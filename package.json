@@ -1,0 +1,19 @@
+{
+  "name": "veyron-browser",
+  "description": "Veyron Browser is a browser for the Veyron namespace.",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "preinstall": "npm install --production $VEYRON_ROOT/veyron/javascript/api"
+  },
+  "devDependencies": {
+    "browserify": "^4.2.3",
+    "jshint": "^2.5.2",
+    "mercury": "^6.0.1",
+    "prova": "^1.14.0",
+    "routes": "^1.2.0",
+    "serve": "^1.4.0",
+    "veyron": "0.0.1",
+    "vulcanize": "^0.3.1"
+  }
+}

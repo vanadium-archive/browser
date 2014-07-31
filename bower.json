@@ -1,0 +1,12 @@
+{
+  "name": "veyron-browser",
+  "dependencies": {
+    "core-drawer-panel": "Polymer/core-drawer-panel#~0.3.4",
+    "core-header-panel": "Polymer/core-header-panel#~0.3.4",
+    "core-item": "Polymer/core-item#~0.3.4",
+    "core-icons": "Polymer/core-icons#~0.3.4",
+    "core-menu": "Polymer/core-menu#~0.3.4",
+    "core-toolbar": "Polymer/core-toolbar#~0.3.4",
+    "paper-button": "Polymer/paper-button#~0.3.4"
+  }
+}

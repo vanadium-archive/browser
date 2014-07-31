@@ -1,0 +1,27 @@
+{
+  "browser": true,
+  "camelcase": true,
+  "curly": true,
+  "eqeqeq": true,
+  "forin": true,
+  "freeze": true,
+  "immed": true,
+  "indent": 2,
+  "latedef": "nofunc",
+  "newcap": true,
+  "noarg": true,
+  "nonbsp": true,
+  "nonew": true,
+  "quotmark": "single",
+  "undef": true,
+  "unused": "vars",
+  "trailing": true,
+  "maxlen": 80,
+  "devel": true,
+  "expr": true,
+  "sub": true,
+  "node": true,
+  "globals": {
+    "Promise": true
+  }
+}

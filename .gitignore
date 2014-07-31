@@ -1,0 +1,5 @@
+node_modules/
+bower_components/
+public/bundle.*
+public/platform.js
+npm-debug.log
