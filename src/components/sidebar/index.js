@@ -1,4 +1,6 @@
 var mercury = require('mercury');
+var browseRoute = require('../../routes/browse');
+var helpRoute = require('../../routes/help');
 var h = mercury.h;
 
 module.exports = create;
@@ -9,7 +11,7 @@ module.exports.render = render;
  */
 function create() {}
 
-function render(navigationState, navigationEvents) {
+function render(navigationState) {
   return [
     h('core-toolbar', [
       h('h1', 'Veyron Browser')
@@ -18,7 +20,7 @@ function render(navigationState, navigationEvents) {
         'selected': navigationState.pageKey,
         'valueattr': 'itemKey'
       },
-      renderNavigationItems(navigationEvents)
+      renderNavigationItems()
     )
   ];
 }
@@ -26,14 +28,16 @@ function render(navigationState, navigationEvents) {
 var navigationItems = [{
   key: 'browse',
   label: 'Browse',
-  icon: 'search'
+  icon: 'search',
+  href: browseRoute.createUrl()
 }, {
   key: 'help',
   label: 'Help',
-  icon: 'help'
+  icon: 'help',
+  href: helpRoute.createUrl()
 }];
 
-function renderNavigationItems(navigationEvents) {
+function renderNavigationItems() {
   return navigationItems.map(function createMenuItem(navItem) {
     return h('core-item', {
       'itemKey': navItem.key,
@@ -41,12 +45,7 @@ function renderNavigationItems(navigationEvents) {
       'label': navItem.label
     }, [
       h('a', {
-        'href': '#/' + navItem.key,
-        'ev-click': mercury.event(
-          navigationEvents.navigate, {
-            path: '/' + navItem.key
-          }
-        )
+        'href': navItem.href
       })
     ]);
   });

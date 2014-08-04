@@ -2,6 +2,10 @@ module.exports = function(routes) {
   routes.addRoute('/help', handleHelpRoute);
 };
 
+module.exports.createUrl = function(namespace, globquery) {
+  return '#/help';
+};
+
 function handleHelpRoute(state) {
 
   // Set the page to help

@@ -2,15 +2,15 @@ PATH:=$(VEYRON_ROOT)/environment/cout/node/bin:$(PATH)
 PATH:=node_modules/.bin:$(PATH)
 
 # All JS files except build.js and third party
-JS_FILES = $(shell find browser -name "*.js")
+JS_FILES = $(shell find src -name "*.js")
 
 # Builds everything
 all: public/bundle.js public/bundle.html public/platform.js
 
 # Creating the bundle JS file
 public/bundle.js: $(JS_FILES) node_modules
-	jshint browser # lint all browser JavaScript files
-	browserify browser/app.js -o public/bundle.js
+	jshint src # lint all src JavaScript files
+	browserify src/app.js -o public/bundle.js
 
 # Creating the bundle HTML file
 public/bundle.html: web-component-dependencies.html node_modules bower_components

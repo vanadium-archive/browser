@@ -3,6 +3,7 @@ var onDocumentReady = require('./lib/document-ready');
 var Viewport = require('./components/viewport/index');
 var router = require('./router');
 var browse = require('./components/browse/index');
+window.debug = require('debug');
 
 onDocumentReady(function startApp() {
 
@@ -19,7 +20,7 @@ onDocumentReady(function startApp() {
        * Mutable via route handlers
        * @type {string}
        */
-      pageKey: mercury.value(null)
+      pageKey: mercury.value('')
     }),
     /*
      * Veyron Namespace Browsing related states

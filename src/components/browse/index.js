@@ -1,5 +1,7 @@
 var mercury = require('mercury');
-var browseNamespace = require('./update/browseNamespace');
+var exists = require('../../lib/exists');
+var browseRoute = require('../../routes/browse');
+var browseNamespace = require('./event-handlers/browseNamespace');
 var h = mercury.h;
 
 module.exports = create;
@@ -15,13 +17,16 @@ function create() {
      * Current Veyron namespace being displayed and queried
      * @type {string}
      */
-    namespace: mercury.value(null),
+    namespace: mercury.value(''), //TODO(aghassemi) temp
 
     /*
      * Current Glob query applied to the Veyron namespace
      * @type {string}
      */
-    globQuery: mercury.value(null)
+    globQuery: mercury.value('*'),
+
+    items: mercury.array([])
+
   });
 
   var events = mercury.input([
@@ -45,10 +50,23 @@ function create() {
   };
 }
 
-function render(browseState, browseEvents) {
+function render(browseState, navigationEvents) {
 
-  // Trigger browseNamespace event when value of the inputs change
-  var changeEvent = mercury.valueEvent(browseEvents.browseNamespace);
+  // Trigger an actual navigation event when value of the inputs change
+  var changeEvent = mercury.valueEvent(function(data) {
+    var namespace = browseState.namespace;
+    var globQuery = browseState.globQuery;
+    if (exists(data.namespace)) {
+      namespace = data.namespace;
+    }
+
+    if (exists(data.globQuery) && data.globQuery !== '') {
+      globQuery = data.globQuery;
+    }
+    navigationEvents.navigate({
+      path: browseRoute.createUrl(namespace, globQuery)
+    });
+  });
 
   return [
     h('input', {
@@ -62,8 +80,22 @@ function render(browseState, browseEvents) {
       'ev-change': changeEvent
     }),
     h('div', ['Current Namespace:', browseState.namespace]),
-    h('div', ['Current GlobQuery:', browseState.globQuery])
+    h('div', ['Current GlobQuery:', browseState.globQuery]),
+    h('ul', renderItems(browseState))
   ];
+}
+
+function renderItems(browseState) {
+  return browseState.items.map(function(item) {
+    return h('li', [
+      h('a', {
+        'href': browseRoute.createUrl(
+          item.name,
+          browseState.globQuery
+        )
+      }, item.mountedName)
+    ]);
+  });
 }
 
 // Wire up events that we know how to handle

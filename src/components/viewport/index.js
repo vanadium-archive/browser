@@ -17,7 +17,7 @@ function render(state, events) {
     h('core-header-panel', {
         'drawer': new AttributeHook(true)
       },
-      Sidebar.render(state.navigation, events.navigation)
+      Sidebar.render(state.navigation)
     ),
     h('core-header-panel', {
         'main': new AttributeHook(true)

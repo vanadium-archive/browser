@@ -22,7 +22,7 @@ function renderContent(state, events) {
   var pageKey = state.navigation.pageKey;
   switch (pageKey) {
     case 'browse':
-      return Browse.render(state.browse, events.browse);
+      return Browse.render(state.browse, events.navigation);
     case 'help':
       return Help.render();
     default:

@@ -3,16 +3,15 @@
 module.exports = MountPoint;
 
 /**
- * MountPoint handles manipulating and querying from
- * a mounttable.
+ * MountPoint handles manipulating and querying a namespace
  * @param {object} client A veyron client.
- * @param {object} mountTable A veyron MountTable instance.
+ * @param {object} namespace A veyron namespace instance.
  * @param {...string} addressParts Parts of the address to join
  * @constructor
  */
-function MountPoint(client, mountTable, addressParts) {
+function MountPoint(client, namespace, addressParts) {
   this.client = client;
-  this.mountTable = mountTable;
+  this.namespace = namespace;
   this.name = Array.prototype.slice.call(arguments, 2).join('/');
   this._terminalNames = null;
 }
@@ -24,10 +23,10 @@ function MountPoint(client, mountTable, addressParts) {
  */
 MountPoint.prototype._getTerminalNames = function() {
   // We resolve to a terminal name manually because veyron rpc calls
-  // wont usually resolve a name if it's to a mounttable.  We
+  // wont usually resolve a name if it's to a namespace.  We
   // would like to interact with all kinds of servers.
   if (!this._terminalNames) {
-    this._terminalNames = this.mountTable.resolveMaximally(this.name);
+    this._terminalNames = this.namespace.resolveMaximally(this.name);
   }
   return this._terminalNames;
 };
@@ -43,7 +42,7 @@ MountPoint.prototype.appendToPath = function(toAdd) {
   if (this.name.length > 0) {
     args.unshift(this.name);
   }
-  return new MountPoint(this.client, this.mountTable, args.join('/'));
+  return new MountPoint(this.client, this.namespace, args.join('/'));
 };
 
 /**
