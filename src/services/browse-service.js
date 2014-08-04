@@ -10,7 +10,8 @@ var veyronNamespace = veyron.newNamespace();
 
 module.exports = {
   glob: glob,
-  join: join
+  join: join,
+  signature: signature
 };
 
 /*
@@ -30,7 +31,7 @@ var cache = {
 };
 
 /*
- * Given a name and a glob query, returns items that match the query
+ * Given a name and a glob query, returns promise of items that match the query
  * Each item is of the form:
  * {
  *    mountedName: 'CornerThermostat' //The  mount name of the item
@@ -52,6 +53,16 @@ function glob(name, globQuery) {
         name: itemName
       };
     });
+  });
+}
+
+/*
+ * Given a name, returns a promise of the signature of methods available on the
+ * object represented by that name.
+ */
+function signature(name) {
+  return veyronClient.bindTo(name).then(function(service) {
+    return service.signature();
   });
 }
 

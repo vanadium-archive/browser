@@ -22,13 +22,25 @@ function browseNamespace(browseState, data) {
     browseState.globQuery.set(data.globQuery);
   }
 
-  browseService.glob(browseState.namespace(), browseState.globQuery())
+  var namespace = browseState.namespace();
+  browseService.glob(namespace, browseState.globQuery())
     .then(function globResultsReceived(globResult) {
       browseState.items.set(globResult);
-    }).catch(function(err) {
+    }, function(err) {
       debug('Failed to glob',
         browseState.namespace(), browseState.globQuery(),
         err, err.stack
       );
+      browseState.items.set([]);
+    });
+
+  browseService.signature(namespace).then( function(signatureResult) {
+      browseState.signature.set(signatureResult);
+    }, function(err) {
+      debug('Failed to get signature',
+        browseState.namespace(),
+        err, err.stack
+      );
+      browseState.signature.set('N/A');
     });
 }

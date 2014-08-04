@@ -14,18 +14,28 @@ function create() {
 
   var state = mercury.struct({
     /*
-     * Current Veyron namespace being displayed and queried
+     * Veyron namespace being displayed and queried
      * @type {string}
      */
     namespace: mercury.value(''), //TODO(aghassemi) temp
 
     /*
-     * Current Glob query applied to the Veyron namespace
+     * Glob query applied to the Veyron namespace
      * @type {string}
      */
     globQuery: mercury.value('*'),
 
-    items: mercury.array([])
+    /*
+     * List of children for the namespace
+     * @type {Array<Object>}
+     */
+    items: mercury.array([]),
+
+    /*
+     * Method signature for the namespace, if pointing to a server
+     * @type {Object}
+     */
+    signature: mercury.value(null)
 
   });
 
@@ -81,18 +91,21 @@ function render(browseState, navigationEvents) {
     }),
     h('div', ['Current Namespace:', browseState.namespace]),
     h('div', ['Current GlobQuery:', browseState.globQuery]),
-    h('ul', renderItems(browseState))
+    h('ul', renderItems(browseState, navigationEvents)),
+    h('h3', 'Method Signature'),
+    h('div', JSON.stringify(browseState.signature))
   ];
 }
 
-function renderItems(browseState) {
+function renderItems(browseState, navigationEvents) {
+
   return browseState.items.map(function(item) {
     return h('li', [
       h('a', {
-        'href': browseRoute.createUrl(
-          item.name,
-          browseState.globQuery
-        )
+        'href': browseRoute.createUrl(item.name, browseState.globQuery),
+        'ev-click': mercury.event(navigationEvents.navigate, {
+          path: browseRoute.createUrl(item.name, browseState.globQuery)
+        })
       }, item.mountedName)
     ]);
   });

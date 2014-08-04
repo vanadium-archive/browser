@@ -23,7 +23,10 @@ proxyd -address=$VEYRON_PROXY_ADDR & \
 wsprd --v=3 -logtostderr=true -vproxy=$VEYRON_PROXY_ADDR --port $VEYRON_WSPR_PORT & \
 mounttabled --address=:$VEYRON_MOUNTTABLE_PORT2 --name=global & \
 sleep 1 ; \
+# Run bunch of random veyron servers like store, rockpaperscissors, smapled
 stored --address=:$VEYRON_STORE_PORT --name=global/$USER/store &
+rpsbot &
+sampled &
 serve public/. --port $HTTP_PORT --compress &
 
 wait
