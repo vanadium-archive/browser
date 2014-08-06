@@ -1,6 +1,9 @@
 var mercury = require('mercury');
+var insertCss = require('insert-css');
 var Browse = require('../browse/index');
 var Help = require('../help/index');
+var css = require('./index.css');
+
 var h = mercury.h;
 
 module.exports = create;
@@ -12,9 +15,9 @@ module.exports.render = render;
 function create() {}
 
 function render(state, events) {
+  insertCss(css);
   return [
-    h('h1', state.navigation.pageKey),
-    h('div', renderContent(state, events))
+    h('div.main-container', renderContent(state, events))
   ];
 }
 

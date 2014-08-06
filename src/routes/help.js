@@ -10,4 +10,5 @@ function handleHelpRoute(state) {
 
   // Set the page to help
   state.navigation.pageKey.set('help');
+  state.viewport.title.set('Help');
 }

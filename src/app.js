@@ -1,6 +1,6 @@
 var mercury = require('mercury');
 var onDocumentReady = require('./lib/document-ready');
-var Viewport = require('./components/viewport/index');
+var viewport = require('./components/viewport/index');
 var router = require('./router');
 var browse = require('./components/browse/index');
 window.debug = require('debug');
@@ -8,6 +8,7 @@ window.debug = require('debug');
 onDocumentReady(function startApp() {
 
   var browseComponent = browse();
+  var viewportComponent = viewport();
 
   // Top level state
   var state = mercury.struct({
@@ -25,7 +26,12 @@ onDocumentReady(function startApp() {
     /*
      * Veyron Namespace Browsing related states
      */
-    browse: browseComponent.state
+    browse: browseComponent.state,
+
+    /*
+     * State of the viewport component
+     */
+    viewport: viewportComponent.state
   });
 
   // To level events
@@ -37,9 +43,13 @@ onDocumentReady(function startApp() {
 
     /*
      * Veyron Namespace Browsing related events
-     * Source: components/browse/events
      */
-    'browse'
+    'browse',
+
+    /*
+     * Events of the viewport component
+     */
+    'viewport'
   ]);
   events.navigation = mercury.input([
     /*
@@ -53,13 +63,14 @@ onDocumentReady(function startApp() {
     'navigate'
   ]);
   events.browse = browseComponent.events;
+  events.viewport = viewportComponent.events;
 
   // Start the router which will register the application routes
   router(state, events);
 
   // Render the app
   var render = function(state) {
-    return Viewport.render(state, events);
+    return viewport.render(state, events);
   };
   mercury.app(document.body, state, render);
 

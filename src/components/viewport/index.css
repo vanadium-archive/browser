@@ -1,6 +1,29 @@
 /* TODO(aghassemi) Use Rework */
-@import url(http://fonts.googleapis.com/css?family=Open+Sans);
+@import url(http://fonts.googleapis.com/css?family=Roboto);
 body {
   font-family: 'Roboto', sans-serif;
   color: #252525;
+  /* TODO(aghassemi) refactor FAFAFA into color-white variable */
+  background-color: #FAFAFA;
 }
+
+.panel .drawer {
+  background-color: #FAFAFA;
+}
+
+.title {
+  /* TODO(aghassemi) refactor these into size variables of xsmall, small, normal, medium, large, larger */
+  font-size: 1.1em;
+  font-weight: normal;
+  color: #FAFAFA;
+}
+
+.drawer-toggle {
+  color: #FAFAFA;
+}
+
+.toolbar {
+  /* TODO(aghassemi) refactor into color-primary-dark variable */
+  background-color: #2F3E9E;
+}
+

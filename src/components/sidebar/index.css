@@ -1,0 +1,4 @@
+.nav-item.core-selected {
+  /* TODO(aghassemi) refactor into color-bright variable */
+  color: #FF4081;
+}

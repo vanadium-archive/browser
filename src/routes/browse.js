@@ -29,6 +29,7 @@ function handleBrowseRoute(state, events, params) {
 
   // Set the page to browse
   state.navigation.pageKey.set('browse');
+  state.viewport.title.set('Browse');
 
   var namespace = '';
   var globquery = '';
