@@ -1,16 +1,19 @@
 PATH:=$(VEYRON_ROOT)/environment/cout/node/bin:$(PATH)
 PATH:=node_modules/.bin:$(PATH)
 
-# All JS files except build.js and third party
-JS_FILES = $(shell find src -name "*.js")
+# All JS and CSS files except build.js and third party
+BROWSERIFY_FILES = $(shell find src -name "*.js" -o -name "*.css")
+BROWSERIFY_OPTIONS = --transform ./css-transform --debug
+PROVA_OPTIONS = --browser --launch chrome --plugin proxyquireify/plugin
+PROVA_HEADLESS_OPTIONS = --headless --progress --quit
 
 # Builds everything
 all: public/bundle.js public/bundle.html public/platform.js
 
 # Creating the bundle JS file
-public/bundle.js: $(JS_FILES) node_modules
+public/bundle.js: $(BROWSERIFY_FILES) node_modules
 	jshint src # lint all src JavaScript files
-	browserify src/app.js -o public/bundle.js
+	browserify src/app.js $(BROWSERIFY_OPTIONS) $< | exorcist $@.map > $@ #Browserify and generate map file
 
 # Creating the bundle HTML file
 public/bundle.html: web-component-dependencies.html node_modules bower_components
@@ -37,7 +40,7 @@ bower_components: bower.json node_modules
 # Uses prova to run tests in a headless chrome and then quit after all test finish
 test:
 	jshint test # lint all test JavaScript files
-	prova test/**/*.js --browser --launch chrome --headless --progress --quit --plugin proxyquireify/plugin
+	prova test/**/*.js $(PROVA_OPTIONS) $(PROVA_HEADLESS_OPTIONS)
 
 # Continuously watch for changes to .js, .html or .css files.
 # Rebundles the appropriate bundles when local files change
@@ -47,7 +50,7 @@ watch:
 # Continuously reruns the tests as they change
 watch-test:
 	@echo "Tests being watched at: http://0.0.0.0:7559"
-	prova test/**/*.js --browser --launch chrome --plugin proxyquireify/plugin
+	prova test/**/*.js $(PROVA_OPTIONS)
 
 # Serves the needed daemons and starts a server at http://localhost:$(HTTP_PORT)
 # CTRL-C to stop
