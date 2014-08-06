@@ -31,7 +31,7 @@ function handleBrowseRoute(state, events, params) {
   state.navigation.pageKey.set('browse');
 
   var namespace = '';
-  var globquery = '*';
+  var globquery = '';
   if (params.namespace) {
     var parsed = urlUtil.parse(params.namespace);
     namespace = parsed.pathname || '';

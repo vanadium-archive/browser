@@ -1,7 +1,7 @@
 var mercury = require('mercury');
 var exists = require('../../lib/exists');
 var browseRoute = require('../../routes/browse');
-var browseNamespace = require('./event-handlers/browseNamespace');
+var browseNamespace = require('./event-handlers/browse-namespace');
 var h = mercury.h;
 
 module.exports = create;

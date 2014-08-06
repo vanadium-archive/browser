@@ -37,7 +37,7 @@ bower_components: bower.json node_modules
 # Uses prova to run tests in a headless chrome and then quit after all test finish
 test:
 	jshint test # lint all test JavaScript files
-	prova test/**/*.js --browser --launch chrome --headless --progress --quit
+	prova test/**/*.js --browser --launch chrome --headless --progress --quit --plugin proxyquireify/plugin
 
 # Continuously watch for changes to .js, .html or .css files.
 # Rebundles the appropriate bundles when local files change
@@ -47,7 +47,7 @@ watch:
 # Continuously reruns the tests as they change
 watch-test:
 	@echo "Tests being watched at: http://0.0.0.0:7559"
-	prova test/**/*.js --browser --launch chrome
+	prova test/**/*.js --browser --launch chrome --plugin proxyquireify/plugin
 
 # Serves the needed daemons and starts a server at http://localhost:$(HTTP_PORT)
 # CTRL-C to stop

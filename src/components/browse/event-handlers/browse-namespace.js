@@ -1,5 +1,5 @@
 var exists = require('../../../lib/exists');
-var debug = require('debug')('components:browse:browseNamespace');
+var debug = require('debug')('components:browse:browse-namespace');
 var browseService = require('../../../services/browse-service');
 
 module.exports = browseNamespace;
@@ -18,7 +18,7 @@ function browseNamespace(browseState, data) {
     browseState.namespace.set(data.namespace);
   }
 
-  if (exists(data.globQuery)) {
+  if (exists(data.globQuery) && data.globQuery !== '') {
     browseState.globQuery.set(data.globQuery);
   }
 
@@ -29,7 +29,8 @@ function browseNamespace(browseState, data) {
     }, function(err) {
       debug('Failed to glob',
         browseState.namespace(), browseState.globQuery(),
-        err, err.stack
+        err,
+        (err && err.stack) ? err.stack : undefined
       );
       browseState.items.set([]);
     });
@@ -39,8 +40,9 @@ function browseNamespace(browseState, data) {
     }, function(err) {
       debug('Failed to get signature',
         browseState.namespace(),
-        err, err.stack
+        err,
+        (err && err.stack) ? err.stack : undefined
       );
-      browseState.signature.set('N/A');
+      browseState.signature.set('');
     });
 }
