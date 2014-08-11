@@ -4,7 +4,7 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "preinstall": "npm install --production $VEYRON_ROOT/veyron/javascript/api"
+    "preinstall": "npm install --production $VEYRON_ROOT/veyron.js"
   },
   "devDependencies": {
     "browserify": "^4.2.3",
@@ -14,7 +14,8 @@
     "proxyquireify": "^0.5.0",
     "serve": "^1.4.0",
     "through2": "^0.5.1",
-    "vulcanize": "^0.3.1"
+    "vulcanize": "^0.3.1",
+    "bower": "~1.3.9"
   },
   "dependencies": {
     "debug": "^1.0.4",

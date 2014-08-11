@@ -20,12 +20,11 @@ identityd --httpaddr=:$VEYRON_IDENTITY_PORT & \
 mounttabled --address=:$VEYRON_MOUNTTABLE_PORT & \
 export NAMESPACE_ROOT=/localhost:$VEYRON_MOUNTTABLE_PORT ; \
 proxyd -address=$VEYRON_PROXY_ADDR & \
-wsprd --v=3 -logtostderr=true -vproxy=$VEYRON_PROXY_ADDR --port $VEYRON_WSPR_PORT & \
+wsprd --v=3 -logtostderr=true -vproxy=$VEYRON_PROXY_ADDR --port $VEYRON_WSPR_PORT --identd='/localhost:5163'& \
 mounttabled --address=:$VEYRON_MOUNTTABLE_PORT2 --name=global & \
 sleep 1 ; \
 # Run bunch of random veyron servers like store, rockpaperscissors, smapled
 stored --address=:$VEYRON_STORE_PORT --name=global/$USER/store &
-rpsbot &
 sampled &
 serve public/. --port $HTTP_PORT --compress &
 
