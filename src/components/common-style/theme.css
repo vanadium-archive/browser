@@ -1,0 +1,8 @@
+/* CSS variables for the color theme of the application */
+:root {
+  --font-family: 'Roboto', sans-serif;
+  --color-white: #FAFAFA;
+  --color-black: #252525;
+  --color-primary-dark: #2F3E9E;
+  --color-bright: #FF4081;
+}

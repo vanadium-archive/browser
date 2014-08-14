@@ -1,0 +1,17 @@
+/* Size related CSS variables */
+:root {
+
+  /* font-size */
+  --size-font-xsmall: 0.8em;
+  --size-font-small: 0.9em;
+  --size-font-normal: 1em;
+  --size-font-large: 1.1em;
+  --size-font-xlarge: 1.2em;
+
+  /* margin and padding size */
+  --size-space-xsmall: 0.5em;
+  --size-space-small: 0.75em;
+  --size-space-normal: 1em;
+  --size-space-large: 1.25em;
+  --size-space-xlarge: 1.5em;
+}

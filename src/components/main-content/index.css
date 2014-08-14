@@ -1,3 +1,5 @@
+@import "common-style/sizes.css";
+
 .main-container {
-  margin: 1em;
+  margin: var(--size-space-normal);
 }
