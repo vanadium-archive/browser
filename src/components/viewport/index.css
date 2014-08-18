@@ -22,7 +22,8 @@ body {
   background-color: var(--color-white);
 }
 
-.drawer-toggle {
-  color: var(--color-white);
+.toolbar {
+  /* TODO(aghassemi) refactor into color-primary-dark variable */
+  background-color: #1a237e;
 }
 

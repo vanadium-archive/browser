@@ -11,25 +11,30 @@ var veyronNamespace = veyron.newNamespace();
 module.exports = {
   glob: glob,
   join: join,
-  signature: signature
+  signature: signature,
+  getTypeInfo : getTypeInfo,
+  isRooted: isRooted,
+  isGlobbable: isGlobbable
 };
 
 /*
  * Cache of Name to MountPoint objects
  */
-var cache = {
+var mpcache = {
   _cacheMap: {},
   get: function(name) {
     return veyronNamespace.then(function(ns) {
       // TODO(aghassemi) why is namespace a promise?!
-      if (!cache._cacheMap[name]) {
-        cache._cacheMap[name] = new MountPoint(veyronClient, ns, name);
+      if (!mpcache._cacheMap[name]) {
+        mpcache._cacheMap[name] = new MountPoint(veyronClient, ns, name);
       }
-      return cache._cacheMap[name];
+      return mpcache._cacheMap[name];
     });
   }
 };
 
+// TODO(aghassemi) how to invalidate?
+var globcache = {};
 /*
  * Given a name and a glob query, returns promise of items that match the query
  * Each item is of the form:
@@ -39,11 +44,23 @@ var cache = {
  * }
  */
 function glob(name, globQuery) {
+  if(globcache[name] && globcache[name][globQuery]) {
+    return Promise.resolve(globcache[name][globQuery]);
+  }
 
-  return cache.get(name).then(function glob(mountPoint) {
-    return mountPoint.glob(globQuery);
+  return mpcache.get(name).then(function glob(mountPoint) {
+    if( mountPoint['glob'] !== undefined) {
+      return mountPoint.glob(globQuery);
+    } else {
+      var err = new Error('Object does not support glob operation');
+      return Promise.reject(err)
+    }
+
   }).then(function createItems(globResults) {
-    return globResults.map(function(result) {
+    if( globcache[name] === undefined) {
+      globcache[name] = {};
+    }
+    var result = globResults.map(function(result) {
       var itemName = result.name;
       if (name !== '') {
         itemName = namespaceUtil.join([name, itemName]);
@@ -53,22 +70,97 @@ function glob(name, globQuery) {
         name: itemName
       };
     });
+
+    result.sort(function(a,b) {
+      return a.mountedName.localeCompare(b.mountedName);
+    });
+
+    globcache[name][globQuery] = result;
+    return result;
   });
 }
 
+// TODO(aghassemi) how to invalidate?
+var sigcache = {};
 /*
  * Given a name, returns a promise of the signature of methods available on the
  * object represented by that name.
  */
 function signature(name) {
+  if( sigcache[name] ) {
+    return Promise.resolve(sigcache[name]);
+  }
   return veyronClient.bindTo(name).then(function(service) {
-    return service.signature();
+    return service.signature().then(function(sig) {
+      sigcache[name] = sig;
+      return sig;
+    })
   });
 }
 
 /*
  * Given a name and a suffix, it joins them to create a single name
  */
-function join(name, suffix) {
-  return namespaceUtil.join(name, suffix);
+function join(nameParts) {
+  return namespaceUtil.join(nameParts);
+}
+
+/*
+ * Given a name and a suffix, it joins them to create a single name
+ */
+function isRooted(name) {
+  return namespaceUtil.isRooted(name);
+}
+
+
+/*
+ * Given signature of an item returns type information
+ * TODO(aghassemi) We need actual type information in signature, this code makes
+ * highly speculative assumptions.
+ */
+function getTypeInfo(signature) {
+
+  var typeName = 'Unknown';
+  var typeDescription = 'Type of item is now known.'
+
+  if (!signature) {
+    typeName = 'Intermediary Name';
+    typeDescription = 'Intermediary node in the namespace';
+  } else if (isMounttable(signature)) {
+    typeName = 'Mounttable';
+    typeDescription = 'Item resolves to a Mounttable server';
+  } else {
+    typeName = 'Server';
+    typeDescription = 'Item resolves to a regular server.';
+  }
+
+  return {
+    name: typeName,
+    description: typeDescription
+  }
+}
+
+/*
+ * Given signature of an item returns whether it is a mounttable service or not
+ * TODO(aghassemi) We need actual type information in signature, this code makes
+ * highly speculative assumptions.
+ */
+function isMounttable(signature) {
+  return (signature &&
+    signature['glob'] &&
+    signature['mount'] &&
+    signature['unmount']);
+}
+
+function isGlobbable(name) {
+  return signature(name).then( function(sig) {
+    return sig['glob'] !== undefined
+  }).catch( function(e) {
+    // TODO(aghassemi) This is very wrong, not having a signature does not mean
+    // globbale will do for prototype
+    if(e && e.message && e.message.indexOf("Name doesn't exist") > -1) {
+      return true;
+    }
+    return false;
+  })
 }

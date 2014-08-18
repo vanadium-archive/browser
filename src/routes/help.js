@@ -2,7 +2,7 @@ module.exports = function(routes) {
   routes.addRoute('/help', handleHelpRoute);
 };
 
-module.exports.createUrl = function(namespace, globquery) {
+module.exports.createUrl = function() {
   return '#/help';
 };
 

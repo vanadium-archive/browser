@@ -10,5 +10,6 @@ module.exports.render = render;
 function create() {}
 
 function render() {
-  return h('span', 'HELP! TODO(aghassemi)');
+  // TODO(aghassemi)
+  return h('div.empty', 'Help will come one day.');
 }

@@ -2,6 +2,7 @@ var mercury = require('mercury');
 var insertCss = require('insert-css');
 var browseRoute = require('../../routes/browse');
 var helpRoute = require('../../routes/help');
+var visualizeRoute = require('../../routes/visualize');
 var css = require('./index.css');
 
 var h = mercury.h;
@@ -23,37 +24,42 @@ function render(state, events) {
       renderNavigationItems(events)
     )
   ];
-}
 
-var navigationItems = [{
-  key: 'browse',
-  label: 'Browse',
-  icon: 'search',
-  href: browseRoute.createUrl()
-}, {
-  key: 'help',
-  label: 'Help',
-  icon: 'help',
-  href: helpRoute.createUrl()
-}];
+  function renderNavigationItems() {
+    var navigationItems = [{
+      key: 'browse',
+      label: 'Browse',
+      icon: 'search',
+      href: browseRoute.createUrl(state.browse.namespace, state.browse.globQuery)
+    }, {
+      key: 'visualize',
+      label: 'Visualize',
+      icon: 'social:circles-extended',
+      href: visualizeRoute.createUrl()
+    }, {
+      key: 'help',
+      label: 'Help',
+      icon: 'help',
+      href: helpRoute.createUrl()
+    }];
 
-function renderNavigationItems(events) {
-  insertCss(css);
-  return navigationItems.map(function createMenuItem(navItem) {
-    return h('core-item.nav-item', {
-      'itemKey': navItem.key,
-      'icon': navItem.icon,
-      'label': navItem.label
-    }, [
-      h('a', {
-        'href': navItem.href,
-        'ev-click': [
-          mercury.event(events.navigation.navigate, {
-            path: navItem.href
-          }),
-          mercury.event(events.viewport.closeSidebar)
-        ]
-      })
-    ]);
-  });
+    insertCss(css);
+    return navigationItems.map(function createMenuItem(navItem) {
+      return h('core-item.nav-item', {
+        'itemKey': navItem.key,
+        'icon': navItem.icon,
+        'label': navItem.label
+      }, [
+        h('a', {
+          'href': navItem.href,
+          'ev-click': [
+            mercury.event(events.navigation.navigate, {
+              path: navItem.href
+            }),
+            mercury.event(events.viewport.closeSidebar)
+          ]
+        })
+      ]);
+    });
+  }
 }

@@ -1,0 +1,11 @@
+package sample
+
+type Speaker interface {
+ PlaySong(songName string) (error)
+ PlayStream() stream<[]byte, _> (error)
+ Pause() (error)
+ Stop() (error)
+ Volume(volumeLevel uint16) (error)
+}
+
+//TODO(aghassemi) cleanup comments and interface definition, add return types,

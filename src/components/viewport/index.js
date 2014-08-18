@@ -71,7 +71,7 @@ function render(state, events) {
 
 function renderSideToolbar(state, events) {
   return h('core-toolbar.toolbar', [
-    h('h1.title', 'Veyron Browser')
+    h('h1.title', 'Namespace Browser')
   ]);
 }
 
@@ -82,7 +82,8 @@ function renderMainToolbar(state, events) {
       'icon': new AttributeHook('menu'),
       'ev-click': mercury.event(events.viewport.openSidebar)
     }),
-    h('h2.title', state.viewport.title)
+    h('h2.title', state.viewport.title),
+    mainContent.renderHeader(state,events)
   ]);
 }
 

@@ -1,0 +1,9 @@
+package sample
+
+type SmokeDetector interface {
+ Status() (error)
+ Test() (error)
+ Sensitivity(sens int16) (error)
+}
+
+//TODO(aghassemi) cleanup comments and interface definition, add return types,

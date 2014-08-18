@@ -3,12 +3,16 @@ var onDocumentReady = require('./lib/document-ready');
 var viewport = require('./components/viewport/index');
 var router = require('./router');
 var browse = require('./components/browse/index');
+var error = require('./components/error/index');
+var errorRoute = require('./routes/error');
+
 window.debug = require('debug');
 
 onDocumentReady(function startApp() {
 
   var browseComponent = browse();
   var viewportComponent = viewport();
+  var errorComponent = error();
 
   // Top level state
   var state = mercury.struct({
@@ -31,7 +35,12 @@ onDocumentReady(function startApp() {
     /*
      * State of the viewport component
      */
-    viewport: viewportComponent.state
+    viewport: viewportComponent.state,
+
+    /*
+     * State of the error component
+     */
+    error: errorComponent.state
   });
 
   // To level events
@@ -65,6 +74,9 @@ onDocumentReady(function startApp() {
   events.browse = browseComponent.events;
   events.viewport = viewportComponent.events;
 
+  // Wire Events
+  wireEvents();
+
   // Start the router which will register the application routes
   router(state, events);
 
@@ -73,5 +85,21 @@ onDocumentReady(function startApp() {
     return viewport.render(state, events);
   };
   mercury.app(document.body, state, render);
+
+  function wireEvents() {
+    events.browse.error(onError)
+  }
+
+  function onError(err) {
+    var msg = err.toString();
+    if (err.message) {
+      msg = err.message;
+    }
+    state.error.message.set(msg);
+    events.navigation.navigate({
+      path: errorRoute.createUrl(),
+      skipHistoryPush: true
+    });
+  }
 
 });

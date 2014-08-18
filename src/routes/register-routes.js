@@ -7,4 +7,6 @@ function registerRoutes(routes) {
   require('./index')(routes);
   require('./help')(routes);
   require('./browse')(routes);
+  require('./error')(routes);
+  require('./visualize')(routes);
 }

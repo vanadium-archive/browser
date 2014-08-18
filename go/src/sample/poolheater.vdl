@@ -1,0 +1,8 @@
+package sample
+
+type PoolHeater interface {
+ Start(temperature uint64, duration uint64) (error)
+ Stop() (error)
+}
+
+//TODO(aghassemi) cleanup comments and interface definition, add return types,

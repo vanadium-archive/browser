@@ -1,0 +1,11 @@
+package sample
+
+type Alarm interface {
+ Status() (error)
+ Arm() (error)
+ DelayArm(seconds uint16) (error)
+ Unarm() (error)
+ Panic() (error)
+}
+
+//TODO(aghassemi) cleanup comments and interface definition, add return types,

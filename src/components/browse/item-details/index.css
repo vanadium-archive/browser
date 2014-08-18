@@ -1,0 +1,46 @@
+.tabs {
+  box-shadow: 0px 3px 2px rgba(0, 0, 0, 0.2);
+}
+
+.tabs::shadow #selectionBar {
+  background-color: #FF4081;
+}
+
+.tab {
+   /* TODO(aghassemi) refactor into color-primary-main variable */
+  background-color: #3f51b5;
+  color: #FAFAFA;
+}
+
+.tab::shadow #ink {
+  /* TODO(aghassemi) refactor into color-bright variable */
+  color: #FF4081;
+}
+
+.browse-details-sidebar::shadow #dropShadow {
+  display: none;
+}
+
+.tab-content {
+  padding: 0.5em;
+}
+
+:not(.core-selected).tab-content {
+  display: none;
+}
+
+.field {
+  font-size: 0.9em;
+  margin-bottom: 0.75em;
+
+}
+
+.field h4 {
+  margin: 0;
+  color: rgba(0,0,0, 0.54);
+}
+
+.signature pre{
+  white-space: normal;
+  word-break: break-all;
+}
