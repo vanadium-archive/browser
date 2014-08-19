@@ -4,13 +4,13 @@ module.exports = MountPoint;
 
 /**
  * MountPoint handles manipulating and querying a namespace
- * @param {object} client A veyron client.
+ * @param {object} rt A veyron runtime.
  * @param {object} namespace A veyron namespace instance.
  * @param {...string} addressParts Parts of the address to join
  * @constructor
  */
-function MountPoint(client, namespace, addressParts) {
-  this.client = client;
+function MountPoint(rt, namespace, addressParts) {
+  this.rt = rt;
   this.namespace = namespace;
   this.name = Array.prototype.slice.call(arguments, 2).join('/');
   this._terminalNames = null;
@@ -42,7 +42,7 @@ MountPoint.prototype.appendToPath = function(toAdd) {
   if (this.name.length > 0) {
     args.unshift(this.name);
   }
-  return new MountPoint(this.client, this.namespace, args.join('/'));
+  return new MountPoint(this.rt, this.namespace, args.join('/'));
 };
 
 /**
@@ -51,11 +51,11 @@ MountPoint.prototype.appendToPath = function(toAdd) {
  * @return {promise} a promise that completes when it is mounted
  */
 MountPoint.prototype.mount = function(target) {
-  var client = this.client;
+  var rt = this.rt;
   return this._getTerminalNames().then(function(terminalNames) {
     // TODO(mattr): We should try all the names instead of just the first.
     // Perhpas the library should allow me to pass a list of names.
-    return client.bindTo(terminalNames[0]).then(function(mtService) {
+    return rt.bindTo(terminalNames[0]).then(function(mtService) {
       return mtService.mount(target, 0);
     });
   });
@@ -68,11 +68,11 @@ MountPoint.prototype.mount = function(target) {
  */
 MountPoint.prototype.glob = function(expr) {
   var results = [];
-  var client = this.client;
+  var rt = this.rt;
   return this._getTerminalNames().then(function(terminalNames) {
     // TODO(mattr): We should try all the names instead of just the first.
     // Perhpas the library should allow me to pass a list of names.
-    return client.bindTo(terminalNames[0]).then(function(mtService) {
+    return rt.bindTo(terminalNames[0]).then(function(mtService) {
       var promise = mtService.glob(expr);
       var stream = promise.stream;
 

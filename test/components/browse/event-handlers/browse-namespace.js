@@ -31,12 +31,12 @@ var browseServiceMockWithFailure = {
 
 // Require the browseNamespace using the proxy so mocked browse-service is used
 var browseNamespace =
-proxyquire('../../../../src/components/browse/event-handlers/browse-namespace',{
+proxyquire('../../../../src/components/browse/browse-namespace',{
   '../../../services/browse-service': browseServiceMock
 });
 
 var browseNamespaceWithFailure =
-proxyquire('../../../../src/components/browse/event-handlers/browse-namespace',{
+proxyquire('../../../../src/components/browse/browse-namespace',{
   '../../../services/browse-service': browseServiceMockWithFailure
 });
 

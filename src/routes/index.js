@@ -8,6 +8,6 @@ function handleIndexRoute(state, events) {
 
   // Redirect to browse
   events.navigation.navigate({
-    path: browseRoute.createUrl('/aghassemi0.mtv.corp.google.com:5167')
+    path: browseRoute.createUrl('/proxy.envyor.com:8101')
   });
 }

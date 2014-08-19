@@ -1,12 +1,10 @@
-var Veyron = require('veyron');
+var veyron = require('veyron');
+var namespaceUtil = veyron.namespaceUtil;
+
 var veyronConfig = require('../veyron-config');
 var MountPoint = require('../lib/mountpoint');
 
-var veyron = new Veyron(veyronConfig);
-var namespaceUtil = Veyron.namespaceUtil;
-
-var veyronClient = veyron.newClient();
-var veyronNamespace = veyron.newNamespace();
+var runtimePromise = veyron.init(veyronConfig);
 
 module.exports = {
   glob: glob,
@@ -23,12 +21,14 @@ module.exports = {
 var mpcache = {
   _cacheMap: {},
   get: function(name) {
-    return veyronNamespace.then(function(ns) {
-      // TODO(aghassemi) why is namespace a promise?!
-      if (!mpcache._cacheMap[name]) {
-        mpcache._cacheMap[name] = new MountPoint(veyronClient, ns, name);
-      }
-      return mpcache._cacheMap[name];
+    return runtimePromise.then(function(rt) {
+      return rt.newNamespace().then(function(ns) {
+        // TODO(aghassemi) why is namespace a promise?!
+        if (!mpcache._cacheMap[name]) {
+          mpcache._cacheMap[name] = new MountPoint(rt, ns, name);
+        }
+        return mpcache._cacheMap[name];
+      });
     });
   }
 };
@@ -90,11 +90,13 @@ function signature(name) {
   if( sigcache[name] ) {
     return Promise.resolve(sigcache[name]);
   }
-  return veyronClient.bindTo(name).then(function(service) {
-    return service.signature().then(function(sig) {
-      sigcache[name] = sig;
-      return sig;
-    })
+  return runtimePromise.then(function(rt){
+    return rt.bindTo(name).then(function(service) {
+      return service.signature().then(function(sig) {
+        sigcache[name] = sig;
+        return sig;
+      })
+    });
   });
 }
 

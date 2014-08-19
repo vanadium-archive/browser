@@ -48,7 +48,7 @@ bower_components: bower.json node_modules
 # PHONY targets:
 
 # Uses prova to run tests in a headless chrome and then quit after all test finish
-test:
+test: public/bundle.js public/bundle.html public/platform.js
 	jshint test # lint all test JavaScript files
 	prova test/**/*.js $(PROVA_OPTIONS) $(PROVA_HEADLESS_OPTIONS)
 
@@ -64,7 +64,7 @@ watch-test:
 
 # Serves the needed daemons and starts a server at http://localhost:$(HTTP_PORT)
 # CTRL-C to stop
-start:
+start: all
 	./services.sh
 
 # Clean all build artifacts

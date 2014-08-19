@@ -8,6 +8,13 @@ Before you can run Mounttable Browser, you need to build. Simply run:
 make
 ```
 
+## The Extension
+
+You must have the Veyron Extension installed to run this.
+
+Get it here:
+https://github.com/veyron/veyron.js/raw/master/extension/veyron.crx
+
 ## Running
 
 ```sh
