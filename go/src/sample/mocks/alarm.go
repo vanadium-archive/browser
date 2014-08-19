@@ -1,33 +1,60 @@
 package mocks
 
 import (
-	"errors"
+	"fmt"
+	"time"
 
 	"veyron2/ipc"
 )
 
-type alarm struct{}
+const (
+	// Alarm status constants
+	alarmPanicking = "panicking"
+	alarmArmed     = "armed"
+	alarmUnarmed   = "unarmed"
+)
 
-func (_ alarm) Status(_ ipc.ServerContext) error {
-	return errors.New("not implemented")
+// Alarm allows clients to manipulate an alarm and query its status.
+type alarm struct {
+	status string
 }
 
-func (_ alarm) Arm(_ ipc.ServerContext) error {
-	return errors.New("not implemented")
+// Status returns the current status of the Alarm (i.e., armed, unarmed, panicking).
+func (a *alarm) Status(ipc.ServerContext) (string, error) {
+	return a.status, nil
 }
 
-func (_ alarm) DelayArm(_ ipc.ServerContext, _ uint16) error {
-	return errors.New("not implemented")
+// Arm sets the Alarm to the armed state
+func (a *alarm) Arm(ipc.ServerContext) error {
+	a.status = alarmArmed
+	return nil
 }
 
-func (_ alarm) Unarm(_ ipc.ServerContext) error {
-	return errors.New("not implemented")
+// DelayArm sets the Alarm to the armed state after the given delay in seconds.
+func (a *alarm) DelayArm(_ ipc.ServerContext, delay uint16) error {
+	d, err := time.ParseDuration(fmt.Sprintf("%ds", delay))
+	if err != nil {
+		return fmt.Errorf("%s could not parse delay %d", err, delay)
+	}
+	time.AfterFunc(d, func() {
+		a.status = alarmArmed
+	})
+	return nil
 }
 
-func (_ alarm) Panic(_ ipc.ServerContext) error {
-	return errors.New("not implemented")
+// Unarm sets the Alarm to the unarmed state.
+func (a *alarm) Unarm(ipc.ServerContext) error {
+	a.status = alarmUnarmed
+	return nil
 }
 
-func NewAlarm() alarm {
-	return alarm{}
+// Panic sets the Alarm to the panicking state.
+func (a *alarm) Panic(ipc.ServerContext) error {
+	a.status = alarmPanicking
+	return nil
+}
+
+// NewAlarm creates a new alarm stub.
+func NewAlarm() *alarm {
+	return &alarm{status: alarmUnarmed}
 }

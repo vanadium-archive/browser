@@ -18,20 +18,19 @@ identity seekblessing > "${VEYRON_IDENTITY_PATH}"
 
 export VEYRON_IDENTITY=$VEYRON_IDENTITY_PATH; \
 mounttabled --address=:$VEYRON_MOUNTTABLE_PORT & \
+sleep 1 ; \
+export NAMESPACE_ROOT=/localhost:$VEYRON_MOUNTTABLE_PORT ; \
 mounttabled --address=:$VEYRON_MOUNTTABLE_PORT_HOUSE --name="house" & \
 mounttabled --address=:$VEYRON_MOUNTTABLE_PORT_COTTAGE --name="cottage" & \
-export NAMESPACE_ROOT=/localhost:$VEYRON_MOUNTTABLE_PORT ; \
 proxyd -address=$VEYRON_PROXY_ADDR & \
 wsprd --v=3 -logtostderr=true -vproxy=$VEYRON_PROXY_ADDR --port $VEYRON_WSPR_PORT --identd=$VEYRON_IDENTITY_SERVER & \
 sleep 1 ; \
-# Run bunch of random veyron servers like store, rockpaperscissors, smapled
-stored --address=:$VEYRON_STORE_PORT --name="stored" & \
+# Run bunch of random veyron servers like store, rockpaperscissors, sampled
+stored --address=:$VEYRON_STORE_PORT --name=global/$USER/store & \
 binaryd --name="binaryd" & \
 buildd --name="buildd" & \
 ./go/bin/sampled & \
-mounttabled --address=:$VEYRON_MOUNTTABLE_PORT2 --name=global & \
-stored --address=:$VEYRON_STORE_PORT --name=global/$USER/store & \
-sampled &
+
 serve public/. --port $HTTP_PORT --compress &
 
 wait

@@ -1,8 +1,11 @@
 package sample
 
+// PoolHeater allows clients to control when the pool is being heated.
 type PoolHeater interface {
+ // Status retrieves the PoolHeater's status (i.e., active, idle)
+ Status() (string, error)
+ // Start informs the PoolHeater to heat the pool to the given temperature until the duration expires.
  Start(temperature uint64, duration uint64) (error)
+ // Stop informs the PoolHeater to cease heating the pool.
  Stop() (error)
 }
-
-//TODO(aghassemi) cleanup comments and interface definition, add return types,

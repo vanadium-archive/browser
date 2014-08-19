@@ -17,11 +17,16 @@ import (
 // It corrects a bug where _gen_wiretype is unused in VDL pacakges where only bootstrap types are used on interfaces.
 const _ = _gen_wiretype.TypeIDInvalid
 
+// PoolHeater allows clients to control when the pool is being heated.
 // PoolHeater is the interface the client binds and uses.
 // PoolHeater_ExcludingUniversal is the interface without internal framework-added methods
 // to enable embedding without method collisions.  Not to be used directly by clients.
 type PoolHeater_ExcludingUniversal interface {
+	// Status retrieves the PoolHeater's status (i.e., active, idle)
+	Status(ctx _gen_context.T, opts ..._gen_ipc.CallOpt) (reply string, err error)
+	// Start informs the PoolHeater to heat the pool to the given temperature until the duration expires.
 	Start(ctx _gen_context.T, temperature uint64, duration uint64, opts ..._gen_ipc.CallOpt) (err error)
+	// Stop informs the PoolHeater to cease heating the pool.
 	Stop(ctx _gen_context.T, opts ..._gen_ipc.CallOpt) (err error)
 }
 type PoolHeater interface {
@@ -31,7 +36,12 @@ type PoolHeater interface {
 
 // PoolHeaterService is the interface the server implements.
 type PoolHeaterService interface {
+
+	// Status retrieves the PoolHeater's status (i.e., active, idle)
+	Status(context _gen_ipc.ServerContext) (reply string, err error)
+	// Start informs the PoolHeater to heat the pool to the given temperature until the duration expires.
 	Start(context _gen_ipc.ServerContext, temperature uint64, duration uint64) (err error)
+	// Stop informs the PoolHeater to cease heating the pool.
 	Stop(context _gen_ipc.ServerContext) (err error)
 }
 
@@ -74,6 +84,17 @@ func NewServerPoolHeater(server PoolHeaterService) interface{} {
 type clientStubPoolHeater struct {
 	client _gen_ipc.Client
 	name   string
+}
+
+func (__gen_c *clientStubPoolHeater) Status(ctx _gen_context.T, opts ..._gen_ipc.CallOpt) (reply string, err error) {
+	var call _gen_ipc.Call
+	if call, err = __gen_c.client.StartCall(ctx, __gen_c.name, "Status", nil, opts...); err != nil {
+		return
+	}
+	if ierr := call.Finish(&reply, &err); ierr != nil {
+		err = ierr
+	}
+	return
 }
 
 func (__gen_c *clientStubPoolHeater) Start(ctx _gen_context.T, temperature uint64, duration uint64, opts ..._gen_ipc.CallOpt) (err error) {
@@ -143,6 +164,8 @@ func (__gen_s *ServerStubPoolHeater) GetMethodTags(call _gen_ipc.ServerCall, met
 	// Note: This exhibits some weird behavior like returning a nil error if the method isn't found.
 	// This will change when it is replaced with Signature().
 	switch method {
+	case "Status":
+		return []interface{}{}, nil
 	case "Start":
 		return []interface{}{}, nil
 	case "Stop":
@@ -160,6 +183,13 @@ func (__gen_s *ServerStubPoolHeater) Signature(call _gen_ipc.ServerCall) (_gen_i
 			{Name: "duration", Type: 53},
 		},
 		OutArgs: []_gen_ipc.MethodArgument{
+			{Name: "", Type: 65},
+		},
+	}
+	result.Methods["Status"] = _gen_ipc.MethodSignature{
+		InArgs: []_gen_ipc.MethodArgument{},
+		OutArgs: []_gen_ipc.MethodArgument{
+			{Name: "", Type: 3},
 			{Name: "", Type: 65},
 		},
 	}
@@ -191,6 +221,11 @@ func (__gen_s *ServerStubPoolHeater) UnresolveStep(call _gen_ipc.ServerCall) (re
 	for i, p := range published {
 		reply[i] = _gen_naming.Join(p, call.Name())
 	}
+	return
+}
+
+func (__gen_s *ServerStubPoolHeater) Status(call _gen_ipc.ServerCall) (reply string, err error) {
+	reply, err = __gen_s.service.Status(call)
 	return
 }
 

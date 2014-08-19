@@ -17,12 +17,16 @@ import (
 // It corrects a bug where _gen_wiretype is unused in VDL pacakges where only bootstrap types are used on interfaces.
 const _ = _gen_wiretype.TypeIDInvalid
 
+// SmokeDetector allows clients to monitor and adjust a smoke detector.
 // SmokeDetector is the interface the client binds and uses.
 // SmokeDetector_ExcludingUniversal is the interface without internal framework-added methods
 // to enable embedding without method collisions.  Not to be used directly by clients.
 type SmokeDetector_ExcludingUniversal interface {
-	Status(ctx _gen_context.T, opts ..._gen_ipc.CallOpt) (err error)
-	Test(ctx _gen_context.T, opts ..._gen_ipc.CallOpt) (err error)
+	// Status retrieves the current status of the SmokeDetector (i.e., detecting, not detecting)
+	Status(ctx _gen_context.T, opts ..._gen_ipc.CallOpt) (reply string, err error)
+	// Test the SmokeDetector to check if it is working.
+	Test(ctx _gen_context.T, opts ..._gen_ipc.CallOpt) (reply bool, err error)
+	// Sensitivity adjusts the SmokeDetector's sensitivity to smoke.
 	Sensitivity(ctx _gen_context.T, sens int16, opts ..._gen_ipc.CallOpt) (err error)
 }
 type SmokeDetector interface {
@@ -32,8 +36,12 @@ type SmokeDetector interface {
 
 // SmokeDetectorService is the interface the server implements.
 type SmokeDetectorService interface {
-	Status(context _gen_ipc.ServerContext) (err error)
-	Test(context _gen_ipc.ServerContext) (err error)
+
+	// Status retrieves the current status of the SmokeDetector (i.e., detecting, not detecting)
+	Status(context _gen_ipc.ServerContext) (reply string, err error)
+	// Test the SmokeDetector to check if it is working.
+	Test(context _gen_ipc.ServerContext) (reply bool, err error)
+	// Sensitivity adjusts the SmokeDetector's sensitivity to smoke.
 	Sensitivity(context _gen_ipc.ServerContext, sens int16) (err error)
 }
 
@@ -78,23 +86,23 @@ type clientStubSmokeDetector struct {
 	name   string
 }
 
-func (__gen_c *clientStubSmokeDetector) Status(ctx _gen_context.T, opts ..._gen_ipc.CallOpt) (err error) {
+func (__gen_c *clientStubSmokeDetector) Status(ctx _gen_context.T, opts ..._gen_ipc.CallOpt) (reply string, err error) {
 	var call _gen_ipc.Call
 	if call, err = __gen_c.client.StartCall(ctx, __gen_c.name, "Status", nil, opts...); err != nil {
 		return
 	}
-	if ierr := call.Finish(&err); ierr != nil {
+	if ierr := call.Finish(&reply, &err); ierr != nil {
 		err = ierr
 	}
 	return
 }
 
-func (__gen_c *clientStubSmokeDetector) Test(ctx _gen_context.T, opts ..._gen_ipc.CallOpt) (err error) {
+func (__gen_c *clientStubSmokeDetector) Test(ctx _gen_context.T, opts ..._gen_ipc.CallOpt) (reply bool, err error) {
 	var call _gen_ipc.Call
 	if call, err = __gen_c.client.StartCall(ctx, __gen_c.name, "Test", nil, opts...); err != nil {
 		return
 	}
-	if ierr := call.Finish(&err); ierr != nil {
+	if ierr := call.Finish(&reply, &err); ierr != nil {
 		err = ierr
 	}
 	return
@@ -180,12 +188,14 @@ func (__gen_s *ServerStubSmokeDetector) Signature(call _gen_ipc.ServerCall) (_ge
 	result.Methods["Status"] = _gen_ipc.MethodSignature{
 		InArgs: []_gen_ipc.MethodArgument{},
 		OutArgs: []_gen_ipc.MethodArgument{
+			{Name: "", Type: 3},
 			{Name: "", Type: 65},
 		},
 	}
 	result.Methods["Test"] = _gen_ipc.MethodSignature{
 		InArgs: []_gen_ipc.MethodArgument{},
 		OutArgs: []_gen_ipc.MethodArgument{
+			{Name: "", Type: 2},
 			{Name: "", Type: 65},
 		},
 	}
@@ -214,13 +224,13 @@ func (__gen_s *ServerStubSmokeDetector) UnresolveStep(call _gen_ipc.ServerCall) 
 	return
 }
 
-func (__gen_s *ServerStubSmokeDetector) Status(call _gen_ipc.ServerCall) (err error) {
-	err = __gen_s.service.Status(call)
+func (__gen_s *ServerStubSmokeDetector) Status(call _gen_ipc.ServerCall) (reply string, err error) {
+	reply, err = __gen_s.service.Status(call)
 	return
 }
 
-func (__gen_s *ServerStubSmokeDetector) Test(call _gen_ipc.ServerCall) (err error) {
-	err = __gen_s.service.Test(call)
+func (__gen_s *ServerStubSmokeDetector) Test(call _gen_ipc.ServerCall) (reply bool, err error) {
+	reply, err = __gen_s.service.Test(call)
 	return
 }
 

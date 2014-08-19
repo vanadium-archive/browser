@@ -11,19 +11,30 @@ import (
 	"veyron2/rt"
 )
 
+func makeServerAlarm() interface{} {
+	return sample.NewServerAlarm(mocks.NewAlarm())
+}
+func makeServerPoolHeater() interface{} {
+	return sample.NewServerPoolHeater(mocks.NewPoolHeater())
+}
+func makeServerSmokeDetector() interface{} {
+	return sample.NewServerSmokeDetector(mocks.NewSmokeDetector())
+}
+func makeServerSpeaker() interface{} {
+	return sample.NewServerSpeaker(mocks.NewSpeaker())
+}
+func makeServerSprinkler() interface{} {
+	return sample.NewServerSprinkler(mocks.NewSprinkler())
+}
+
 func main() {
 	// Create the runtime
 	r := rt.Init()
 
-	// Create bunch of server stubs
-	alarmServ := sample.NewServerAlarm(mocks.NewAlarm())
-	poolHeaterServ := sample.NewServerPoolHeater(mocks.NewPoolHeater())
-	smokeDetectorServ := sample.NewServerSmokeDetector(mocks.NewSmokeDetector())
-	speakerServ := sample.NewServerSpeaker(mocks.NewSpeaker())
-	sprinklerServ := sample.NewServerSprinkler(mocks.NewSprinkler())
+	defer r.Cleanup()
 
 	// Create new server and publish the given server under the given name
-	var listenAndServe = func(name string, server interface{}) {
+	var listenAndServe = func(name string, server interface{}) func() {
 
 		// Create a new server instance.
 		s, err := r.NewServer()
@@ -38,29 +49,32 @@ func main() {
 			log.Fatal("error listening to service: ", err)
 		}
 
-		// Serve these services at multiple names
+		// Serve these services at the given name.
 		if err := s.Serve(name, ipc.SoloDispatcher(server, nil)); err != nil {
 			log.Fatal("error serving service: ", err)
 		}
 
+		return func() {
+			s.Stop()
+		}
 	}
 
 	// Serve bunch of mock services under different names
-	listenAndServe("house/alarm", alarmServ)
-	listenAndServe("house/living-room/smoke-detector", smokeDetectorServ)
-	listenAndServe("house/living-room/blast-speaker", speakerServ)
-	listenAndServe("house/living-room/soundbar", speakerServ)
-	listenAndServe("house/master-bedroom/smoke-detector", smokeDetectorServ)
-	listenAndServe("house/master-bedroom/speaker", speakerServ)
-	listenAndServe("house/kitchen/smoke-detector", smokeDetectorServ)
+	defer listenAndServe("house/alarm", makeServerAlarm())()
+	defer listenAndServe("house/living-room/smoke-detector", makeServerSmokeDetector())()
+	defer listenAndServe("house/living-room/blast-speaker", makeServerSpeaker())()
+	defer listenAndServe("house/living-room/soundbar", makeServerSpeaker())()
+	defer listenAndServe("house/master-bedroom/smoke-detector", makeServerSmokeDetector())()
+	defer listenAndServe("house/master-bedroom/speaker", makeServerSpeaker())()
+	defer listenAndServe("house/kitchen/smoke-detector", makeServerSmokeDetector())()
 
-	listenAndServe("cottage/smoke-detector", smokeDetectorServ)
-	listenAndServe("cottage/alarm", alarmServ)
-	listenAndServe("cottage/pool/heater", poolHeaterServ)
-	listenAndServe("cottage/pool/speaker", speakerServ)
-	listenAndServe("cottage/lawn/front/sprinkler", sprinklerServ)
-	listenAndServe("cottage/lawn/back/sprinkler", sprinklerServ)
-	listenAndServe("cottage/lawn/master-sprinkler", sprinklerServ)
+	defer listenAndServe("cottage/smoke-detector", makeServerSmokeDetector())()
+	defer listenAndServe("cottage/alarm", makeServerAlarm())()
+	defer listenAndServe("cottage/pool/heater", makeServerPoolHeater())()
+	defer listenAndServe("cottage/pool/speaker", makeServerSpeaker())()
+	defer listenAndServe("cottage/lawn/front/sprinkler", makeServerSprinkler())()
+	defer listenAndServe("cottage/lawn/back/sprinkler", makeServerSprinkler())()
+	defer listenAndServe("cottage/lawn/master-sprinkler", makeServerSprinkler())()
 
 	// Wait forever.
 	<-signals.ShutdownOnSignals()

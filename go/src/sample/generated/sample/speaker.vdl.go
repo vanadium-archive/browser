@@ -18,15 +18,27 @@ import (
 // It corrects a bug where _gen_wiretype is unused in VDL pacakges where only bootstrap types are used on interfaces.
 const _ = _gen_wiretype.TypeIDInvalid
 
+// Speaker allows clients to control the music being played.
 // Speaker is the interface the client binds and uses.
 // Speaker_ExcludingUniversal is the interface without internal framework-added methods
 // to enable embedding without method collisions.  Not to be used directly by clients.
 type Speaker_ExcludingUniversal interface {
+	// Play starts or continues the current song.
+	Play(ctx _gen_context.T, opts ..._gen_ipc.CallOpt) (err error)
+	// PlaySong plays back the given song title, if possible.
 	PlaySong(ctx _gen_context.T, songName string, opts ..._gen_ipc.CallOpt) (err error)
+	// PlayStream plays the given stream of music data.
 	PlayStream(ctx _gen_context.T, opts ..._gen_ipc.CallOpt) (reply SpeakerPlayStreamCall, err error)
+	// GetSong retrieves the title of the Speaker's current song, if any.
+	GetSong(ctx _gen_context.T, opts ..._gen_ipc.CallOpt) (reply string, err error)
+	// Pause playback of the Speaker's current song.
 	Pause(ctx _gen_context.T, opts ..._gen_ipc.CallOpt) (err error)
+	// Stop playback of the Speaker's current song.
 	Stop(ctx _gen_context.T, opts ..._gen_ipc.CallOpt) (err error)
+	// Volume adjusts the Speaker's volume.
 	Volume(ctx _gen_context.T, volumeLevel uint16, opts ..._gen_ipc.CallOpt) (err error)
+	// GetVolume retrieves the Speaker's volume.
+	GetVolume(ctx _gen_context.T, opts ..._gen_ipc.CallOpt) (reply uint16, err error)
 }
 type Speaker interface {
 	_gen_ipc.UniversalServiceMethods
@@ -35,11 +47,23 @@ type Speaker interface {
 
 // SpeakerService is the interface the server implements.
 type SpeakerService interface {
+
+	// Play starts or continues the current song.
+	Play(context _gen_ipc.ServerContext) (err error)
+	// PlaySong plays back the given song title, if possible.
 	PlaySong(context _gen_ipc.ServerContext, songName string) (err error)
+	// PlayStream plays the given stream of music data.
 	PlayStream(context _gen_ipc.ServerContext, stream SpeakerServicePlayStreamStream) (err error)
+	// GetSong retrieves the title of the Speaker's current song, if any.
+	GetSong(context _gen_ipc.ServerContext) (reply string, err error)
+	// Pause playback of the Speaker's current song.
 	Pause(context _gen_ipc.ServerContext) (err error)
+	// Stop playback of the Speaker's current song.
 	Stop(context _gen_ipc.ServerContext) (err error)
+	// Volume adjusts the Speaker's volume.
 	Volume(context _gen_ipc.ServerContext, volumeLevel uint16) (err error)
+	// GetVolume retrieves the Speaker's volume.
+	GetVolume(context _gen_ipc.ServerContext) (reply uint16, err error)
 }
 
 // SpeakerPlayStreamCall is the interface for call object of the method
@@ -232,6 +256,17 @@ type clientStubSpeaker struct {
 	name   string
 }
 
+func (__gen_c *clientStubSpeaker) Play(ctx _gen_context.T, opts ..._gen_ipc.CallOpt) (err error) {
+	var call _gen_ipc.Call
+	if call, err = __gen_c.client.StartCall(ctx, __gen_c.name, "Play", nil, opts...); err != nil {
+		return
+	}
+	if ierr := call.Finish(&err); ierr != nil {
+		err = ierr
+	}
+	return
+}
+
 func (__gen_c *clientStubSpeaker) PlaySong(ctx _gen_context.T, songName string, opts ..._gen_ipc.CallOpt) (err error) {
 	var call _gen_ipc.Call
 	if call, err = __gen_c.client.StartCall(ctx, __gen_c.name, "PlaySong", []interface{}{songName}, opts...); err != nil {
@@ -249,6 +284,17 @@ func (__gen_c *clientStubSpeaker) PlayStream(ctx _gen_context.T, opts ..._gen_ip
 		return
 	}
 	reply = &implSpeakerPlayStreamCall{clientCall: call, writeStream: implSpeakerPlayStreamStreamSender{clientCall: call}}
+	return
+}
+
+func (__gen_c *clientStubSpeaker) GetSong(ctx _gen_context.T, opts ..._gen_ipc.CallOpt) (reply string, err error) {
+	var call _gen_ipc.Call
+	if call, err = __gen_c.client.StartCall(ctx, __gen_c.name, "GetSong", nil, opts...); err != nil {
+		return
+	}
+	if ierr := call.Finish(&reply, &err); ierr != nil {
+		err = ierr
+	}
 	return
 }
 
@@ -280,6 +326,17 @@ func (__gen_c *clientStubSpeaker) Volume(ctx _gen_context.T, volumeLevel uint16,
 		return
 	}
 	if ierr := call.Finish(&err); ierr != nil {
+		err = ierr
+	}
+	return
+}
+
+func (__gen_c *clientStubSpeaker) GetVolume(ctx _gen_context.T, opts ..._gen_ipc.CallOpt) (reply uint16, err error) {
+	var call _gen_ipc.Call
+	if call, err = __gen_c.client.StartCall(ctx, __gen_c.name, "GetVolume", nil, opts...); err != nil {
+		return
+	}
+	if ierr := call.Finish(&reply, &err); ierr != nil {
 		err = ierr
 	}
 	return
@@ -330,15 +387,21 @@ func (__gen_s *ServerStubSpeaker) GetMethodTags(call _gen_ipc.ServerCall, method
 	// Note: This exhibits some weird behavior like returning a nil error if the method isn't found.
 	// This will change when it is replaced with Signature().
 	switch method {
+	case "Play":
+		return []interface{}{}, nil
 	case "PlaySong":
 		return []interface{}{}, nil
 	case "PlayStream":
+		return []interface{}{}, nil
+	case "GetSong":
 		return []interface{}{}, nil
 	case "Pause":
 		return []interface{}{}, nil
 	case "Stop":
 		return []interface{}{}, nil
 	case "Volume":
+		return []interface{}{}, nil
+	case "GetVolume":
 		return []interface{}{}, nil
 	default:
 		return nil, nil
@@ -347,7 +410,27 @@ func (__gen_s *ServerStubSpeaker) GetMethodTags(call _gen_ipc.ServerCall, method
 
 func (__gen_s *ServerStubSpeaker) Signature(call _gen_ipc.ServerCall) (_gen_ipc.ServiceSignature, error) {
 	result := _gen_ipc.ServiceSignature{Methods: make(map[string]_gen_ipc.MethodSignature)}
+	result.Methods["GetSong"] = _gen_ipc.MethodSignature{
+		InArgs: []_gen_ipc.MethodArgument{},
+		OutArgs: []_gen_ipc.MethodArgument{
+			{Name: "", Type: 3},
+			{Name: "", Type: 65},
+		},
+	}
+	result.Methods["GetVolume"] = _gen_ipc.MethodSignature{
+		InArgs: []_gen_ipc.MethodArgument{},
+		OutArgs: []_gen_ipc.MethodArgument{
+			{Name: "", Type: 51},
+			{Name: "", Type: 65},
+		},
+	}
 	result.Methods["Pause"] = _gen_ipc.MethodSignature{
+		InArgs: []_gen_ipc.MethodArgument{},
+		OutArgs: []_gen_ipc.MethodArgument{
+			{Name: "", Type: 65},
+		},
+	}
+	result.Methods["Play"] = _gen_ipc.MethodSignature{
 		InArgs: []_gen_ipc.MethodArgument{},
 		OutArgs: []_gen_ipc.MethodArgument{
 			{Name: "", Type: 65},
@@ -407,6 +490,11 @@ func (__gen_s *ServerStubSpeaker) UnresolveStep(call _gen_ipc.ServerCall) (reply
 	return
 }
 
+func (__gen_s *ServerStubSpeaker) Play(call _gen_ipc.ServerCall) (err error) {
+	err = __gen_s.service.Play(call)
+	return
+}
+
 func (__gen_s *ServerStubSpeaker) PlaySong(call _gen_ipc.ServerCall, songName string) (err error) {
 	err = __gen_s.service.PlaySong(call, songName)
 	return
@@ -415,6 +503,11 @@ func (__gen_s *ServerStubSpeaker) PlaySong(call _gen_ipc.ServerCall, songName st
 func (__gen_s *ServerStubSpeaker) PlayStream(call _gen_ipc.ServerCall) (err error) {
 	stream := &implSpeakerServicePlayStreamStream{reader: implSpeakerServicePlayStreamStreamIterator{serverCall: call}}
 	err = __gen_s.service.PlayStream(call, stream)
+	return
+}
+
+func (__gen_s *ServerStubSpeaker) GetSong(call _gen_ipc.ServerCall) (reply string, err error) {
+	reply, err = __gen_s.service.GetSong(call)
 	return
 }
 
@@ -430,5 +523,10 @@ func (__gen_s *ServerStubSpeaker) Stop(call _gen_ipc.ServerCall) (err error) {
 
 func (__gen_s *ServerStubSpeaker) Volume(call _gen_ipc.ServerCall, volumeLevel uint16) (err error) {
 	err = __gen_s.service.Volume(call, volumeLevel)
+	return
+}
+
+func (__gen_s *ServerStubSpeaker) GetVolume(call _gen_ipc.ServerCall) (reply uint16, err error) {
+	reply, err = __gen_s.service.GetVolume(call)
 	return
 }

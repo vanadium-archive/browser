@@ -4,4 +4,4 @@ go/pkg/
 public/bundle.*
 public/platform.js
 npm-debug.log
-go/bin
+go/bin/

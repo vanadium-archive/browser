@@ -1,21 +1,58 @@
 package mocks
 
 import (
-	"errors"
+	"time"
 
 	"veyron2/ipc"
 )
 
-type poolHeater struct{}
+const (
+	// Pool heater status constants
+	poolHeaterActive = "active"
+	poolHeaterIdle   = "idle"
 
-func (_ poolHeater) Start(_ ipc.ServerContext, _ uint64, _ uint64) error {
-	return errors.New("not implemented")
+	poolHeaterDefaultTemperature = 60
+)
+
+// PoolHeater allows clients to control when the pool is being heated.
+type poolHeater struct {
+	status          string
+	currTemperature uint64
 }
 
-func (_ poolHeater) Stop(_ ipc.ServerContext) error {
-	return errors.New("not implemented")
+// Status retrieves the PoolHeater's status (i.e., active, idle)
+func (p *poolHeater) Status(ipc.ServerContext) (string, error) {
+	return p.status, nil
 }
 
-func NewPoolHeater() poolHeater {
-	return poolHeater{}
+// Start informs the PoolHeater to heat the pool to the given temperature until the duration expires.
+func (p *poolHeater) Start(_ ipc.ServerContext, temperature uint64, duration uint64) error {
+	// Begin heating.
+	p.status = poolHeaterActive
+	p.currTemperature = temperature
+
+	// After duration, stop heating.
+	time.AfterFunc(
+		time.Duration(duration)*time.Second,
+		func() {
+			p.status = poolHeaterIdle
+			p.currTemperature = poolHeaterDefaultTemperature
+		},
+	)
+	return nil
+}
+
+// Stop informs the PoolHeater to cease heating the pool.
+func (p *poolHeater) Stop(ipc.ServerContext) error {
+	p.status = poolHeaterIdle
+	p.currTemperature = poolHeaterDefaultTemperature
+	return nil
+}
+
+// NewPoolHeater creates a new poolHeater stub.
+func NewPoolHeater() *poolHeater {
+	return &poolHeater{
+		status:          poolHeaterIdle,
+		currTemperature: poolHeaterDefaultTemperature,
+	}
 }

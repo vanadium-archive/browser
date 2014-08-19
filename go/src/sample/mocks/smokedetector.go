@@ -1,25 +1,43 @@
 package mocks
 
 import (
-	"errors"
-
 	"veyron2/ipc"
 )
 
-type smokeDetector struct{}
+const (
+	// Smoke detector status constants
+	smokeDetectorDetecting    = "smoky"
+	smokeDetectorNotDetecting = "normal"
 
-func (_ smokeDetector) Status(_ ipc.ServerContext) error {
-	return errors.New("not implemented")
+	smokeDetectorDefaultSensitivity = int16(10)
+)
+
+// SmokeDetector allows clients to monitor and adjust a smoke detector.
+type smokeDetector struct {
+	status      string
+	sensitivity int16
 }
 
-func (_ smokeDetector) Test(_ ipc.ServerContext) error {
-	return errors.New("not implemented")
+// Status retrieves the current status of the SmokeDetector (i.e., detecting, not detecting)
+func (s *smokeDetector) Status(ipc.ServerContext) (string, error) {
+	return s.status, nil
 }
 
-func (_ smokeDetector) Sensitivity(_ ipc.ServerContext, _ int16) error {
-	return errors.New("not implemented")
+// Test the SmokeDetector to check if it is working.
+func (s *smokeDetector) Test(ipc.ServerContext) (bool, error) {
+	return true, nil
 }
 
-func NewSmokeDetector() smokeDetector {
-	return smokeDetector{}
+// Sensitivity adjusts the SmokeDetector's sensitivity to smoke.
+func (s *smokeDetector) Sensitivity(_ ipc.ServerContext, sensitivity int16) error {
+	s.sensitivity = sensitivity
+	return nil
+}
+
+// NewSmokeDetector creates a new smoke detector stub.
+func NewSmokeDetector() *smokeDetector {
+	return &smokeDetector{
+		status:      smokeDetectorNotDetecting,
+		sensitivity: smokeDetectorDefaultSensitivity,
+	}
 }

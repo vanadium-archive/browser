@@ -17,14 +17,20 @@ import (
 // It corrects a bug where _gen_wiretype is unused in VDL pacakges where only bootstrap types are used on interfaces.
 const _ = _gen_wiretype.TypeIDInvalid
 
+// Alarm allows clients to manipulate an alarm and query its status.
 // Alarm is the interface the client binds and uses.
 // Alarm_ExcludingUniversal is the interface without internal framework-added methods
 // to enable embedding without method collisions.  Not to be used directly by clients.
 type Alarm_ExcludingUniversal interface {
-	Status(ctx _gen_context.T, opts ..._gen_ipc.CallOpt) (err error)
+	// Status returns the current status of the Alarm (i.e., armed, unarmed, panicking).
+	Status(ctx _gen_context.T, opts ..._gen_ipc.CallOpt) (reply string, err error)
+	// Arm sets the Alarm to the armed state.
 	Arm(ctx _gen_context.T, opts ..._gen_ipc.CallOpt) (err error)
+	// DelayArm sets the Alarm to the armed state after the given delay in seconds.
 	DelayArm(ctx _gen_context.T, seconds uint16, opts ..._gen_ipc.CallOpt) (err error)
+	// Unarm sets the Alarm to the unarmed state.
 	Unarm(ctx _gen_context.T, opts ..._gen_ipc.CallOpt) (err error)
+	// Panic sets the Alarm to the panicking state.
 	Panic(ctx _gen_context.T, opts ..._gen_ipc.CallOpt) (err error)
 }
 type Alarm interface {
@@ -34,10 +40,16 @@ type Alarm interface {
 
 // AlarmService is the interface the server implements.
 type AlarmService interface {
-	Status(context _gen_ipc.ServerContext) (err error)
+
+	// Status returns the current status of the Alarm (i.e., armed, unarmed, panicking).
+	Status(context _gen_ipc.ServerContext) (reply string, err error)
+	// Arm sets the Alarm to the armed state.
 	Arm(context _gen_ipc.ServerContext) (err error)
+	// DelayArm sets the Alarm to the armed state after the given delay in seconds.
 	DelayArm(context _gen_ipc.ServerContext, seconds uint16) (err error)
+	// Unarm sets the Alarm to the unarmed state.
 	Unarm(context _gen_ipc.ServerContext) (err error)
+	// Panic sets the Alarm to the panicking state.
 	Panic(context _gen_ipc.ServerContext) (err error)
 }
 
@@ -82,12 +94,12 @@ type clientStubAlarm struct {
 	name   string
 }
 
-func (__gen_c *clientStubAlarm) Status(ctx _gen_context.T, opts ..._gen_ipc.CallOpt) (err error) {
+func (__gen_c *clientStubAlarm) Status(ctx _gen_context.T, opts ..._gen_ipc.CallOpt) (reply string, err error) {
 	var call _gen_ipc.Call
 	if call, err = __gen_c.client.StartCall(ctx, __gen_c.name, "Status", nil, opts...); err != nil {
 		return
 	}
-	if ierr := call.Finish(&err); ierr != nil {
+	if ierr := call.Finish(&reply, &err); ierr != nil {
 		err = ierr
 	}
 	return
@@ -222,6 +234,7 @@ func (__gen_s *ServerStubAlarm) Signature(call _gen_ipc.ServerCall) (_gen_ipc.Se
 	result.Methods["Status"] = _gen_ipc.MethodSignature{
 		InArgs: []_gen_ipc.MethodArgument{},
 		OutArgs: []_gen_ipc.MethodArgument{
+			{Name: "", Type: 3},
 			{Name: "", Type: 65},
 		},
 	}
@@ -256,8 +269,8 @@ func (__gen_s *ServerStubAlarm) UnresolveStep(call _gen_ipc.ServerCall) (reply [
 	return
 }
 
-func (__gen_s *ServerStubAlarm) Status(call _gen_ipc.ServerCall) (err error) {
-	err = __gen_s.service.Status(call)
+func (__gen_s *ServerStubAlarm) Status(call _gen_ipc.ServerCall) (reply string, err error) {
+	reply, err = __gen_s.service.Status(call)
 	return
 }
 

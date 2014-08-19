@@ -17,12 +17,16 @@ import (
 // It corrects a bug where _gen_wiretype is unused in VDL pacakges where only bootstrap types are used on interfaces.
 const _ = _gen_wiretype.TypeIDInvalid
 
+// Sprinkler allows clients to control the virtual sprinkler.
 // Sprinkler is the interface the client binds and uses.
 // Sprinkler_ExcludingUniversal is the interface without internal framework-added methods
 // to enable embedding without method collisions.  Not to be used directly by clients.
 type Sprinkler_ExcludingUniversal interface {
+	// Status retrieves the Sprinkler's status (i.e., active, idle)
+	Status(ctx _gen_context.T, opts ..._gen_ipc.CallOpt) (reply string, err error)
+	// Start causes the Sprinkler to emit water for the given duration (in seconds).
 	Start(ctx _gen_context.T, duration uint16, opts ..._gen_ipc.CallOpt) (err error)
-	Schedule(ctx _gen_context.T, startTime string, duration uint16, opts ..._gen_ipc.CallOpt) (err error)
+	// Stop causes the Sprinkler to cease watering.
 	Stop(ctx _gen_context.T, opts ..._gen_ipc.CallOpt) (err error)
 }
 type Sprinkler interface {
@@ -32,8 +36,12 @@ type Sprinkler interface {
 
 // SprinklerService is the interface the server implements.
 type SprinklerService interface {
+
+	// Status retrieves the Sprinkler's status (i.e., active, idle)
+	Status(context _gen_ipc.ServerContext) (reply string, err error)
+	// Start causes the Sprinkler to emit water for the given duration (in seconds).
 	Start(context _gen_ipc.ServerContext, duration uint16) (err error)
-	Schedule(context _gen_ipc.ServerContext, startTime string, duration uint16) (err error)
+	// Stop causes the Sprinkler to cease watering.
 	Stop(context _gen_ipc.ServerContext) (err error)
 }
 
@@ -78,20 +86,20 @@ type clientStubSprinkler struct {
 	name   string
 }
 
-func (__gen_c *clientStubSprinkler) Start(ctx _gen_context.T, duration uint16, opts ..._gen_ipc.CallOpt) (err error) {
+func (__gen_c *clientStubSprinkler) Status(ctx _gen_context.T, opts ..._gen_ipc.CallOpt) (reply string, err error) {
 	var call _gen_ipc.Call
-	if call, err = __gen_c.client.StartCall(ctx, __gen_c.name, "Start", []interface{}{duration}, opts...); err != nil {
+	if call, err = __gen_c.client.StartCall(ctx, __gen_c.name, "Status", nil, opts...); err != nil {
 		return
 	}
-	if ierr := call.Finish(&err); ierr != nil {
+	if ierr := call.Finish(&reply, &err); ierr != nil {
 		err = ierr
 	}
 	return
 }
 
-func (__gen_c *clientStubSprinkler) Schedule(ctx _gen_context.T, startTime string, duration uint16, opts ..._gen_ipc.CallOpt) (err error) {
+func (__gen_c *clientStubSprinkler) Start(ctx _gen_context.T, duration uint16, opts ..._gen_ipc.CallOpt) (err error) {
 	var call _gen_ipc.Call
-	if call, err = __gen_c.client.StartCall(ctx, __gen_c.name, "Schedule", []interface{}{startTime, duration}, opts...); err != nil {
+	if call, err = __gen_c.client.StartCall(ctx, __gen_c.name, "Start", []interface{}{duration}, opts...); err != nil {
 		return
 	}
 	if ierr := call.Finish(&err); ierr != nil {
@@ -156,9 +164,9 @@ func (__gen_s *ServerStubSprinkler) GetMethodTags(call _gen_ipc.ServerCall, meth
 	// Note: This exhibits some weird behavior like returning a nil error if the method isn't found.
 	// This will change when it is replaced with Signature().
 	switch method {
-	case "Start":
+	case "Status":
 		return []interface{}{}, nil
-	case "Schedule":
+	case "Start":
 		return []interface{}{}, nil
 	case "Stop":
 		return []interface{}{}, nil
@@ -169,20 +177,18 @@ func (__gen_s *ServerStubSprinkler) GetMethodTags(call _gen_ipc.ServerCall, meth
 
 func (__gen_s *ServerStubSprinkler) Signature(call _gen_ipc.ServerCall) (_gen_ipc.ServiceSignature, error) {
 	result := _gen_ipc.ServiceSignature{Methods: make(map[string]_gen_ipc.MethodSignature)}
-	result.Methods["Schedule"] = _gen_ipc.MethodSignature{
+	result.Methods["Start"] = _gen_ipc.MethodSignature{
 		InArgs: []_gen_ipc.MethodArgument{
-			{Name: "startTime", Type: 3},
 			{Name: "duration", Type: 51},
 		},
 		OutArgs: []_gen_ipc.MethodArgument{
 			{Name: "", Type: 65},
 		},
 	}
-	result.Methods["Start"] = _gen_ipc.MethodSignature{
-		InArgs: []_gen_ipc.MethodArgument{
-			{Name: "duration", Type: 51},
-		},
+	result.Methods["Status"] = _gen_ipc.MethodSignature{
+		InArgs: []_gen_ipc.MethodArgument{},
 		OutArgs: []_gen_ipc.MethodArgument{
+			{Name: "", Type: 3},
 			{Name: "", Type: 65},
 		},
 	}
@@ -217,13 +223,13 @@ func (__gen_s *ServerStubSprinkler) UnresolveStep(call _gen_ipc.ServerCall) (rep
 	return
 }
 
-func (__gen_s *ServerStubSprinkler) Start(call _gen_ipc.ServerCall, duration uint16) (err error) {
-	err = __gen_s.service.Start(call, duration)
+func (__gen_s *ServerStubSprinkler) Status(call _gen_ipc.ServerCall) (reply string, err error) {
+	reply, err = __gen_s.service.Status(call)
 	return
 }
 
-func (__gen_s *ServerStubSprinkler) Schedule(call _gen_ipc.ServerCall, startTime string, duration uint16) (err error) {
-	err = __gen_s.service.Schedule(call, startTime, duration)
+func (__gen_s *ServerStubSprinkler) Start(call _gen_ipc.ServerCall, duration uint16) (err error) {
+	err = __gen_s.service.Start(call, duration)
 	return
 }
 

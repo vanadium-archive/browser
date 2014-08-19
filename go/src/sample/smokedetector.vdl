@@ -1,9 +1,11 @@
 package sample
 
+// SmokeDetector allows clients to monitor and adjust a smoke detector.
 type SmokeDetector interface {
- Status() (error)
- Test() (error)
+ // Status retrieves the current status of the SmokeDetector (i.e., detecting, not detecting)
+ Status() (string, error)
+ // Test the SmokeDetector to check if it is working.
+ Test() (bool, error)
+ // Sensitivity adjusts the SmokeDetector's sensitivity to smoke.
  Sensitivity(sens int16) (error)
 }
-
-//TODO(aghassemi) cleanup comments and interface definition, add return types,

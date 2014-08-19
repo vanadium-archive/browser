@@ -2,32 +2,85 @@ package mocks
 
 import (
 	"errors"
+	"fmt"
 	"sample/generated/sample"
 	"veyron2/ipc"
 )
 
-type speaker struct{}
+const speakerDefaultVolume = uint16(10)
 
-func (_ speaker) PlaySong(_ ipc.ServerContext, _ string) error {
-	return errors.New("not implemented")
+// Prepopulate the music library with a few songs
+var speakerLibrary = map[string]bool{
+	"Happy Birthday":          true,
+	"Never Gonna Give You Up": true,
 }
 
-func (_ speaker) PlayStream(_ ipc.ServerContext, _ sample.SpeakerServicePlayStreamStream) error {
-	return errors.New("not implemented")
+// Speaker allows clients to control the music being played.
+type speaker struct {
+	currentSong string
+	playing     bool
+	volume      uint16
 }
 
-func (_ speaker) Pause(_ ipc.ServerContext) error {
-	return errors.New("not implemented")
+// Play starts or continues the current song.
+func (s *speaker) Play(ipc.ServerContext) error {
+	if s.currentSong == "" {
+		return errors.New("no current song")
+	}
+	s.playing = true
+	return nil
 }
 
-func (_ speaker) Stop(_ ipc.ServerContext) error {
-	return errors.New("not implemented")
+// PlaySong plays back the given song title, if possible.
+func (s *speaker) PlaySong(_ ipc.ServerContext, title string) error {
+	if !speakerLibrary[title] {
+		return errors.New(fmt.Sprintf("%q does not exist", title))
+	}
+	s.currentSong = title
+	s.playing = true
+	return nil
 }
 
-func (_ speaker) Volume(_ ipc.ServerContext, _ uint16) error {
-	return errors.New("not implemented")
+// PlayStream plays the given stream of music data.
+func (s *speaker) PlayStream(_ ipc.ServerContext, stream sample.SpeakerServicePlayStreamStream) error {
+	s.currentSong = ""
+	s.playing = true
+	return nil
 }
 
-func NewSpeaker() speaker {
-	return speaker{}
+// GetSong retrieves the title of the Speaker's current song, if any.
+func (s *speaker) GetSong(ipc.ServerContext) (string, error) {
+	return s.currentSong, nil
+}
+
+// Pause playback of the Speaker's current song.
+func (s *speaker) Pause(ipc.ServerContext) error {
+	s.playing = false
+	return nil
+}
+
+// Stop playback of the Speaker's current song.
+func (s *speaker) Stop(ipc.ServerContext) error {
+	s.currentSong = ""
+	s.playing = false
+	return nil
+}
+
+// Volume adjusts the Speaker's volume.
+func (s *speaker) Volume(_ ipc.ServerContext, volume uint16) error {
+	s.volume = volume
+	return nil
+}
+
+// GetVolume retrieves the Speaker's volume.
+func (s *speaker) GetVolume(ipc.ServerContext) (uint16, error) {
+	return s.volume, nil
+}
+
+// NewSpeaker creates a new speaker stub.
+func NewSpeaker() *speaker {
+	return &speaker{
+		playing: false,
+		volume:  speakerDefaultVolume,
+	}
 }

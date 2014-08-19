@@ -1,9 +1,11 @@
 package sample
 
+// Sprinkler allows clients to control the virtual sprinkler.
 type Sprinkler interface {
+ // Status retrieves the Sprinkler's status (i.e., active, idle)
+ Status() (string, error)
+ // Start causes the Sprinkler to emit water for the given duration (in seconds).
  Start(duration uint16) (error)
- Schedule(startTime string, duration uint16) (error)
+ // Stop causes the Sprinkler to cease watering.
  Stop() (error)
 }
-
-//TODO(aghassemi) cleanup comments and interface definition, add return types,
