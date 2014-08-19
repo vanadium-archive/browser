@@ -2,6 +2,7 @@ var mercury = require('mercury');
 var AttributeHook = require('../../../lib/mercury/attribute-hook');
 var insertCss = require('insert-css');
 var displayItemDetails = require('./display-item-details');
+var makeRPC = require('./make-rpc');
 var browseService = require('../../../services/browse-service');
 var h = mercury.h;
 var css = require('./index.css');
@@ -34,7 +35,8 @@ function create() {
 
   var events = mercury.input([
     'displayItemDetails',
-    'tabSelected'
+    'tabSelected',
+    'methodSelected',
   ]);
 
   wireUpEvents(state, events);
@@ -66,7 +68,7 @@ function render(state, events) {
       'selected': new AttributeHook(state.selectedTabIndex)
     }, [
       h('div.tab-content', renderDetailsTab()),
-      h('div.tab-content', rendersignatureTab())
+      h('div.tab-content', renderSignatureTab())
     ])
   ];
 
@@ -80,7 +82,7 @@ function render(state, events) {
     ];
   }
 
-  function rendersignatureTab() {
+  function renderSignatureTab() {
     var methods = [];
     var sig = state.signature;
     for (var m in sig) {
@@ -108,7 +110,13 @@ function render(state, events) {
       if (param.isStreaming) {
         text += ' - streaming'
       }
-      return h('pre', text);
+      return h('pre', {
+        'ev-click': mercury.event(events.methodSelected, {
+          name: state.itemName,
+          methodName: name,
+          hasParams: param.inArgs.length !== 0,
+        })
+      }, text);
     }
   }
 }
@@ -137,4 +145,5 @@ function wireUpEvents(state, events) {
   events.tabSelected(function(data) {
     state.selectedTabIndex.set(data.index);
   });
+  events.methodSelected(makeRPC.bind(null, state));
 }

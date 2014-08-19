@@ -12,7 +12,8 @@ module.exports = {
   signature: signature,
   getTypeInfo : getTypeInfo,
   isRooted: isRooted,
-  isGlobbable: isGlobbable
+  isGlobbable: isGlobbable,
+  makeRPC: makeRPC,
 };
 
 /*
@@ -95,6 +96,21 @@ function signature(name) {
       return service.signature().then(function(sig) {
         sigcache[name] = sig;
         return sig;
+      })
+    });
+  });
+}
+
+/*
+ * Given a name and a methodName with no parameters, make an RPC call for that method
+ * on the object represented by that name.
+ */
+function makeRPC(name, methodName) {
+  return runtimePromise.then(function(rt){
+    return rt.bindTo(name).then(function(service) {
+      console.log("Calling ", methodName, " on ", name);
+      return service[methodName]().then(function(result) {
+        return result;
       })
     });
   });

@@ -1,0 +1,37 @@
+/*
+ * local-storage allows key-value store for string keys and any value.
+ */
+
+module.exports = {
+  setValue: setValue,
+  getValue: getValue,
+  removeValue: removeValue,
+};
+
+/*
+ * Given a string identifier and any value, JSON encode the value and
+ * place it into localStorage.
+ */
+function setValue(name, value) {
+    localStorage.setItem(name, JSON.stringify(value));
+}
+
+/*
+ * Given a string identifier, return the JSON decoded value from localStorage.
+ * Returns undefined if the value was not present or could not be parsed.
+ */
+function getValue(name) {
+    var value = localStorage.getItem(name);
+    try {
+        return JSON.parse(value);
+    } catch (exception) {
+        console.log("JSON parse failed for key:", name, "and value:", value);
+    }
+}
+
+/*
+ * Given a string identifier, remove the associated value from localStorage.
+ */
+function removeValue(name) {
+    localStorage.removeItem(name);
+}

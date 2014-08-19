@@ -1,6 +1,7 @@
 var urlUtil = require('url');
 var qsUtil = require('querystring');
 var exists = require('../lib/exists');
+var store = require('../lib/local-storage');
 
 module.exports = function(routes) {
   // Url pattern: /browse/veyronNameSpace?glob=*
@@ -40,6 +41,9 @@ function handleBrowseRoute(state, events, params) {
       globquery = qsUtil.parse(parsed.query).glob;
     }
   }
+
+  // Log the URLs as we receive them.
+  store.setValue('index', namespace);
 
   // Trigger browse components browseNamespace event
   events.browse.browseNamespace({
