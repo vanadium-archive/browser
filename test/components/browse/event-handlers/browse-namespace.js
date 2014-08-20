@@ -11,20 +11,24 @@ var mockItem = {
   mountedName: 'mockItem',
   name: 'foo/bar/mockItem'
 };
+var mockItemResult = {
+  itemName: 'foo/bar/mockItem',
+  mountedName: 'mockItem',
+  isGlobbable: true,
+};
 var browseServiceMock = {
+  isGlobbable: function(name) {
+    return Promise.resolve(true);
+  },
   glob: function(name, globQuery) {
     return Promise.resolve([mockItem]);
-  },
-  signature: function(name) {
-    return Promise.resolve('signature');
   }
 };
 var browseServiceMockWithFailure = {
-  glob: function(name, globQuery) {
-    return Promise.reject();
+  isGlobbable: function(name) {
+    return Promise.resolve(true);
   },
-
-  signature: function(name) {
+  glob: function(name, globQuery) {
     return Promise.reject();
   }
 };
@@ -32,37 +36,38 @@ var browseServiceMockWithFailure = {
 // Require the browseNamespace using the proxy so mocked browse-service is used
 var browseNamespace =
 proxyquire('../../../../src/components/browse/browse-namespace',{
-  '../../../services/browse-service': browseServiceMock
+  '../../services/browse-service': browseServiceMock
 });
 
 var browseNamespaceWithFailure =
 proxyquire('../../../../src/components/browse/browse-namespace',{
-  '../../../services/browse-service': browseServiceMockWithFailure
+  '../../services/browse-service': browseServiceMockWithFailure
 });
 
 test('Updates state.namespace', function(t) {
   t.plan(4);
 
   var state = browseComponent().state;
+  var events = browseComponent().events;
 
   // Should update state.namespace with data.namespace
-  browseNamespace(state, {
+  browseNamespace(state, events, {
     namespace: 'foo/bar'
   });
   t.equal(state.namespace(), 'foo/bar');
 
   // Should not update state.namespace if data.namespace is null
-  browseNamespace(state, {
+  browseNamespace(state, events, {
     namespace: null
   });
   t.equal(state.namespace(), 'foo/bar');
 
   // Should not update state.namespace if data.namespace is undefined
-  browseNamespace(state, {});
+  browseNamespace(state, events, {});
   t.equal(state.namespace(), 'foo/bar');
 
   // Should update state.namespace if data.namespace is empty string
-  browseNamespace(state, {
+  browseNamespace(state, events, {
     namespace: ''
   });
   t.equal(state.namespace(), '');
@@ -72,42 +77,59 @@ test('Updates state.globQuery', function(t) {
   t.plan(4);
 
   var state = browseComponent().state;
+  var events = browseComponent().events;
 
   // Should update state.globQuery with data.globQuery
-  browseNamespace(state, {
+  browseNamespace(state, events, {
     globQuery: '**/*'
   });
   t.equal(state.globQuery(), '**/*');
 
   // Should not update state.globQuery if data.globQuery is null
-  browseNamespace(state, {
+  browseNamespace(state, events, {
     globQuery: null
   });
   t.equal(state.globQuery(), '**/*');
 
   // Should not update state.globQuery if data.globQuery is undefined
-  browseNamespace(state, {});
+  browseNamespace(state, events, {});
   t.equal(state.globQuery(), '**/*');
 
-  // Should not update state.globQuery if data.globQuery is empty string
-  browseNamespace(state, {
+  // Special: Convert empty string to glob everything at this level
+  browseNamespace(state, events, {
     globQuery: ''
   });
-  t.equal(state.globQuery(), '**/*');
+  t.equal(state.globQuery(), '*');
 });
 
 test('Updates state.items', function(t) {
   t.plan(1);
 
   var state = browseComponent().state;
+  var events = browseComponent().events;
 
   // Should update the items to items returned by glob method call (async)
-  browseNamespace(state, {
+  browseNamespace(state, events, {
     globQuery: '*',
     namespace: 'foo/bar'
   });
+
+  // The observ-array will callback each time we change state.items
+  // Here, we expect exactly 1 changeset to match.
+  // We cannot ask all of them to match, so t.deepEquals cannot be used.
   state.items(function(items) {
-    t.deepEqual(items, [mockItem]);
+    if (items[0] === undefined) {
+      return;
+    }
+    var match = true;
+    for (var prop in mockItemResult) {
+      if (mockItemResult[prop] !== items[0][prop]) {
+        match = false;
+      }
+    }
+    if (match) {
+      t.pass();
+    }
   });
 });
 
@@ -115,51 +137,20 @@ test('Updates state.items to empty on failure', function(t) {
   t.plan(1);
 
   var state = browseComponent().state;
+  var events = browseComponent().events;
 
-  // Give initial value
-  state.items.set([mockItem]);
+  // Give initial non-empty value
+  state.items.push([mockItem]);
 
   //Should reset the items to empty on failed glob method call (async)
-  browseNamespaceWithFailure(state, {
+  browseNamespaceWithFailure(state, events, {
     globQuery: '*',
     namespace: 'foo/bar'
   });
+
+  // The observ-array will callback each time we change state.items
+  // Here, we expect a single clear.
   state.items(function(items) {
     t.deepEqual(items, []);
-  });
-
-});
-
-test('Updates state.signature', function(t) {
-  t.plan(1);
-
-  var state = browseComponent().state;
-
-  // Should update the signature to items returned by glob method call (async)
-  browseNamespace(state, {
-    globQuery: '*',
-    namespace: 'foo/bar'
-  });
-  state.signature(function(signature) {
-    t.equal(signature, 'signature');
-  });
-
-});
-
-test('Updates state.signature to empty on failure', function(t) {
-  t.plan(1);
-
-  var state = browseComponent().state;
-
-  // Give initial value
-  state.signature.set('not-empty');
-
-  // Should reset the signature to empty on failed signature method call (async)
-  browseNamespaceWithFailure(state, {
-    globQuery: '*',
-    namespace: 'foo/bar'
-  });
-  state.signature(function(sig) {
-    t.equal(sig, '');
   });
 });
