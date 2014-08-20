@@ -25,7 +25,7 @@ function getValue(name) {
     try {
         return JSON.parse(value);
     } catch (exception) {
-        console.log("JSON parse failed for key:", name, "and value:", value);
+        console.error('JSON parse failed for key:', name, 'and value:', value);
     }
 }
 

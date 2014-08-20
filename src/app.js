@@ -87,7 +87,7 @@ onDocumentReady(function startApp() {
   mercury.app(document.body, state, render);
 
   function wireEvents() {
-    events.browse.error(onError)
+    events.browse.error(onError);
   }
 
   function onError(err) {

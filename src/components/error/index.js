@@ -26,5 +26,5 @@ function render(state) {
   // TODO(aghassemi)
   return [
     h('p', state.message)
-  ]
+  ];
 }

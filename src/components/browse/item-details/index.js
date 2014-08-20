@@ -98,7 +98,7 @@ function render(state, events) {
     }
 
     function renderMethod(name, param) {
-      var text = name + '('
+      var text = name + '(';
       for (var i = 0; i < param.inArgs.length; i++) {
         var arg = param.inArgs[i];
         if (i > 0) {
@@ -108,7 +108,7 @@ function render(state, events) {
       }
       text += ')';
       if (param.isStreaming) {
-        text += ' - streaming'
+        text += ' - streaming';
       }
       return h('pre', {
         'ev-click': mercury.event(events.methodSelected, {
@@ -124,7 +124,7 @@ function render(state, events) {
 /*TODO(aghassemi) make a web component for this*/
 function renderFieldItem(label, content, tooltip) {
 
-  var label = h('h4', label);
+  var hlabel = h('h4', label);
   if (tooltip) {
     // If there is a tooltip, wrap the content in it
     content = h('core-tooltip.tooltip', {
@@ -134,7 +134,7 @@ function renderFieldItem(label, content, tooltip) {
   }
 
   return h('div.field', [
-    h('h4', label),
+    h('h4', hlabel),
     h('div.content', content)
   ]);
 }

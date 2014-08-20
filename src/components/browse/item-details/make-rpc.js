@@ -1,4 +1,5 @@
 var browseService = require('../../../services/browse-service');
+var debug = require('debug')('make-rpc');
 
 module.exports = makeRPC;
 
@@ -8,9 +9,9 @@ function makeRPC(state, data) {
   }
 
   browseService.makeRPC(data.name, data.methodName).then(function(result) {
-    console.log("Received: " + result);
+    console.log('Received: ', result);
   }, function(err) {
-    console.log("Failed: " + err);
+    console.error('Failed: ', err);
     debug('Error during RPC',
       data.name,
       data.methodName,

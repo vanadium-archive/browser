@@ -54,7 +54,7 @@ function glob(name, globQuery) {
       return mountPoint.glob(globQuery);
     } else {
       var err = new Error('Object does not support glob operation');
-      return Promise.reject(err)
+      return Promise.reject(err);
     }
 
   }).then(function createItems(globResults) {
@@ -96,22 +96,22 @@ function signature(name) {
       return service.signature().then(function(sig) {
         sigcache[name] = sig;
         return sig;
-      })
+      });
     });
   });
 }
 
 /*
- * Given a name and a methodName with no parameters, make an RPC call for that method
- * on the object represented by that name.
+ * Given a name and a methodName with no parameters, make an RPC call for that
+ * method on the object represented by that name.
  */
 function makeRPC(name, methodName) {
   return runtimePromise.then(function(rt){
     return rt.bindTo(name).then(function(service) {
-      console.log("Calling ", methodName, " on ", name);
+      console.log('Calling ', methodName, ' on ', name);
       return service[methodName]().then(function(result) {
         return result;
-      })
+      });
     });
   });
 }
@@ -139,7 +139,7 @@ function isRooted(name) {
 function getTypeInfo(signature) {
 
   var typeName = 'Unknown';
-  var typeDescription = 'Type of item is now known.'
+  var typeDescription = 'Type of item is now known.';
 
   if (!signature) {
     typeName = 'Intermediary Name';
@@ -155,7 +155,7 @@ function getTypeInfo(signature) {
   return {
     name: typeName,
     description: typeDescription
-  }
+  };
 }
 
 /*
@@ -172,13 +172,13 @@ function isMounttable(signature) {
 
 function isGlobbable(name) {
   return signature(name).then( function(sig) {
-    return sig['glob'] !== undefined
+    return sig['glob'] !== undefined;
   }).catch( function(e) {
     // TODO(aghassemi) This is very wrong, not having a signature does not mean
-    // globbale will do for prototype
-    if(e && e.message && e.message.indexOf("Name doesn't exist") > -1) {
+    // globbable will do for prototype
+    if(e && e.message && e.message.indexOf('Name doesn\'t exist') > -1) {
       return true;
     }
     return false;
-  })
+  });
 }

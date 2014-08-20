@@ -76,7 +76,7 @@ function renderHeader(browseState, browseEvents, navigationEvents) {
   var changeEvent = new PaperInputValueEvent(function(val) {
     var namespace = browseState.namespace;
     if (exists(val)) {
-      namespace = val
+      namespace = val;
     }
     navigationEvents.navigate({
       path: browseRoute.createUrl(namespace, browseState.globQuery)
@@ -85,7 +85,9 @@ function renderHeader(browseState, browseEvents, navigationEvents) {
 
   return h('div.namespace-box', [
     h('core-tooltip.tooltip', {
-      'label': new AttributeHook('Enter a name to browse, e.g. house/living-room'),
+      'label': new AttributeHook(
+        'Enter a name to browse, e.g. house/living-room'
+      ),
       'position': 'right',
     }, [
 
@@ -103,7 +105,6 @@ function renderHeader(browseState, browseEvents, navigationEvents) {
 
 function render(browseState, browseEvents, navigationEvents) {
   insertCss(css);
-  var drawerWidth = '350px';
 
   var sideView = [
     itemDetailsComponent.render(
@@ -118,7 +119,7 @@ function render(browseState, browseEvents, navigationEvents) {
 
   var sideViewWidth = '50%';
   if (browseState.items.length === 0) {
-    mainView = h('div.empty', 'No children to display.')
+    mainView = h('div.empty', 'No children to display.');
   }
 
   var view = [
@@ -165,7 +166,9 @@ function render(browseState, browseEvents, navigationEvents) {
 
     return h('div.search-box', [
       h('core-tooltip.tooltip', {
-        'label': new AttributeHook('Enter Glob query for searching, e.g. */*/a*'),
+        'label': new AttributeHook(
+          'Enter Glob query for searching, e.g. */*/a*'
+        ),
         'position': 'left',
       }, [
         h('core-icon.icon', {
@@ -197,7 +200,7 @@ function render(browseState, browseEvents, navigationEvents) {
       }
       return h('div.item.card' + (selected ? '.selected' : ''), [
         h('a.label', {
-          'href': 'javascript://',
+          'href': '#',
           'ev-click': mercury.event(
             browseEvents.selectedItemDetails.displayItemDetails, {
               name: item.itemName
@@ -213,7 +216,7 @@ function render(browseState, browseEvents, navigationEvents) {
     var isRooted = browseService.isRooted(browseState.namespace);
     var namespaceParts = browseState.namespace.split('/').filter(
       function(n) {
-        return n.trim() !== ''
+        return n.trim() !== '';
       }
     );
     var breadCrumbs = [];
@@ -226,7 +229,7 @@ function render(browseState, browseEvents, navigationEvents) {
             path: browseRoute.createUrl()
           })
         }, 'Home')
-      ]))
+      ]));
     }
 
     for (var i = 0; i < namespaceParts.length; i++) {

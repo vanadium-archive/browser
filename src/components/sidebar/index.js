@@ -30,7 +30,10 @@ function render(state, events) {
       key: 'browse',
       label: 'Browse',
       icon: 'search',
-      href: browseRoute.createUrl(state.browse.namespace, state.browse.globQuery)
+      href: browseRoute.createUrl(
+        state.browse.namespace,
+        state.browse.globQuery
+      )
     }, {
       key: 'visualize',
       label: 'Visualize',

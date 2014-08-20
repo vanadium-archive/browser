@@ -1,4 +1,5 @@
 var browseService = require('../../../services/browse-service');
+var debug = require('debug')('display-item-details');
 
 module.exports = displayItemDetails;
 

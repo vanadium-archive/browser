@@ -6,7 +6,7 @@ GOPATH:=$(CURRENT_DIR)/go:$(GOPATH)
 # All JS and CSS files except build.js and third party
 BROWSERIFY_FILES = $(shell find src -name "*.js" -o -name "*.css")
 BROWSERIFY_OPTIONS = --transform ./css-transform --debug
-PROVA_OPTIONS = --browser --launch chrome --plugin proxyquireify/plugin
+PROVA_OPTIONS = --browser --launch chrome --plugin proxyquireify/plugin --transform ./css-transform
 PROVA_HEADLESS_OPTIONS = --headless --progress --quit
 
 # All Go and VDL files
@@ -18,7 +18,7 @@ all: public/bundle.js public/bundle.html public/platform.js go/bin go/src/sample
 
 # Creating the bundle JS file
 public/bundle.js: $(BROWSERIFY_FILES) node_modules
-	#jshint src # lint all src JavaScript files
+	jshint src # lint all src JavaScript files
 	browserify src/app.js $(BROWSERIFY_OPTIONS) $< | exorcist $@.map > $@ #Browserify and generate map file
 
 # Creating the bundle HTML file

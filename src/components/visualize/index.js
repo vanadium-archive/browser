@@ -1,7 +1,5 @@
-var mercury = require('mercury');
 var insertCss = require('insert-css');
 var vis = require('vis');
-var h = mercury.h;
 var css = require('./index.css');
 var browseService = require('../../services/browse-service');
 
@@ -19,7 +17,7 @@ function render(browseState) {
   insertCss(css);
   return [
     new TreeWidget(browseState)
-  ]
+  ];
 }
 
 function TreeWidget(browseState) {
@@ -74,7 +72,7 @@ TreeWidget.prototype.init = function() {
   }
 
   return elem;
-}
+};
 
 TreeWidget.prototype.loadData = function(namespace) {
   var self = this;
@@ -83,13 +81,13 @@ TreeWidget.prototype.loadData = function(namespace) {
       return {
         id: item.name,
         label: item.mountedName
-      }
+      };
     });
     var newEdges = results.map(function(item) {
       return {
         from: namespace,
         to: item.name
-      }
+      };
     });
     self.nodes.add(newNodes);
     self.edges.add(newEdges);
@@ -100,4 +98,4 @@ TreeWidget.prototype.loadData = function(namespace) {
 };
 
 TreeWidget.prototype.update = function(prev, elem) {
-}
+};
