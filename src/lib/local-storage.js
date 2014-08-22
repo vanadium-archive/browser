@@ -18,7 +18,7 @@ function setValue(name, value) {
 
 /*
  * Given a string identifier, return the JSON decoded value from localStorage.
- * Returns undefined if the value was not present or could not be parsed.
+ * Returns null if the value was not present or could not be parsed.
  */
 function getValue(name) {
     var value = localStorage.getItem(name);
@@ -27,6 +27,7 @@ function getValue(name) {
     } catch (exception) {
         console.error('JSON parse failed for key:', name, 'and value:', value);
     }
+    return null;
 }
 
 /*

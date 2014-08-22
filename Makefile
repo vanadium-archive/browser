@@ -8,6 +8,7 @@ BROWSERIFY_FILES = $(shell find src -name "*.js" -o -name "*.css")
 BROWSERIFY_OPTIONS = --transform ./css-transform --debug
 PROVA_OPTIONS = --browser --launch chrome --plugin proxyquireify/plugin --transform ./css-transform
 PROVA_HEADLESS_OPTIONS = --headless --progress --quit
+JS_TEST_FILES = $(shell find test -name "*.js")
 
 # All Go and VDL files
 GO_FILES = $(shell find go -name "*.go")
@@ -54,7 +55,7 @@ bower_components: bower.json node_modules
 # Uses prova to run tests in a headless chrome and then quit after all test finish
 test: public/bundle.js public/bundle.html public/platform.js
 	jshint test # lint all test JavaScript files
-	prova test/**/*.js $(PROVA_OPTIONS) $(PROVA_HEADLESS_OPTIONS)
+	prova $(JS_TEST_FILES) $(PROVA_OPTIONS) $(PROVA_HEADLESS_OPTIONS)
 
 # Continuously watch for changes to .js, .html or .css files.
 # Rebundles the appropriate bundles when local files change
