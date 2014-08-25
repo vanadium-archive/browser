@@ -31,6 +31,7 @@ function create() {
 
     selectedTabIndex: mercury.value(0),
 
+    details: mercury.varhash(),
   });
 
   var events = mercury.input([
@@ -74,11 +75,26 @@ function render(state, events) {
 
   function renderDetailsTab() {
     var typeInfo = browseService.getTypeInfo(state.signature);
+    var displayItems = [
+      renderFieldItem('Name', (state.itemName || '<root>')),
+      renderFieldItem('Type', typeInfo.name, typeInfo.description),
+    ];
+
+    // In addition to the Name and Type, render additional service details.
+    var details = state.details;
+    for (var method in details[state.itemName]) {
+      if (details[state.itemName].hasOwnProperty(method)) {
+        displayItems.push(
+          renderFieldItem(
+            method,
+            details[state.itemName][method]
+          )
+        );
+      }
+    }
+
     return [
-      h('div', [
-        renderFieldItem('Name', (state.itemName || '<root>')),
-        renderFieldItem('Type', typeInfo.name, typeInfo.description)
-      ]),
+      h('div', displayItems),
     ];
   }
 
@@ -114,6 +130,7 @@ function render(state, events) {
         'ev-click': mercury.event(events.methodSelected, {
           name: state.itemName,
           methodName: name,
+          signature: sig,
           hasParams: param.inArgs.length !== 0,
         })
       }, text);

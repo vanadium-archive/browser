@@ -2,6 +2,7 @@ var urlUtil = require('url');
 var qsUtil = require('querystring');
 var exists = require('../lib/exists');
 var store = require('../lib/local-storage');
+var smartService = require('../services/smart-service');
 
 module.exports = function(routes) {
   // Url pattern: /browse/veyronNameSpace?glob=*
@@ -44,6 +45,16 @@ function handleBrowseRoute(state, events, params) {
 
   // Log the URLs as we receive them.
   store.setValue('index', namespace);
+
+  // Log the URLs to the smart service.
+  smartService.record('learner-shortcut', {name: namespace});
+
+  // TODO(alexfandrianto): Remove these debug lines.
+  // For debug, display what our prediction would be.
+  console.log('PredictS:', smartService.predict('learner-shortcut', ''));
+
+  // Save every time we navigate to a page.
+  smartService.save('learner-shortcut');
 
   // Trigger browse components browseNamespace event
   events.browse.browseNamespace({

@@ -21,7 +21,7 @@ function setValue(name, value) {
  * Returns null if the value was not present or could not be parsed.
  */
 function getValue(name) {
-    var value = localStorage.getItem(name);
+    var value = localStorage.getItem(name); // value is string or null
     try {
         return JSON.parse(value);
     } catch (exception) {

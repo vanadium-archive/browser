@@ -7,6 +7,7 @@ var browseRoute = require('../../routes/browse');
 var browseNamespace = require('./browse-namespace');
 var itemDetailsComponent = require('./item-details/index');
 var browseService = require('../../services/browse-service');
+var smartService = require('../../services/smart-service');
 var css = require('./index.css');
 
 var h = mercury.h;
@@ -19,6 +20,14 @@ module.exports.renderHeader = renderHeader;
  * Browse component provides user interfaces for browsing the Veyron namespace
  */
 function create() {
+  smartService.loadOrRegister(
+    'learner-shortcut',
+    smartService.constants.LEARNER_SHORTCUT
+  );
+  smartService.loadOrRegister(
+    'learner-autorpc',
+    smartService.constants.LEARNER_AUTORPC
+  );
 
   var selectedItemDetails = itemDetailsComponent();
 

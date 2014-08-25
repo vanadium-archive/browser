@@ -81,7 +81,7 @@ function glob(name, globQuery) {
   });
 }
 
-// TODO(aghassemi) how to invalidate?
+// TODO(aghassemi): how to invalidate? An explicit refresh button?
 var sigcache = {};
 /*
  * Given a name, returns a promise of the signature of methods available on the

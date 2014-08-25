@@ -12,7 +12,7 @@ test('local-storage set=>get', function(t) {
   // Simple string is successfully recovered.
   var value = 'potato soup';
   store.setValue('key1', value);
-  t.deepEqual(store.getValue('key'), value);
+  t.deepEqual(store.getValue('key1'), value);
 
   // Simple object is successfully recovered.
   var object = { attribute: 'yellow' };
@@ -35,13 +35,13 @@ test('local-storage set=>get', function(t) {
 
 test('local-storage setA=>setB=>get', function(t) {
   // The last value set wins...
-  var key = 'key1';
+  var key1 = 'key1';
   var key2 = 'key2';
   var value = 'artificial flavors';
   var object = { attribute: 'organic' };
-  store.setValue(key, value);
-  store.setValue(key, object);
-  t.deepEqual(store.getValue(key), object);
+  store.setValue(key1, value);
+  store.setValue(key1, object);
+  t.deepEqual(store.getValue(key1), object);
 
   // ...regardless of the values stored.
   store.setValue(key2, object);
