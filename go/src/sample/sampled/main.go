@@ -50,7 +50,7 @@ func main() {
 		}
 
 		// Serve these services at the given name.
-		if err := s.Serve(name, ipc.SoloDispatcher(server, nil)); err != nil {
+		if err := s.Serve(name, ipc.LeafDispatcher(server, nil)); err != nil {
 			log.Fatal("error serving service: ", err)
 		}
 
