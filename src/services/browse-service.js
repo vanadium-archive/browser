@@ -1,8 +1,8 @@
 var veyron = require('veyron');
 var namespaceUtil = veyron.namespaceUtil;
-
 var veyronConfig = require('../veyron-config');
 var MountPoint = require('../lib/mountpoint');
+var debug = require('debug')('browse-service');
 
 var runtimePromise = veyron.init(veyronConfig);
 
@@ -102,14 +102,16 @@ function signature(name) {
 }
 
 /*
- * Given a name and a methodName with no parameters, make an RPC call for that
- * method on the object represented by that name.
+ * Make an RPC call on a service object.
+ * name: string representing the name of the service
+ * methodName: string for the service method name
+ * args (optional): array of arguments for the service method
  */
-function makeRPC(name, methodName) {
+function makeRPC(name, methodName, args) {
   return runtimePromise.then(function(rt){
     return rt.bindTo(name).then(function(service) {
-      console.log('Calling ', methodName, ' on ', name);
-      return service[methodName]().then(function(result) {
+      debug('Calling', methodName, 'on', name, 'with', args);
+      return service[methodName].apply(null, args).then(function(result) {
         return result;
       });
     });

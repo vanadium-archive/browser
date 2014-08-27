@@ -11,7 +11,18 @@ module.exports = displayItemDetails;
  */
 function displayItemDetails(state, data) {
   var name = data.name;
+
+  // Don't refresh if we are already looking at this name's details.
+  if (state.itemName() === name) {
+    return;
+  }
+  // Set the new name and reset the selected method and outputs.
+  // TODO(alexfandrianto): Instead of resetting, should we remember this info?
   state.itemName.set(name);
+  state.selectedMethod.set('');
+  // TODO(aghassemi)
+  // any better way than splice to tell Mercury all of array changed?
+  state.methodOutputs.splice(0, state.methodOutputs.getLength());
 
   browseService.signature(name).then(function(signatureResult) {
     state.signature.set(signatureResult);
