@@ -1,9 +1,11 @@
+var util = require('./util');
+
 module.exports = {
   update: perceptronUpdate,
   predict: perceptronPredict
 };
 
-/* 
+/*
  * Update the weights given the input features and associated score.
  * The learning rate modulates the amount the weights are adjusted.
  */
@@ -24,11 +26,5 @@ function perceptronUpdate(weights, features, score, learningRate) {
  * Given the weights and input features, compute the predicted score.
  */
 function perceptronPredict(weights, features) {
-  var value = 0;
-  for (var key in features) {
-    if (weights[key] !== undefined) {
-      value += features[key] * weights[key];
-    }
-  }
-  return value;
+  return util.dotProduct(weights, features);
 }

@@ -53,6 +53,15 @@ function handleBrowseRoute(state, events, params) {
   // For debug, display what our prediction would be.
   console.log('PredictS:', smartService.predict('learner-shortcut', ''));
 
+  // Update our shortcuts with these predictions.
+  var predictions = smartService.predict('learner-shortcut', '');
+  // TODO(alexfandrianto): When observ-array's set() method works properly,
+  // update the observ-array variables to use set instead of splice + push.
+  state.browse.shortcuts.splice(0, state.browse.shortcuts.getLength());
+  predictions.map(function(prediction) {
+    state.browse.shortcuts.push(prediction.item);
+  });
+
   // Save every time we navigate to a page.
   smartService.save('learner-shortcut');
 

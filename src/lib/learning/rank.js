@@ -1,6 +1,10 @@
+var util = require('./util');
+
 module.exports = {
   getBestKItems: getBestKItems,
-  getBestItem: getBestItem
+  getBestItem: getBestItem,
+  getBestItemIndex: getBestItemIndex,
+  applyDiversityPenalty: applyDiversityPenalty
 };
 
 /*
@@ -30,18 +34,52 @@ function getBestKItems(scoredItems, k) {
 }
 
 /*
- * Given an array of scored items, find and return the highest scored item.
+ * Given an array of scored items, find the highest scored item.
  * A scored item has an item and score attribute.
  * Note: Order is not specified for ties.
  * Note: Returns null if there is no best item.
  */
 function getBestItem(scoredItems) {
+  var index = getBestItemIndex(scoredItems);
+  if (index === -1) {
+    return null;
+  }
+  return scoredItems[index];
+}
+
+/*
+ * Given an array of scored items, find the index of the highest scored item.
+ * A scored item has an item and score attribute.
+ * Note: Order is not specified for ties.
+ * Note: Returns -1 if there is no best item.
+ */
+function getBestItemIndex(scoredItems) {
+  var maxScoredItemIndex = -1;
   var maxScoredItem = null;
   for (var i = 0; i < scoredItems.length; i++) {
     var scoredItem = scoredItems[i];
     if (maxScoredItem === null || scoredItem.score > maxScoredItem.score) {
+      maxScoredItemIndex = i;
       maxScoredItem = scoredItem;
     }
   }
-  return maxScoredItem;
+  return maxScoredItemIndex;
+}
+
+/*
+ * Given scored items, penalize the scored items based on their similarity to
+ * a reference scored item.
+ * A scored item has an item and score attribute.
+ * The extractor takes an item and returns a map[string]float64
+ * The penalty is a float64.
+ */
+function applyDiversityPenalty(scoredItems, otherItem, extractor, penalty) {
+  var oFeatures = extractor(otherItem.item);
+
+  // Penalize the other item's score based on the cosine similarity.
+  for (var i = 0; i < scoredItems.length; i++) {
+    var iFeatures = extractor(scoredItems[i].item);
+    var cossim = util.cossim(iFeatures, oFeatures);
+    scoredItems[i].score -= cossim * penalty;
+  }
 }

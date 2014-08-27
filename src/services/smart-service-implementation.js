@@ -39,13 +39,15 @@ module.exports = {
 };
 
 /*
- * TODO(alexfandrianto): Don't ignore 'params'. Improve this algorithm.
  * Create a shortcut learner that analyzes directory paths visited and predicts
- * the most useful shortcut.
+ * the most useful shortcuts.
+ * The expected attributes in params include:
+ * k, the max # of shortcuts to return
  */
 function shortcutLearner(type, params) {
   this.directoryCount = {};
   this.type = type;
+  this.params = params;
   addAttributes(this, LEARNER_METHODS[type]);
 }
 
@@ -73,16 +75,23 @@ function shortcutLearnerUpdate(input) {
 }
 
 /*
- * TODO(alexfandrianto): We may wish to return the top best k when we generate
- * multiple shortcuts or autocomplete.
- * Given an input path, determine which child is most popular.
+ * Given an input path, determine which children are most popular.
  */
 function shortcutLearnerPredict(input) {
   // Make sure to give input a proper string value.
-  if (!input) {
+  if (input === undefined || input === null) {
     input = '';
   }
-  debug('Predict with: ', this.directoryCount);
+
+  // Also ensure that k, the number of children to return, is defined.
+  var k = this.params.k;
+  if (k === undefined || k === null) {
+    k = 1;
+  }
+
+  debug('Predict top', k, 'children under', input, 'with', this.directoryCount);
+
+  // First score all the items.
   var scoredItems = [];
   for (var key in this.directoryCount) {
     if (this.directoryCount.hasOwnProperty(key) && key.indexOf(input) === 0) {
@@ -92,7 +101,34 @@ function shortcutLearnerPredict(input) {
       };
     }
   }
-  return rank.getBestItem(scoredItems);
+
+  // Then determine the top k items including diversity.
+  // TODO(alexfandrianto): This step forces us to take O(kn) runtime. Is there a
+  // faster way to find the 'best' shortcuts?
+  var topK = [];
+  for (var i = 0; i < k; i++) {
+    var bestItemIndex = rank.getBestItemIndex(scoredItems);
+    topK.push(scoredItems[bestItemIndex]);
+
+    // If we haven't yet found all topK, penalize similar items.
+    if (i < k - 1) {
+      // Remove the most recent top item, and return early if we can.
+      scoredItems.splice(bestItemIndex, 1);
+      if (scoredItems.length === 0) {
+        return topK;
+      }
+
+      // Otherwise, penalize all remaining items.
+      rank.applyDiversityPenalty(
+        scoredItems,
+        topK[i],
+        shortcutLearnerFeatureExtractor,
+        topK[i].score
+      );
+    }
+  }
+
+  return topK;
 }
 
 /*
@@ -168,7 +204,14 @@ function pathFeatureExtractor(path) {
   var split = path.split('/');
   var growingPath = '';
   for (var i = 0; i < split.length; i++) {
-    growingPath += split[i] + '/';
+    if (split[i] === '') {
+      continue;
+    }
+    if (i === 0) {
+      growingPath += split[i];
+    } else {
+      growingPath += '/' + split[i];
+    }
     // give 1, 1/2, 1/4, 1/8, ... credit assignment
     vector[growingPath] = Math.pow(2, i+1-split.length);
   }
