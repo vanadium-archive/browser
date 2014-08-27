@@ -22,7 +22,8 @@ module.exports.renderHeader = renderHeader;
 function create() {
   smartService.loadOrRegister(
     'learner-shortcut',
-    smartService.constants.LEARNER_SHORTCUT
+    smartService.constants.LEARNER_SHORTCUT,
+    { k: 3 }
   );
   smartService.loadOrRegister(
     'learner-autorpc',
@@ -50,6 +51,15 @@ function create() {
      */
     items: mercury.array([]),
 
+    /*
+     * List of shortcuts to display
+     * @type {Array<string>}
+     */
+    shortcuts: mercury.array([]),
+
+    /*
+     * State of the selected item-details component
+     */
     selectedItemDetails: selectedItemDetails.state
 
   });
@@ -123,12 +133,15 @@ function render(browseState, browseEvents, navigationEvents) {
   ];
 
   var mainView = [
-    h('div.items-container', renderItems())
+    h('div.items-container', renderShortcuts()),
+    h('hr.line')
   ];
 
   var sideViewWidth = '50%';
   if (browseState.items.length === 0) {
-    mainView = h('div.empty', 'No children to display.');
+    mainView.push(h('div.empty', 'No children to display.'));
+  } else {
+    mainView.push(h('div.items-container', renderItems()));
   }
 
   var view = [
@@ -190,6 +203,26 @@ function render(browseState, browseEvents, navigationEvents) {
         })
       ])
     ]);
+  }
+
+  function renderShortcuts() {
+    return browseState.shortcuts.map(function(shortcut) {
+      var browsing = browseState.namespace === shortcut;
+
+      // TODO(alexfandrianto): Ideally, the rendering would match renderItems.
+      // However, the shortcuts learned thus far are just names. There isn't
+      // enough data to pass to the item rendering logic.
+      var expandAction = h('a.label', {
+        'href': browseRoute.createUrl(shortcut, browseState.globQuery),
+        'ev-click': mercury.event(navigationEvents.navigate, {
+          path: browseRoute.createUrl(shortcut, browseState.globQuery)
+        }),
+      }, browseService.getSuffix(shortcut));
+
+      return h('div.item.card' + (browsing ? '.selected' : ''), [
+        expandAction
+      ]);
+    });
   }
 
   function renderItems() {

@@ -11,9 +11,10 @@ module.exports = {
   join: join,
   signature: signature,
   getTypeInfo : getTypeInfo,
+  makeRPC: makeRPC,
   isRooted: isRooted,
   isGlobbable: isGlobbable,
-  makeRPC: makeRPC,
+  getSuffix: getSuffix,
 };
 
 /*
@@ -124,10 +125,25 @@ function join(nameParts) {
 }
 
 /*
- * Given a name and a suffix, it joins them to create a single name
+ * Given a name, determines if the given name was rooted
  */
 function isRooted(name) {
   return namespaceUtil.isRooted(name);
+}
+
+/*
+ * Given a name, determine its suffix.
+ */
+function getSuffix(name) {
+  if (name === '' || name === '/') {
+    return name;
+  }
+  var parts = name.split('/');
+  var last = parts[parts.length - 1];
+  if (last === '') {
+    return parts[parts.length - 2];
+  }
+  return last;
 }
 
 

@@ -33,6 +33,7 @@
   flex-direction: row;
   flex-wrap: wrap;
   margin-top: 0.5em;
+  border-bottom: solid 1px rgba(0, 0, 0, 0.12);
 }
 .item.card {
   box-sizing: border-box;
