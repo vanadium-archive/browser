@@ -2,6 +2,7 @@ var insertCss = require('insert-css');
 var vis = require('vis');
 var css = require('./index.css');
 var browseService = require('../../services/browse-service');
+var debug = require('debug')('component:visualize');
 
 module.exports = create;
 module.exports.render = render;
@@ -9,9 +10,7 @@ module.exports.render = render;
 /*
  * Visualize view
  */
-function create() {
-
-}
+function create() {}
 
 function render(browseState) {
   insertCss(css);
@@ -35,52 +34,84 @@ TreeWidget.prototype.type = 'Widget';
 TreeWidget.prototype.init = function() {
   var elem = document.createElement('div');
   elem.className = 'tree';
-  var network;
-  requestAnimationFrame(function() {
-    initNetwork();
-  });
-  var self = this;
 
-  var label = this.browseState.namespace || '<root>';
-  this.nodes.add({
-    id: this.browseState.namespace,
-    label: label
-  });
-  this.loadData(this.browseState.namespace);
-
-  function initNetwork() {
-    network = new vis.Network(elem, {
-      nodes: self.nodes,
-      edges: self.edges
-    }, {
-      clustering: {
-        enabled: false,
-        clusterEdgeThreshold: 0
-      },
-      nodes: {
-        radiusMin: 16,
-        radiusMax: 32,
-        fontColor: '#FAFAFA',
-        color: {
-          background: '#4285f4',
-          highlight: '#FF4081',
-          border: '#4d73ff'
-        }
-      },
-      stabilize: false
-    });
-  }
+  requestAnimationFrame(this.initNetwork.bind(this, elem));
 
   return elem;
 };
 
-TreeWidget.prototype.loadData = function(namespace) {
+TreeWidget.prototype.initNetwork = function(elem) {
+  // Add the initial node.
+  var rootNodeId = this.browseState.namespace;
+  this.nodes.add({
+    id: rootNodeId,
+    label: rootNodeId || '<root>',
+    level: 0
+  });
+
+  // Load the first level of subnodes.
+  var rootNode = this.nodes.get(rootNodeId);
+  this.loadSubNodes(rootNode);
+
+  var options = {
+    dragNetwork: false,
+    dragNodes: false,
+    hover: true,
+    selectable: false, // Setting this to false doesn't seem to do anything.
+    smoothCurves: false,
+    stabilize: false,
+    hierarchicalLayout: {
+        direction: 'UD' // Up to down
+    },
+    nodes: {
+      radiusMin: 16,
+      radiusMax: 32,
+      fontColor: '#FAFAFA',
+      color: {
+        background: '#4285f4',
+        highlight: '#FF4081',
+        border: '#4d73ff'
+      }
+    }
+  };
+
+  // Start drawing the network.
+  var network = new vis.Network(elem, {
+    nodes: this.nodes,
+    edges: this.edges
+  }, options);
+
+  // Event listeners.
+  var self = this;
+  network.on('click', function onClick(data) {
+    var nodeId = data.nodes[0];
+    debug('click', nodeId);
+
+    var node = self.nodes.get(nodeId);
+    self.loadSubNodes(node);
+  });
+
+  network.on('doubleClick', function onClick(data) {
+    var nodeId = data.nodes[0];
+    debug('doubleClick', nodeId);
+    debug(self.browseState);
+  });
+
+  return network;
+};
+
+TreeWidget.prototype.loadSubNodes = function(node) {
+  var namespace = node.id;
+  // The new nodes should be at a deeper level that the parent.
+  var level = node.level + 1;
+
   var self = this;
   browseService.glob(namespace, '*').then(function(results) {
     var newNodes = results.map(function(item) {
       return {
         id: item.name,
-        label: item.mountedName
+        label: item.mountedName,
+        level: level
       };
     });
     var newEdges = results.map(function(item) {
@@ -91,11 +122,7 @@ TreeWidget.prototype.loadData = function(namespace) {
     });
     self.nodes.add(newNodes);
     self.edges.add(newEdges);
-    results.forEach(function(item) {
-      self.loadData(item.name);
-    });
   });
 };
 
-TreeWidget.prototype.update = function(prev, elem) {
-};
+TreeWidget.prototype.update = function(prev, elem) {};

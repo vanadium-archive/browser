@@ -14,7 +14,11 @@ VEYRON_IDENTITY_SERVER=/proxy.envyor.com:8101/identity/veyron-test/google
 
 trap 'kill -TERM 0' SIGINT SIGTERM EXIT
 
-identity seekblessing > "${VEYRON_IDENTITY_PATH}"
+# Get an identity if we don't have one yet.
+if [ ! -f "${VEYRON_IDENTITY_PATH}" ]; then
+  identity seekblessing > "${VEYRON_IDENTITY_PATH}"
+fi
+
 
 export VEYRON_IDENTITY=$VEYRON_IDENTITY_PATH; \
 mounttabled --address=:$VEYRON_MOUNTTABLE_PORT & \
