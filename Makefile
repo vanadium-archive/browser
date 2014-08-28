@@ -36,7 +36,7 @@ go/bin: $(GO_FILES)
 
 # Generate the vdl for the sample mock service
 go/src/sample/sampled/generated: $(VDL_FILES)
-	(cd go/src/sample && $(VEYRON_ROOT)/veyron/go/bin/vdl generate --go_out_dir="generated" ... )
+	(cd go/src/sample && $(VEYRON_ROOT)/veyron/go/bin/vdl generate --lang=go --go_out_dir=generated ... )
 
 # Install what we need from NPM
 node_modules: package.json
