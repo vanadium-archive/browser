@@ -7,6 +7,7 @@ module.exports = makeRPC;
 /*
  * Use the browseService to perform an RPC request.
  * Put the results in the state and record this request in the smartService.
+ * data needs to have (name, methodName, args, hasParams, signature)
  */
 function makeRPC(state, data) {
   browseService.makeRPC(data.name, data.methodName, data.args).then(

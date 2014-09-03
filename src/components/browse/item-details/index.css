@@ -63,15 +63,39 @@
   font-size: 80%;
 }
 
-.method-input-run {
+.method-input-run, .method-input-remove, .method-input-cancel {
   background-color: var(--color-primary-dark);
   color: var(--color-bright);
-  max-width: 10em;
-  display: block;
+  display: inline-block;
+  margin: 0.5em;
 }
 
 .method-output {
   overflow: auto;
   max-height: 10em;
   margin: 0.5em;
+}
+
+.background {
+  width: 200px;
+  height: 30px;
+  background: black;
+  color: var(--color-bright);
+  display: inline-block;
+  vertical-align: top;
+  margin: 0.5em;
+}
+
+.animate {
+  height: 100%;
+  width: 0%;
+  background: cyan;
+  position: relative;
+  -webkit-animation: myfirst 5s; /* Chrome, Safari, Opera */
+}
+
+/* Chrome, Safari, Opera */
+@-webkit-keyframes myfirst {
+  0%   {background:cyan; width:0%;}
+  100% {background:cyan; width:100%;}
 }

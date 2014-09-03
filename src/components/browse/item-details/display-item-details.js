@@ -1,6 +1,5 @@
 var browseService = require('../../../services/browse-service');
 var smartService = require('../../../services/smart-service');
-var makeRPC = require('./make-rpc');
 var debug = require('debug')('display-item-details');
 
 module.exports = displayItemDetails;
@@ -26,6 +25,7 @@ function displayItemDetails(state, data) {
   // TODO(alexfandrianto): Instead of resetting, should we remember this info?
   state.itemName.set(name);
   state.selectedMethod.set('');
+
   // TODO(aghassemi)
   // any better way than splice to tell Mercury all of array changed?
   state.methodOutputs.splice(0, state.methodOutputs.getLength());
@@ -44,11 +44,26 @@ function displayItemDetails(state, data) {
           hasParams: param.inArgs.length !== 0,
         };
 
-        // TODO(alexfandrianto): Improve decision-making for parameterless RPCs.
+        var details = state.details.get(data.name);
+
+        // We will neither recommend methods that take input parameters nor
+        // re-recommend a method.
+        if (input.hasParams || (details && details[m] !== undefined)) {
+          continue;
+        }
+
+        // If the prediction power is strong enough, recommend the method.
         var prediction = smartService.predict('learner-autorpc', input);
-        if (prediction > 0.6) {
-          debug('AutoRPC:', m);
-          makeRPC(state, input);
+        if (prediction > 0.5) {
+          debug('Recommend', m, 'with', prediction);
+
+          // Set the state detail with the prediction value (a float).
+          var detail = state.details.get(data.name);
+          if (detail === undefined) {
+            detail = {};
+          }
+          detail[input.methodName] = prediction;
+          state.details.put(input.name, detail);
         }
       }
     }
