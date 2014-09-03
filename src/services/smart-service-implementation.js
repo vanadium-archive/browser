@@ -108,7 +108,11 @@ function shortcutLearnerPredict(input) {
   var topK = [];
   for (var i = 0; i < k; i++) {
     var bestItemIndex = rank.getBestItemIndex(scoredItems);
-    topK.push(scoredItems[bestItemIndex]);
+    if (bestItemIndex >= 0) {
+      topK.push(scoredItems[bestItemIndex]);
+    } else {
+      return topK; // return early since there are no more top items.
+    }
 
     // If we haven't yet found all topK, penalize similar items.
     if (i < k - 1) {

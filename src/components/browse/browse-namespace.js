@@ -69,7 +69,7 @@ function constructItemStruct(globResultItem) {
     isGlobbable: mercury.value(false)
   });
 
-  // aync call is set isGlobbale
+  // async call to set isGlobbable
   browseService.isGlobbable(globResultItem.name).then(function(isGlobbable) {
     item.isGlobbable.set(isGlobbable);
   });

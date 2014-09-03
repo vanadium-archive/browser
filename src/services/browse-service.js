@@ -193,7 +193,9 @@ function isGlobbable(name) {
     return sig['glob'] !== undefined;
   }).catch( function(e) {
     // TODO(aghassemi) This is very wrong, not having a signature does not mean
-    // globbable will do for prototype
+    // globbable will do for prototype.
+    // TODO(alexfandrianto): Agrees that this is very wrong. Passing an invalid
+    // name can lead to a true isGlobbable result.
     if(e && e.message && e.message.indexOf('Name doesn\'t exist') > -1) {
       return true;
     }

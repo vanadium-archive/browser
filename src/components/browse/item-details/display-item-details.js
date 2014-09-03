@@ -16,6 +16,12 @@ function displayItemDetails(state, data) {
   if (state.itemName() === name) {
     return;
   }
+  // Log the URL to the smart service as a potential shortcut.
+  smartService.record('learner-shortcut', {name: name});
+
+  // Save every time we look at a service's details.
+  smartService.save('learner-shortcut');
+
   // Set the new name and reset the selected method and outputs.
   // TODO(alexfandrianto): Instead of resetting, should we remember this info?
   state.itemName.set(name);
@@ -46,7 +52,6 @@ function displayItemDetails(state, data) {
         }
       }
     }
-
   }, function(err) {
     debug('Failed to get signature',
       name,
