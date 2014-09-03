@@ -1,18 +1,8 @@
 {
   "name": "veyron-browser",
   "dependencies": {
-    "core-drawer-panel": "Polymer/core-drawer-panel#~0.3.5",
-    "core-header-panel": "Polymer/core-header-panel#~0.3.5",
-    "core-item": "Polymer/core-item#~0.3.5",
-    "core-icons": "Polymer/core-icons#~0.3.5",
-    "core-menu": "Polymer/core-menu#~0.3.5",
-    "core-selector": "Polymer/core-selector#~0.3.5",
-    "core-toolbar": "Polymer/core-toolbar#~0.3.5",
-    "core-tooltip": "Polymer/core-tooltip#~0.3.5",
-    "paper-button": "Polymer/paper-button#~0.3.5",
-    "paper-icon-button": "Polymer/paper-icon-button#~0.3.5",
-    "paper-input": "Polymer/paper-input#~0.3.5",
-    "paper-shadow": "Polymer/paper-shadow#~0.3.5",
-    "paper-tabs": "polymer/paper-tabs#~0.3.5"
+    "polymer": "Polymer/polymer#~0.4.0",
+    "core-elements": "Polymer/core-elements#~0.4.0",
+    "paper-elements": "Polymer/paper-elements#~0.4.0"
   }
 }

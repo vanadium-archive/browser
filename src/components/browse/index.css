@@ -168,17 +168,12 @@
   color: inherit
 }
 
-.namespace-box .icon {
-  margin-bottom: 0.5em;
-  margin-right: 0.75em;
-}
-
 .search-box {
   white-space: nowrap;
 }
 
 .search-box .icon, .namespace-box .icon {
-  vertical-align: super;
+  align-self: flex-end;
   margin-right: 0.5em;
   color: #636363;
 }

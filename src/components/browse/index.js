@@ -107,24 +107,29 @@ function renderHeader(browseState, browseEvents, navigationEvents) {
     });
   });
 
-  return h('div.namespace-box', [
+  return h('div.namespace-box',
     h('core-tooltip.tooltip', {
       'label': new AttributeHook(
         'Enter a name to browse, e.g. house/living-room'
       ),
       'position': 'right',
-    }, [
-
-      h('core-icon.icon', {
-        'icon': new AttributeHook('explore')
-      }),
-      h('paper-input', {
-        'name': 'namespace',
-        'value': browseState.namespace,
-        'ev-change': changeEvent
-      })
-    ])
-  ]);
+    },
+      h('div', {
+        'layout': new AttributeHook('true'),
+        'horizontal': new AttributeHook('true')
+      }, [
+        h('core-icon.icon', {
+          'icon': new AttributeHook('explore')
+        }),
+        h('paper-input', {
+          'flex': new AttributeHook('true'),
+          'name': 'namespace',
+          'value': browseState.namespace,
+          'ev-change': changeEvent
+        })
+      ])
+    )
+  );
 }
 
 /*
@@ -207,23 +212,29 @@ function renderSearch(browseState, navigationEvents) {
     });
   });
 
-  return h('div.search-box', [
+  return h('div.search-box',
     h('core-tooltip.tooltip', {
       'label': new AttributeHook(
         'Enter Glob query for searching, e.g. */*/a*'
       ),
       'position': 'left',
-    }, [
-      h('core-icon.icon', {
-        'icon': new AttributeHook('search')
-      }),
-      h('paper-input.input', {
-        'name': 'globQuery',
-        'value': browseState.globQuery,
-        'ev-change': changeEvent
-      })
-    ])
-  ]);
+    },
+      h('div', {
+        'layout': new AttributeHook('true'),
+        'horizontal': new AttributeHook('true')
+      }, [
+        h('core-icon.icon', {
+          'icon': new AttributeHook('search')
+        }),
+        h('paper-input.input', {
+          'flex': new AttributeHook('true'),
+          'name': 'globQuery',
+          'value': browseState.globQuery,
+          'ev-change': changeEvent
+        })
+      ])
+    )
+  );
 }
 
 /*
