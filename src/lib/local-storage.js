@@ -5,7 +5,7 @@
 module.exports = {
   setValue: setValue,
   getValue: getValue,
-  removeValue: removeValue,
+  removeValue: removeValue
 };
 
 /*

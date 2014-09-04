@@ -63,7 +63,7 @@ function handleBrowseRoute(state, events, params) {
   predictions.forEach(function(prediction) {
     var shortcut = mercury.struct({
       itemName: mercury.value(prediction.item),
-      isGlobbable: mercury.value(false),
+      isGlobbable: mercury.value(false)
     });
     state.browse.shortcuts.push(shortcut);
 

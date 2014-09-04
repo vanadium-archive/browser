@@ -57,7 +57,7 @@ function create() {
      * List of RPC method outputs
      * @type {Array<string>}
      */
-    methodOutputs: mercury.array([]),
+    methodOutputs: mercury.array([])
   });
 
   var events = mercury.input([
@@ -106,7 +106,7 @@ function render(state, events) {
         'ev-click': mercury.event(events.tabSelected, {
           index: 1
         })
-      }, 'Methods'),
+      }, 'Methods')
     ]),
     h('core-selector', {
       'selected': new AttributeHook(state.selectedTabIndex)
@@ -126,7 +126,7 @@ function renderDetailsTab(state, events) {
   var typeInfo = browseService.getTypeInfo(state.signature);
   var displayItems = [
     renderFieldItem('Name', (state.itemName || '<root>')),
-    renderFieldItem('Type', typeInfo.name, typeInfo.description),
+    renderFieldItem('Type', typeInfo.name, typeInfo.description)
   ];
 
   // In addition to the Name and Type, render additional service details.
@@ -157,7 +157,7 @@ function renderDetailsTab(state, events) {
   }
 
   return [
-    h('div', displayItems),
+    h('div', displayItems)
   ];
 }
 
@@ -296,7 +296,7 @@ function renderSuggestRPC(state, events, methodName, prediction) {
           methodName: methodName,
           signature: state.signature,
           hasParams: false,
-          args: [],
+          args: []
         });
       }
       elem.addEventListener('webkitAnimationEnd', animationEndHandler);
@@ -329,14 +329,14 @@ function renderRPCRunButton(state, events, methodName, hasParams, args) {
     methodName: methodName,
     hasParams: hasParams,
     signature: state.signature,
-    args: args,
+    args: args
   });
   var runButton = h(
     'paper-button.method-input-run',
     {
       'href': '#',
       'ev-click': ev,
-      'label': 'RUN',
+      'label': 'RUN'
     }
   );
   return runButton;
@@ -350,14 +350,14 @@ function renderRPCRemoveSuggestButton(state, events, methodName) {
     name: state.itemName,
     methodName: methodName,
     signature: state.signature,
-    reward: -1,
+    reward: -1
   });
   return h(
     'paper-button.method-input-remove',
     {
       'href': '#',
       'ev-click': ev,
-      'label': 'REMOVE',
+      'label': 'REMOVE'
     }
   );
 }
@@ -370,14 +370,14 @@ function renderRPCCancelButton(state, events, methodName) {
     name: state.itemName,
     methodName: methodName,
     signature: state.signature,
-    reward: 0,
+    reward: 0
   });
   return h(
     'paper-button.method-input-cancel',
     {
       'href': '#',
       'ev-click': ev,
-      'label': 'CANCEL',
+      'label': 'CANCEL'
     }
   );
 }
@@ -389,7 +389,7 @@ function renderFieldItem(label, content, tooltip) {
     // If there is a tooltip, wrap the content in it
     content = h('core-tooltip.tooltip', {
       'label': new AttributeHook(tooltip),
-      'position': 'right',
+      'position': 'right'
     }, content);
   }
 

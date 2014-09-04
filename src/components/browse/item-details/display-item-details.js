@@ -41,7 +41,7 @@ function displayItemDetails(state, data) {
           name: name,
           methodName: m,
           signature: signatureResult,
-          hasParams: param.inArgs.length !== 0,
+          hasParams: param.inArgs.length !== 0
         };
 
         var details = state.details.get(data.name);

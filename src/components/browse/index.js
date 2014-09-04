@@ -112,7 +112,7 @@ function renderHeader(browseState, browseEvents, navigationEvents) {
       'label': new AttributeHook(
         'Enter a name to browse, e.g. house/living-room'
       ),
-      'position': 'right',
+      'position': 'right'
     },
       h('div', {
         'layout': new AttributeHook('true'),
@@ -166,7 +166,7 @@ function render(browseState, browseEvents, navigationEvents) {
   var view = [
     h('core-toolbar.browse-toolbar', [
       renderBreadcrumbs(browseState, navigationEvents),
-      renderSearch(browseState, navigationEvents),
+      renderSearch(browseState, navigationEvents)
     ]),
     h('core-drawer-panel', {
       'rightDrawer': new AttributeHook(true),
@@ -187,13 +187,13 @@ function render(browseState, browseEvents, navigationEvents) {
   ];
 
   return h('core-drawer-panel', {
-    'drawerWidth': new AttributeHook('0px'),
+    'drawerWidth': new AttributeHook('0px')
   }, [
     h('core-header-panel', {
       'main': new AttributeHook(true)
     }, [
       view
-    ]),
+    ])
   ]);
 }
 
@@ -217,7 +217,7 @@ function renderSearch(browseState, navigationEvents) {
       'label': new AttributeHook(
         'Enter Glob query for searching, e.g. */*/a*'
       ),
-      'position': 'left',
+      'position': 'left'
     },
       h('div', {
         'layout': new AttributeHook('true'),
@@ -245,7 +245,7 @@ function renderShortcuts(browseState, browseEvents, navigationEvents) {
     var item = {
       isGlobbable: shortcut.isGlobbable,
       itemName: shortcut.itemName,
-      mountedName: browseService.getSuffix(shortcut.itemName),
+      mountedName: browseService.getSuffix(shortcut.itemName)
     };
     return renderItem(browseState, browseEvents, navigationEvents, item);
   });
@@ -286,7 +286,7 @@ function renderItem(browseState, browseEvents, navigationEvents, item) {
           name: item.itemName
         })
     }, item.mountedName),
-    expandAction,
+    expandAction
   ]);
 }
 

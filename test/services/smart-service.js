@@ -12,9 +12,9 @@ var smartServiceImplementationMock = {
   LEARNER_METHODS: {
     0: {
       update: dumbLearnerUpdate,
-      predict: dumbLearnerPredict,
-    },
-  },
+      predict: dumbLearnerPredict
+    }
+  }
 };
 
 // The dumbLearner simply counts the calls to update and predict.

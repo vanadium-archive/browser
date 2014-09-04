@@ -14,7 +14,7 @@ function create() {
      * Detailed description of error
      * @type {string}
      */
-    message: mercury.value(''),
+    message: mercury.value('')
   });
 
   return {

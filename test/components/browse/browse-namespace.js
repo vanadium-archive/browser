@@ -1,7 +1,7 @@
 var test = require('prova');
 var proxyquire = require('proxyquireify')(require);
 var browseComponent = proxyquire('../../../src/components/browse/index', {
-  './item-details/index': itemDetailsComponentMock,
+  './item-details/index': itemDetailsComponentMock
 });
 
 /*
@@ -16,7 +16,7 @@ var mockItem = {
 var mockItemResult = {
   itemName: 'foo/bar/mockItem',
   mountedName: 'mockItem',
-  isGlobbable: true,
+  isGlobbable: true
 };
 var browseServiceMock = {
   isGlobbable: function(name) {
@@ -41,19 +41,19 @@ function itemDetailsComponentMock() {
       displayItemDetails: function(data) {
         return;
       }
-    },
+    }
   };
 }
 
 // Require the browseNamespace using the proxy so mocked browse-service is used
 var browseNamespace =
 proxyquire('../../../src/components/browse/browse-namespace',{
-  '../../services/browse-service': browseServiceMock,
+  '../../services/browse-service': browseServiceMock
 });
 
 var browseNamespaceWithFailure =
 proxyquire('../../../src/components/browse/browse-namespace',{
-  '../../services/browse-service': browseServiceMockWithFailure,
+  '../../services/browse-service': browseServiceMockWithFailure
 });
 
 test('Updates state.namespace', function(t) {

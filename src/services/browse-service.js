@@ -14,7 +14,7 @@ module.exports = {
   makeRPC: makeRPC,
   isRooted: isRooted,
   isGlobbable: isGlobbable,
-  getSuffix: getSuffix,
+  getSuffix: getSuffix
 };
 
 /*

@@ -22,12 +22,12 @@ var LEARNER_METHODS = {};
 LEARNER_METHODS[LEARNER_SHORTCUT] = {
   featureExtractor: shortcutLearnerFeatureExtractor,
   update: shortcutLearnerUpdate,
-  predict: shortcutLearnerPredict,
+  predict: shortcutLearnerPredict
 };
 LEARNER_METHODS[LEARNER_AUTORPC] = {
   featureExtractor: autoRPCLearnerFeatureExtractor,
   update: autoRPCLearnerUpdate,
-  predict: autoRPCLearnerPredict,
+  predict: autoRPCLearnerPredict
 };
 
 // Export the implementation constants

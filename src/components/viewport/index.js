@@ -26,7 +26,7 @@ function create() {
      * Title text to display in the toolbar
      * @type {string}
      */
-    title: mercury.value(''),
+    title: mercury.value('')
   });
 
   var events = mercury.input([

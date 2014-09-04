@@ -33,7 +33,7 @@ function makeRPC(state, data) {
           methodName: data.methodName,
           signature: data.signature,
           name: data.name,
-          reward: 1,
+          reward: 1
         };
 
         smartService.record('learner-autorpc', input);
