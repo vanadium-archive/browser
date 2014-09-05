@@ -41,8 +41,8 @@ function create() {
     /*
      * The details information for each service object.
      * Can include recommended details information.
-     * @type {map[string]map[string]string|float}
-     * details information: string
+     * @type {map[string]map[string]string|mercury|float}
+     * details information: string or mercury element
      * recommended details information: float
      */
     details: mercury.varhash(),
@@ -135,8 +135,9 @@ function renderDetailsTab(state, events) {
     if (details.hasOwnProperty(method)) {
       // TODO(alexfandrianto): We may wish to replace this with something less
       // arbitrary. Currently, strings are treated as stringified RPC output.
-      // Floats are treated as the prediction values of recommended items.
-      if (typeof details[method] === 'string') {
+      // And mercury elements can also be rendered this way.
+      // Numbers are treated as the prediction values of recommended items.
+      if (typeof details[method] !== 'number') {
         // These details are already known.
         displayItems.push(
           renderFieldItem(
@@ -290,7 +291,9 @@ function renderSuggestRPC(state, events, methodName, prediction) {
 
     AnimationHook.prototype.hook = function (elem, propName) {
       // On animation end, call the method.
-      function animationEndHandler() {
+      function animationEndHandler(e) {
+        // TODO(alexfandrianto): I think mercury may be the one at fault, but...
+        // this handler is sometimes called several times on animation end.
         events.methodCalled({
           name: state.itemName,
           methodName: methodName,

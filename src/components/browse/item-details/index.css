@@ -76,6 +76,10 @@
   margin: 0.5em;
 }
 
+.method-output pre, .field pre {
+  white-space: pre-wrap;
+}
+
 .background {
   width: 200px;
   height: 30px;

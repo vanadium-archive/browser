@@ -19,6 +19,7 @@
     "bower": "~1.3.9"
   },
   "dependencies": {
+    "bars": "git+https://github.com/steel/bars.git",
     "debug": "^1.0.4",
     "insert-css": "^0.2.0",
     "mercury": "^6.0.1",

@@ -1,31 +1,40 @@
 var browseService = require('../../../services/browse-service');
 var smartService = require('../../../services/smart-service');
 var debug = require('debug')('make-rpc');
+var renderDetail = require('./render-detail');
 
 module.exports = makeRPC;
 
 /*
  * Use the browseService to perform an RPC request.
  * Put the results in the state and record this request in the smartService.
+ * Note that the recorded results are rendered according to renderDetail.
  * data needs to have (name, methodName, args, hasParams, signature)
  */
 function makeRPC(state, data) {
   browseService.makeRPC(data.name, data.methodName, data.args).then(
     function(result) {
       debug('Received:', result);
-      if (result.toString().length > 0) {
-        state.methodOutputs.push(JSON.stringify(result));
+
+      // Do not process empty results.
+      // TODO(alexfandrianto): Eventually, we will know from the method
+      // signature if there are actually results we should care about.
+      if (result.toString().length === 0) {
+        return;
       }
 
+      // Use renderDetail to process the raw result into a renderable format.
+      var renderedResult = renderDetail(result);
+      state.methodOutputs.push(renderedResult);
+
       // If we received a result for a 0-parameter RPC, add to the details page.
-      // TODO(alexfandrianto): Remove the debug lines in this block.
-      if (!data.hasParams && result.toString().length > 0) {
+      if (!data.hasParams) {
         // Store the data we received in our state for later rendering.
         var detail = state.details.get(data.name);
         if (detail === undefined) {
           detail = {};
         }
-        detail[data.methodName] = JSON.stringify(result); // convert to string
+        detail[data.methodName] = renderedResult;
         state.details.put(data.name, detail);
 
         // Log the successful RPC to the smart service.
@@ -35,7 +44,6 @@ function makeRPC(state, data) {
           name: data.name,
           reward: 1
         };
-
         smartService.record('learner-autorpc', input);
 
         // For debug, display what our prediction would be.
