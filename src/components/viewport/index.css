@@ -5,7 +5,7 @@
 
 body {
   font-family: var(--font-family);
-  color: var(--color-black);
+  color: var(--color-text-primary);
   background-color: var(--color-white);
 }
 
@@ -15,18 +15,13 @@ body {
 }
 
 .toolbar {
-  background-color: var(--color-primary-dark);
+  background-color: var(--color-dark);
 }
 
 .panel .drawer {
   background-color: var(--color-white);
 }
 
-.toolbar {
-  /* TODO(aghassemi) refactor into color-primary-dark variable */
-  background-color: #1a237e;
-}
-
 .drawer-toggle {
-  color: #FAFAFA;
+  color: var(--color-white);
 }
