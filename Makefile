@@ -65,7 +65,7 @@ watch:
 # Continuously reruns the tests as they change
 watch-test:
 	@echo "Tests being watched at: http://0.0.0.0:7559"
-	:;prova test/**/*.js $(PROVA_OPTIONS)
+	:;prova $(JS_TEST_FILES) $(PROVA_OPTIONS)
 
 # Serves the needed daemons and starts a server at http://localhost:$(HTTP_PORT)
 # CTRL-C to stop
