@@ -46,9 +46,10 @@ function displayItemDetails(state, data) {
 
         var details = state.details.get(data.name);
 
-        // We will neither recommend methods that take input parameters nor
-        // re-recommend a method.
-        if (input.hasParams || (details && details[m] !== undefined)) {
+        // Ignore methods that take input parameters, already recommended
+        // methods, and methods with no output (only error as an out argument).
+        if (input.hasParams || (details && details[m] !== undefined) ||
+            param.numOutArgs === 1) {
           continue;
         }
 

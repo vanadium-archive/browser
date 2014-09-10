@@ -16,10 +16,10 @@ function makeRPC(state, data) {
     function(result) {
       debug('Received:', result);
 
-      // Do not process empty results.
-      // TODO(alexfandrianto): Eventually, we will know from the method
-      // signature if there are actually results we should care about.
-      if (result.toString().length === 0) {
+      var expectedOutArgs = state.signature()[data.methodName].numOutArgs;
+      // Do not process results we expect to be empty.
+      // TODO(alexfandrianto): Streaming results are ignored with this logic.
+      if (expectedOutArgs === 1) { // Error is the only possible out argument.
         return;
       }
 
