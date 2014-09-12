@@ -8,7 +8,9 @@ BROWSERIFY_FILES = $(shell find src -name "*.js" -o -name "*.css")
 BROWSERIFY_OPTIONS = --transform ./css-transform --debug
 PROVA_OPTIONS = --browser --launch chrome --plugin proxyquireify/plugin --transform ./css-transform
 PROVA_HEADLESS_OPTIONS = --headless --progress --quit
-JS_TEST_FILES = $(shell find test -name "*.js")
+JS_ALL_TEST_FILES = $(shell find test -name "*.js")
+JS_UNIT_TEST_FILES = $(shell find test/unit -name "*.js")
+JS_INTEGRATION_TEST_FILES = $(shell find test/integration -name "*.js")
 
 # All Go and VDL files
 GO_FILES = $(shell find go -name "*.go")
@@ -58,10 +60,23 @@ bower_components: bower.json node_modules
 
 # PHONY targets:
 
-# Uses prova to run tests in a headless chrome and then quit after all test finish
-test: public/bundle.js public/bundle.html public/platform.js
-	:;jshint test # lint all test JavaScript files
-	:;prova $(JS_TEST_FILES) $(PROVA_OPTIONS) $(PROVA_HEADLESS_OPTIONS)
+# Run unit and integration tests
+# TODO(aghassemi) add integration tests back when running/shutting down of services is figured out
+test: test-unit
+
+# Uses prova to run unit tests in a headless chrome and then quit after all test finish
+test-unit: all
+	@echo -e "\e[1;35mRunning Unit Tests\e[0m"
+	@:;jshint test/unit # lint unit test JavaScript files
+	@:;prova $(JS_UNIT_TEST_FILES) $(PROVA_OPTIONS) $(PROVA_HEADLESS_OPTIONS)
+
+# Uses prova to run integration tests in a headless chrome and then quit after all test finish
+# TODO(aghassemi) The need to manually run run-test-services.sh is temporary. We need to reuse or
+# at least take a similar approach as https://veyron-review.googlesource.com/#/c/4316 for veyron.js integration tests
+test-integration: all
+	@echo -e "\e[1;35mRunning Integration Tests - Ensure ./scripts/services/run-test-services.sh is running\e[0m"
+	@:;jshint test/integration # lint integration test JavaScript files
+	@:;prova $(JS_INTEGRATION_TEST_FILES) $(PROVA_OPTIONS) $(PROVA_HEADLESS_OPTIONS)
 
 # Continuously watch for changes to .js, .html or .css files.
 # Rebundles the appropriate bundles when local files change
@@ -70,13 +85,12 @@ watch:
 
 # Continuously reruns the tests as they change
 watch-test:
-	@echo "Tests being watched at: http://0.0.0.0:7559"
-	:;prova $(JS_TEST_FILES) $(PROVA_OPTIONS)
+	@:;prova $(JS_ALL_TEST_FILES) $(PROVA_OPTIONS)
 
 # Serves the needed daemons and starts a server at http://localhost:$(HTTP_PORT)
 # CTRL-C to stop
 start: all
-	./services.sh
+	./scripts/services/run-webapp-services.sh
 
 # Clean all build artifacts
 clean:
@@ -88,4 +102,4 @@ clean:
 	rm -rf go/bin
 	rm -rf bower_components
 
-.PHONY: start clean watch test watch-test
+.PHONY: start clean watch test watch-test test-unit test-integration

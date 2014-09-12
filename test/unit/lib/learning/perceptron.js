@@ -1,5 +1,5 @@
 var test = require('prova');
-var perceptron = require('../../../src/lib/learning/perceptron');
+var perceptron = require('../../../../src/lib/learning/perceptron');
 
 test('perceptron predict', function(t) {
   var weightless = {};

@@ -1,5 +1,5 @@
 var test = require('prova');
-var util = require('../../../src/lib/learning/util');
+var util = require('../../../../src/lib/learning/util');
 
 test('dot product', function(t) {
   t.equals(util.dotProduct({'a': 3}, {}), 0);

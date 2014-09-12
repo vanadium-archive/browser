@@ -1,5 +1,5 @@
 var test = require('prova');
-var addAttributes = require('../../src/lib/addAttributes');
+var addAttributes = require('../../../src/lib/addAttributes');
 
 test('addAttributes', function(t) {
   // Normal Cases: add nothing, add 1 thing, add multiple things

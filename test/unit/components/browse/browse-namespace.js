@@ -1,6 +1,6 @@
 var test = require('prova');
 var proxyquire = require('proxyquireify')(require);
-var browseComponent = proxyquire('../../../src/components/browse/index', {
+var browseComponent = proxyquire('../../../../src/components/browse/index', {
   './item-details/index': itemDetailsComponentMock
 });
 
@@ -47,12 +47,12 @@ function itemDetailsComponentMock() {
 
 // Require the browseNamespace using the proxy so mocked browse-service is used
 var browseNamespace =
-proxyquire('../../../src/components/browse/browse-namespace',{
+proxyquire('../../../../src/components/browse/browse-namespace',{
   '../../services/browse-service': browseServiceMock
 });
 
 var browseNamespaceWithFailure =
-proxyquire('../../../src/components/browse/browse-namespace',{
+proxyquire('../../../../src/components/browse/browse-namespace',{
   '../../services/browse-service': browseServiceMockWithFailure
 });
 

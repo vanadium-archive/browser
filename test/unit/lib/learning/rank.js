@@ -1,6 +1,6 @@
 var test = require('prova');
-var rank = require('../../../src/lib/learning/rank');
-var util = require('../../../src/lib/learning/util');
+var rank = require('../../../../src/lib/learning/rank');
+var util = require('../../../../src/lib/learning/util');
 
 var A = { item: 'A', score: 1.5};
 var B = { item: 'B', score: 1};

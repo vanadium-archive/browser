@@ -1,5 +1,5 @@
 var test = require('prova');
-var store = require('../../src/lib/local-storage');
+var store = require('../../../src/lib/local-storage');
 
 test('local-storage get', function(t) {
   // A key not present in the store is null.

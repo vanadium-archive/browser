@@ -1,5 +1,5 @@
 var test = require('prova');
-var exists = require('../../src/lib/exists');
+var exists = require('../../../src/lib/exists');
 
 test('exists true', function(t) {
   // Normal Cases
