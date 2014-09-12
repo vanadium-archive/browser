@@ -85,6 +85,7 @@ clean:
 	rm -f public/platform.*
 	rm -f public/polymer.*
 	rm -rf node_modules
+	rm -rf go/bin
 	rm -rf bower_components
 
 .PHONY: start clean watch test watch-test
