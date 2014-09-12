@@ -2,6 +2,7 @@ node_modules/
 bower_components/
 go/pkg/
 public/bundle.*
-public/platform.js
+public/platform.*
+public/polymer.*
 npm-debug.log
 go/bin/

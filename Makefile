@@ -15,7 +15,7 @@ GO_FILES = $(shell find go -name "*.go")
 VDL_FILES = $(shell find go -name "*.vdl")
 
 # Builds everything
-all: public/bundle.js public/bundle.html public/platform.js go/bin
+all: public/bundle.js public/bundle.html public/platform.js public/platform.js.map public/polymer.js.map go/bin
 
 # Creating the bundle JS file
 public/bundle.js: $(BROWSERIFY_FILES) node_modules
@@ -29,6 +29,12 @@ public/bundle.html: web-component-dependencies.html node_modules bower_component
 # Copies the web components platform file
 public/platform.js: bower_components
 	cp bower_components/platform/platform.js public/platform.js
+
+public/platform.js.map: bower_components
+	cp bower_components/platform/platform.js.map public/platform.js.map
+
+public/polymer.js.map: bower_components
+	cp bower_components/polymer/polymer.js.map public/polymer.js.map
 
 # Install the go binaries related to the sample mock service
 go/bin: $(GO_FILES) go/src/sample/generated
@@ -76,7 +82,8 @@ start: all
 clean:
 	rm -f public/bundle.js
 	rm -f public/bundle.html
-	rm -f public/platform.js
+	rm -f public/platform.*
+	rm -f public/polymer.*
 	rm -rf node_modules
 	rm -rf bower_components
 
