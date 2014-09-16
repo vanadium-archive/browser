@@ -9,7 +9,7 @@ VEYRON_MOUNTTABLE_PORT_COTTAGE=8883
 VEYRON_STORE_PORT=8884
 VEYRON_WSPR_PORT=8885
 
-VEYRON_IDENTITY_PATH="{$TMPDIR-/tmp}/veyron_browser_test_identity"
+VEYRON_IDENTITY_PATH="${TMPDIR-/tmp}/veyron_browser_test_identity"
 
 # Get an identity if we don't have one yet.
 if [ ! -f "${VEYRON_IDENTITY_PATH}" ]; then
