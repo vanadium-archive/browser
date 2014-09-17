@@ -1,3 +1,4 @@
+var purgeMercuryArray = require('../../../lib/mercury/purgeMercuryArray');
 var browseService = require('../../../services/browse-service');
 var smartService = require('../../../services/smart-service');
 var debug = require('debug')(
@@ -28,9 +29,7 @@ function displayItemDetails(state, data) {
   state.itemName.set(name);
   state.selectedMethod.set('');
 
-  // TODO(aghassemi)
-  // any better way than splice to tell Mercury all of array changed?
-  state.methodOutputs.splice(0, state.methodOutputs.getLength());
+  purgeMercuryArray(state.methodOutputs);
 
   browseService.signature(name).then(function(signatureResult) {
     state.signature.set(signatureResult);

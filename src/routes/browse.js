@@ -5,6 +5,7 @@ var exists = require('../lib/exists');
 var store = require('../lib/local-storage');
 var smartService = require('../services/smart-service');
 var browseService = require('../services/browse-service');
+var purgeMercuryArray = require('../lib/mercury/purgeMercuryArray');
 
 module.exports = function(routes) {
   // Url pattern: /browse/veyronNameSpace?glob=*
@@ -55,8 +56,8 @@ function handleBrowseRoute(state, events, params) {
   // Update our shortcuts with these predictions.
   var predictions = smartService.predict('learner-shortcut', '');
   // TODO(alexfandrianto): When observ-array's set() method works properly,
-  // update the observ-array variables to use set instead of splice + push.
-  state.browse.shortcuts.splice(0, state.browse.shortcuts.getLength());
+  // update the observ-array variables to use set instead of purge + push.
+  purgeMercuryArray(state.browse.shortcuts);
 
   // For each prediction made, setup the shortcut. The shortcut needs to know
   // isGlobbable to render similarly to the other globbed names.
