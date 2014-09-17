@@ -4,7 +4,7 @@
  */
 
 var addAttributes = require('../lib/addAttributes');
-var debug = require('debug')('smart-service');
+var debug = require('debug')('services:smart-service');
 var perceptron = require('../lib/learning/perceptron');
 var rank = require('../lib/learning/rank');
 

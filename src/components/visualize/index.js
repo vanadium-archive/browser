@@ -2,7 +2,7 @@ var insertCss = require('insert-css');
 var vis = require('vis');
 var css = require('./index.css');
 var browseService = require('../../services/browse-service');
-var debug = require('debug')('component:visualize');
+var debug = require('debug')('components:visualize');
 
 module.exports = create;
 module.exports.render = render;

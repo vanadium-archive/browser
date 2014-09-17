@@ -1,6 +1,6 @@
 var browseService = require('../../../services/browse-service');
 var smartService = require('../../../services/smart-service');
-var debug = require('debug')('make-rpc');
+var debug = require('debug')('components:browse:item-details:make-rpc');
 var renderDetail = require('./render-detail');
 
 module.exports = makeRPC;

@@ -8,7 +8,7 @@
 
 var addAttributes = require('../lib/addAttributes');
 var store = require('../lib/local-storage');
-var debug = require('debug')('smart-service');
+var debug = require('debug')('services:smart-service');
 var constants = require('./smart-service-implementation');
 
 // Export methods and constants

@@ -4,7 +4,7 @@ var LRU = require('lru-cache');
 var namespaceUtil = veyron.namespaceUtil;
 var veyronConfig = require('../../veyron-config');
 var itemFactory = require('./item');
-var debug = require('debug')('services/namespace/service');
+var debug = require('debug')('services:namespace:service');
 
 module.exports = {
   getChildren: getChildren,

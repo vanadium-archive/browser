@@ -1,6 +1,8 @@
 var browseService = require('../../../services/browse-service');
 var smartService = require('../../../services/smart-service');
-var debug = require('debug')('display-item-details');
+var debug = require('debug')(
+  'components:browse:item-details:display-item-details'
+);
 
 module.exports = displayItemDetails;
 

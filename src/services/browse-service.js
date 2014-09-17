@@ -2,7 +2,7 @@ var veyron = require('veyron');
 var namespaceUtil = veyron.namespaceUtil;
 var veyronConfig = require('../veyron-config');
 var MountPoint = require('../lib/mountpoint');
-var debug = require('debug')('browse-service');
+var debug = require('debug')('services:browse-service');
 
 var runtimePromise = veyron.init(veyronConfig);
 
