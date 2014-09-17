@@ -1,5 +1,6 @@
 var mercury = require('mercury');
 var exists = require('../../lib/exists');
+var purgeMercuryArray = require('../../lib/mercury/purgeMercuryArray');
 var debug = require('debug')('components:browse:browse-namespace');
 var browseService = require('../../services/browse-service');
 
@@ -56,9 +57,7 @@ function browseNamespace(browseState, browseEvents, data) {
   });
 
   function emptyOutItems() {
-    // TODO(aghassemi)
-    // any better way than splice to tell Mercury all of array changed?
-    browseState.items.splice(0, browseState.items.getLength());
+    purgeMercuryArray(browseState.items);
   }
 }
 
