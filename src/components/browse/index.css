@@ -173,3 +173,21 @@
 .search-box .input {
   font-size: var(--size-space-small)
 }
+
+paper-autocomplete.autocomplete {
+  width: 250px;
+}
+paper-autocomplete.autocomplete::shadow #suggest-box {
+  background-color: var(--color-grey-light);
+  border: var(--border);
+  box-shadow: var(--shadow-all-around);
+}
+
+paper-autocomplete.autocomplete paper-item.highlighted,
+paper-autocomplete.autocomplete paper-item:hover {
+  background-color: var(--color-bright);
+}
+
+paper-autocomplete.autocomplete paper-item {
+  color: var(--color-text-primary);
+}

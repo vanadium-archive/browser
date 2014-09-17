@@ -51,8 +51,7 @@
 }
 
 .method-input {
-  overflow: auto;
-  max-height: 10em;
+  max-height: 15em;
   margin: 0.5em;
 }
 
@@ -70,7 +69,7 @@
 
 .method-output {
   overflow: auto;
-  max-height: 10em;
+  max-height: 15em;
   margin: 0.5em;
 }
 

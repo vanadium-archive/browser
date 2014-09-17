@@ -9,6 +9,7 @@ var PaperInputValueEvent =
   require('../../../lib/mercury/paper-input-value-event');
 var h = mercury.h;
 var css = require('./index.css');
+var debug = require('debug')('components:browse:item-details');
 
 module.exports = create;
 module.exports.render = render;
@@ -57,7 +58,13 @@ function create() {
      * List of RPC method outputs
      * @type {Array<string>}
      */
-    methodOutputs: mercury.array([])
+    methodOutputs: mercury.array([]),
+
+    /*
+     * List of selected RPC method inputs
+     * @type {Array<string>}
+     */
+    methodInputArguments: mercury.array([])
   });
 
   var events = mercury.input([
@@ -208,7 +215,10 @@ function renderSignature(state, events) {
       text += ' - streaming';
     }
     return h('pre', {
-      'ev-click': mercury.event(events.methodSelected, { methodName: name })
+      'ev-click': mercury.event(events.methodSelected, {
+        methodName: name,
+        numArgs: param.inArgs.length
+      })
     }, text);
   }
 }
@@ -226,13 +236,12 @@ function renderMethodInput(state, events) {
   // Form for filling up the arguments
   var param = state.signature[state.selectedMethod];
   var argForm = []; // contains form elements
-  var args = []; // contains form values
+  var args = state.methodInputArguments; // contains form values
   for (var i = 0; i < param.inArgs.length; i++) {
-    // Prefill args with undefined
-    args.push(undefined);
-
     // Fill argForm with the relevant form element.
-    argForm.push(renderMethodInputArgument(param.inArgs[i], args, i));
+    argForm.push(
+      renderMethodInputArgument(state.selectedMethod, param.inArgs[i], args, i)
+    );
   }
 
   // Setup the RUN button.
@@ -264,14 +273,40 @@ function renderMethodOutput(state) {
  * Renders an input element whose change events modify the given args array at
  * the specified index. The placeholder is generally an argument name.
  */
-function renderMethodInputArgument(placeholder, args, index) {
+function renderMethodInputArgument(methodName, placeholder, args, index) {
+  // TODO(alexfandrianto): Replace these children with the autocomplete
+  // suggestions relevant to this input, using paper-item components.
+  var children = [
+    h('paper-item', { 'label': new AttributeHook('churae') }),
+    h('paper-item', { 'label': new AttributeHook('donut') }),
+    h('paper-item', { 'label': new AttributeHook('churof') }),
+    h('paper-item', { 'label': new AttributeHook('donute') }),
+    h('paper-item', { 'label': new AttributeHook('churoo') }),
+    h('paper-item', { 'label': new AttributeHook('donua') }),
+    h('paper-item', { 'label': new AttributeHook('macaroon') })
+  ];
+
   var changeEvent = new PaperInputValueEvent(function(data) {
+    debug('change', data);
     args[index] = data;
   });
-  var elem = h('paper-input.method-input-item', {
-    'placeholder': placeholder,
-    'ev-change': changeEvent
+  // TODO(alexfandrianto): Remove the inputEvent. It is only here for debug
+  // while we are getting used to the paper-autocomplete element.
+  var inputEvent = new PaperInputValueEvent(function(data) {
+    debug('input', data);
   });
+
+  // TODO(alexfandrianto): Note that Mercury and Polymer create a bug together.
+  // Polymer normally captures internal events and stops them from propagating.
+  // Unfortunately, Mercury reads and replays events using capturing mode.
+  // That means spurious 'change' and 'input' events may appear occasionally.
+  var elem = h('paper-autocomplete.method-input-item.autocomplete', {
+    'placeholder': placeholder,
+    'value': args[index],
+    'ev-change': changeEvent,
+    'ev-input': inputEvent,
+  }, children);
+
   return elem;
 }
 
@@ -410,12 +445,17 @@ function wireUpEvents(state, events) {
   });
   events.methodSelected(function(data) {
     state.selectedMethod.set(data.methodName);
+    state.methodInputArguments.splice(0,
+      state.methodInputArguments.getLength());
+    for (var i = 0; i < data.numArgs; i++) {
+      state.methodInputArguments.push(undefined);
+    }
   });
   events.methodCalled(makeRPC.bind(null, state));
   events.methodRemoved(function(data) {
     var detail = state.details[data.name];
     delete detail[data.methodName];
-    // TODO(alexfandrianto): Split to different file
+
     // Log the removed RPC to the smart service.
     smartService.record('learner-autorpc', data);
     state.details.put(data.name, detail);
@@ -423,7 +463,7 @@ function wireUpEvents(state, events) {
   events.methodCancelled(function(data) {
     var detail = state.details[data.name];
     detail[data.methodName] = 0;
-    // TODO(alexfandrianto): Split to different file
+
     // Log the removed RPC to the smart service.
     smartService.record('learner-autorpc', data);
     state.details.put(data.name, detail);

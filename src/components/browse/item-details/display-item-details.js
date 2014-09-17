@@ -28,8 +28,8 @@ function displayItemDetails(state, data) {
   // TODO(alexfandrianto): Instead of resetting, should we remember this info?
   state.itemName.set(name);
   state.selectedMethod.set('');
-
   purgeMercuryArray(state.methodOutputs);
+  purgeMercuryArray(state.methodInputArguments);
 
   browseService.signature(name).then(function(signatureResult) {
     state.signature.set(signatureResult);
