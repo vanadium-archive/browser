@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"sample/generated/sample"
-	"veyron2/ipc"
+	"veyron.io/veyron/veyron2/ipc"
 )
 
 const speakerDefaultVolume = uint16(10)

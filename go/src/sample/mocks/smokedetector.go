@@ -1,7 +1,7 @@
 package mocks
 
 import (
-	"veyron2/ipc"
+	"veyron.io/veyron/veyron2/ipc"
 )
 
 const (

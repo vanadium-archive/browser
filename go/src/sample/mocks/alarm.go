@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"veyron2/ipc"
+	"veyron.io/veyron/veyron2/ipc"
 )
 
 const (

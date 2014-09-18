@@ -6,9 +6,9 @@ import (
 
 	"sample/generated/sample"
 	"sample/mocks"
-	"veyron/lib/signals"
-	"veyron2/ipc"
-	"veyron2/rt"
+	"veyron.io/veyron/veyron/lib/signals"
+	"veyron.io/veyron/veyron2/ipc"
+	"veyron.io/veyron/veyron2/rt"
 )
 
 func makeServerAlarm() interface{} {
