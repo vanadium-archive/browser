@@ -40,7 +40,7 @@ public/polymer.js.map: bower_components
 
 # Install the go binaries related to the sample mock service
 go/bin: $(GO_FILES) go/src/sample/generated
-	$(VEYRON_ROOT)/veyron/scripts/build/go install sample/...
+	$(VEYRON_ROOT)/scripts/build/go install sample/...
 
 # Generate the vdl for the sample mock service
 go/src/sample/generated: $(VDL_FILES)
