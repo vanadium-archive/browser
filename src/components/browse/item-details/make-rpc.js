@@ -12,7 +12,19 @@ module.exports = makeRPC;
  * data needs to have (name, methodName, args, hasParams, signature)
  */
 function makeRPC(state, data) {
-  browseService.makeRPC(data.name, data.methodName, data.args).then(
+  // TODO(alexfandrianto): Once JS signatures have type information and/or VOM
+  // gets better, we can be smarter about this.
+  // Parse if possible. Otherwise, a string (or invalid JSON) will be used.
+  // Solves a problem where booleans did not seem to be parsed properly.
+  var args = data.args.map(function(arg) {
+    try {
+      return JSON.parse(arg);
+    } catch(e) {
+      return arg;
+    }
+  });
+
+  browseService.makeRPC(data.name, data.methodName, args).then(
     function(result) {
       debug('Received:', result);
 
