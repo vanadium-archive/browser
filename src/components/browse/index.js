@@ -29,6 +29,11 @@ function create() {
     'learner-autorpc',
     smartService.constants.LEARNER_AUTORPC
   );
+  smartService.loadOrRegister(
+    'learner-method-input',
+    smartService.constants.LEARNER_METHOD_INPUT,
+    { minThreshold: 0.2, maxValues: 5 }
+  );
 
   var selectedItemDetails = itemDetailsComponent();
 

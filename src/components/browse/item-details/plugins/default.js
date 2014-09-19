@@ -1,20 +1,20 @@
 var h = require('mercury').h;
 
 module.exports = {
-  'shouldRender': shouldRender,
-  'render': render
+  'shouldFormat': shouldFormat,
+  'format': format
 };
 
 /*
- * By default, always render.
+ * By default, always format.
  */
-function shouldRender(input) {
+function shouldFormat(input) {
   return true;
 }
 
 /*
  * By default, the input is returned as prettified JSON.
  */
-function render(input) {
+function format(input) {
   return h('pre', JSON.stringify(input, null, 2));
 }

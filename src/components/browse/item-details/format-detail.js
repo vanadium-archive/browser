@@ -1,6 +1,6 @@
 /*
  * The plugins listed here are listed in order with highest priority first.
- * Plugins must export functions shouldRender(input) and render(input).
+ * Plugins must export functions shouldFormat(input) and format(input).
  * The default plugin should always be last.
  */
 var plugins = [
@@ -8,17 +8,17 @@ var plugins = [
   require('./plugins/default.js')
 ];
 
-module.exports = renderDetail;
+module.exports = formatDetail;
 
 /*
  * Transforms the input into the desired detail output.
  * Various plugins are tested until the correct one is found.
  * With the default plugin, this should always return something.
  */
-function renderDetail(input) {
+function formatDetail(input) {
   for (var i = 0; i < plugins.length; i++) {
-    if (plugins[i].shouldRender(input)) {
-      return plugins[i].render(input);
+    if (plugins[i].shouldFormat(input)) {
+      return plugins[i].format(input);
     }
   }
   console.error('No plugins rendered the detail', input);

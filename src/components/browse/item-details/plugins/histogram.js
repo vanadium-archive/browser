@@ -2,24 +2,24 @@ var histogram = require('bars');
 var h = require('mercury').h;
 
 module.exports = {
-  'shouldRender': shouldRender,
-  'render': render
+  'shouldFormat': shouldFormat,
+  'format': format
 };
 
 /*
- * Render if the appropriate histogram fields are present.
+ * Format if the appropriate histogram fields are present.
  * TODO(alexfandrianto): Negotiate a better way of identifying histogram data.
  */
-function shouldRender(input) {
+function shouldFormat(input) {
   return input.count !== undefined && input.sum !== undefined &&
     input.buckets !== undefined;
 }
 
 /*
- * The histogram is rendered with bars (a fork of ascii-histogram).
- * TODO(alexfandrianto): Consider using a prettier rendering package.
+ * The histogram is formatted with bars (a fork of ascii-histogram).
+ * TODO(alexfandrianto): Consider using a prettier formatting package.
  */
-function render(input) {
+function format(input) {
   var histData = {};
   input.buckets.forEach(function(obj) {
     histData[obj.lowBound] = obj.count;

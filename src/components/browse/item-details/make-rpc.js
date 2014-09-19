@@ -1,58 +1,40 @@
 var browseService = require('../../../services/browse-service');
 var smartService = require('../../../services/smart-service');
 var debug = require('debug')('components:browse:item-details:make-rpc');
-var renderDetail = require('./render-detail');
+var formatDetail = require('./format-detail');
 
 module.exports = makeRPC;
 
 /*
  * Use the browseService to perform an RPC request.
  * Put the results in the state and record this request in the smartService.
- * Note that the recorded results are rendered according to renderDetail.
+ * Note that the recorded results are rendered according to formatDetail.
  * data needs to have (name, methodName, args, hasParams, signature)
  */
 function makeRPC(state, data) {
   browseService.makeRPC(data.name, data.methodName, data.args).then(
     function(result) {
-      debug('Received:', result);
+      // Since the RPC was successful, we can assume the inputs were good.
+      if (data.signature[data.methodName].inArgs.length > 0) {
+        learnMethodInput(state, data);
+      }
 
-      var expectedOutArgs = state.signature()[data.methodName].numOutArgs;
       // Do not process results we expect to be empty.
       // TODO(alexfandrianto): Streaming results are ignored with this logic.
+      var expectedOutArgs = state.signature()[data.methodName].numOutArgs;
       if (expectedOutArgs === 1) { // Error is the only possible out argument.
         return;
       }
 
-      // Use renderDetail to process the raw result into a renderable format.
-      var renderedResult = renderDetail(result);
-      state.methodOutputs.push(renderedResult);
+      // Draw the results.
+      formatResult(state, data, result);
 
-      // If we received a result for a 0-parameter RPC, add to the details page.
+      // Learn which parameterless RPCs are good to recommend.
       if (!data.hasParams) {
-        // Store the data we received in our state for later rendering.
-        var detail = state.details.get(data.name);
-        if (detail === undefined) {
-          detail = {};
-        }
-        detail[data.methodName] = renderedResult;
-        state.details.put(data.name, detail);
-
-        // Log the successful RPC to the smart service.
-        var input = {
-          methodName: data.methodName,
-          signature: data.signature,
-          name: data.name,
-          reward: 1
-        };
-        smartService.record('learner-autorpc', input);
-
-        // For debug, display what our prediction would be.
-        debug('PredictA:', smartService.predict('learner-autorpc', input));
-
-        // Save after making a successful parameterless RPC.
-        smartService.save('learner-autorpc');
+        learnAutoRPC(state, data);
       }
-    },
+    }
+  ).catch(
     function(err) {
       debug('Error during RPC',
         data.name,
@@ -61,4 +43,68 @@ function makeRPC(state, data) {
       );
     }
   );
+}
+
+/*
+ * The result will be rendered. The rendering is stored in the state.
+ */
+function formatResult(state, data, result) {
+  // Use formatDetail to process the raw result into a renderable format.
+  var formattedResult = formatDetail(result);
+  state.methodOutputs.push(formattedResult);
+
+  // If we received a result for a 0-parameter RPC, add to the details page.
+  if (!data.hasParams) {
+    var detail = state.details.get(data.name);
+    if (detail === undefined) {
+      detail = {};
+    }
+    detail[data.methodName] = formattedResult;
+    state.details.put(data.name, detail);
+  }
+}
+
+/*
+ * Learn from the method inputs to be able to suggest them in the future.
+ */
+function learnMethodInput(state, data) {
+  for (var i = 0; i < data.args.length; i++) {
+    var argName = data.signature[data.methodName].inArgs[i];
+    var input = {
+      argName: argName,
+      methodName: data.methodName,
+      signature: data.signature,
+      value: data.args[i]
+    };
+    debug('Update Input:', input);
+
+    smartService.record('learner-method-input', input);
+
+    // For debug, display what our prediction would be.
+    debug('PredictMI:', smartService.predict('learner-method-input', input));
+
+    // Save after making a successful parameterless RPC.
+    smartService.save('learner-method-input');
+  }
+}
+
+
+/*
+ * Learn to recommend this method to the user.
+ */
+function learnAutoRPC(state, data) {
+  // Log the successful RPC to the smart service.
+  var input = {
+    methodName: data.methodName,
+    signature: data.signature,
+    name: data.name,
+    reward: 1
+  };
+  smartService.record('learner-autorpc', input);
+
+  // For debug, display what our prediction would be.
+  debug('PredictA:', smartService.predict('learner-autorpc', input));
+
+  // Save after making a successful parameterless RPC.
+  smartService.save('learner-autorpc');
 }
