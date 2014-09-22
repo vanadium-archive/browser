@@ -24,19 +24,20 @@ installMockVeyronExtension();
 test('getChildren of default namespace root', function(t) {
   t.plan(9+9);
 
-  var result = namespaceService.getChildren();
-
-  // Wait until we receive the 4 top level items,
-  // binaryd, buildd, cottage, house
-  var numReturnedChildren;
-  result(function(children) {
-    numReturnedChildren = children.length;
-    if (numReturnedChildren === 4) {
-      children = _.sortBy(children, 'mountedName');
-      assertBinaryd(children[0]);
-      assertHouse(children[3]);
-    }
-  });
+  namespaceService.getChildren().
+  then(function assertResult(result) {
+    // Wait until we receive the 4 top level items,
+    // binaryd, buildd, cottage, house
+    var numReturnedChildren;
+    result(function(children) {
+      numReturnedChildren = children.length;
+      if (numReturnedChildren === 4) {
+        children = _.sortBy(children, 'mountedName');
+        assertBinaryd(children[0]);
+        assertHouse(children[3]);
+      }
+    });
+  }).catch(t.end);
 
   // 9 assertions
   function assertBinaryd(item) {
@@ -66,19 +67,20 @@ test('getChildren of default namespace root', function(t) {
 test('getChildren of cottage/lawn', function(t) {
   t.plan(9+5);
 
-  var result = namespaceService.getChildren('cottage/lawn');
-
-  // Wait until we receive the 3 items,
-  // back, front and master-sprinkler come back
-  var numReturnedChildren;
-  result(function(children) {
-    numReturnedChildren = children.length;
-    if (numReturnedChildren === 3) {
-      children = _.sortBy(children, 'mountedName');
-      assertBack(children[0]);
-      assertSprinkler(children[2]);
-    }
-  });
+  namespaceService.getChildren('cottage/lawn').
+  then(function assertResult(result) {
+    // Wait until we receive the 3 items,
+    // back, front and master-sprinkler come back
+    var numReturnedChildren;
+    result(function(children) {
+      numReturnedChildren = children.length;
+      if (numReturnedChildren === 3) {
+        children = _.sortBy(children, 'mountedName');
+        assertBack(children[0]);
+        assertSprinkler(children[2]);
+      }
+    });
+  }).catch(t.end);
 
   // 9 assertions
   function assertSprinkler(item) {
@@ -106,19 +108,20 @@ test('getChildren of rooted /localhost:8881/house/kitchen', function(t) {
   t.plan(9+9);
 
   // 8881 is the expected root mounttable port to be running for the tests
-  var result = namespaceService.getChildren('/localhost:8881/house/kitchen');
-
+  namespaceService.getChildren('/localhost:8881/house/kitchen').
+  then(function assertResult(result) {
   // Wait until we receive the 2 items, lights and smoke-detector
-  var numReturnedChildren;
-  result(function(children) {
-    numReturnedChildren = children.length;
+    var numReturnedChildren;
+    result(function(children) {
+      numReturnedChildren = children.length;
     if (numReturnedChildren === 2) {
       children = _.sortBy(children, 'mountedName');
       assertLightSwitch(children[0]);
       assertSmokeDetector(children[1]);
-      t.end();
-    }
-  });
+        t.end();
+      }
+    });
+  }).catch(t.end);
 
   // 9 assertions
   function assertLightSwitch(item) {
@@ -145,22 +148,39 @@ test('getChildren of rooted /localhost:8881/house/kitchen', function(t) {
   }
 });
 
+test('getChildren of non-existing mounttable', function(t) {
+  t.plan(1);
+
+  // Should get an error
+  namespaceService.getChildren('/DoesNotExist:666/What/Ever').
+  then(function shouldNotGetResult(result){
+    t.fail('Should have returned an error instead of result');
+  }).
+  catch(function assertThereIsError(err) {
+    t.ok(err);
+  });
+});
+
 test('glob uses caching', function(t) {
   t.plan(3);
 
   mockLRUCache.reset();
 
-  namespaceService.glob('house', '*');
-  // First time, no cache hit so a get call followed by a set call
-  t.notOk(mockLRUCache.lastCallWasCacheHit);
+  namespaceService.glob('house', '*').
+  then(function assertNoCacheHit() {
+    // First time, no cache hit so a get call followed by a set call
+    t.notOk(mockLRUCache.lastCallWasCacheHit);
 
-  // Second time, there should have been a cache hit
-  namespaceService.glob('house', '*');
-  t.ok(mockLRUCache.lastCallWasCacheHit);
+    // Call second time, there should have been a cache hit
+    return namespaceService.glob('house', '*');
+  }).then( function assertCacheHit() {
+    t.ok(mockLRUCache.lastCallWasCacheHit);
 
-  // call glob with same name, different query, there should be no cache hit
-  namespaceService.glob('house', 'foo*');
-  t.notOk(mockLRUCache.lastCallWasCacheHit);
+    // call glob with same name, different query, there should be no cache hit
+    return namespaceService.glob('house', 'foo*');
+  }).then(function assertNoCacheHit() {
+    t.notOk(mockLRUCache.lastCallWasCacheHit);
+  }).catch(t.end);
 });
 
 test('getSignature uses caching', function(t) {

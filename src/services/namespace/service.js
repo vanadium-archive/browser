@@ -25,13 +25,14 @@ var globCache = new LRU({
   max: GLOB_CACHE_MAX_SIZE
 });
 /*
- * Given a name and a glob query returns an observable array of items as defined
- * in @see item.js
+ * Given a name and a glob query returns a promise of an observable array
+ * of items as defined in @see item.js
  * As new items become available the observable array will change to reflect
  * the changes.
  * @param {string} name Object name to glob
  * @param {string} globQuery Glob query to run
- * @return {mercury.array} observable array of namespace items
+ * @return {Promise.<mercury.array>} Promise of an observable array
+ * of namespace items
  */
 function glob(name, globQuery) {
   var cacheKey = namespaceUtil.join(name, globQuery);
@@ -40,11 +41,9 @@ function glob(name, globQuery) {
     return cacheHit;
   }
 
-  // Create and cache an observable array as result
-  var resultObservArr = mercury.array([]);
-  globCache.set(cacheKey, resultObservArr);
-
   var runtime;
+  var globItemsObservArr = mercury.array([]);
+  var globItemsObservArrPromise =
   onRuntimeReady.then(function getNamespace(rt) {
     runtime = rt;
     return runtime.newNamespace();
@@ -62,23 +61,24 @@ function glob(name, globQuery) {
       // Create an item as glob results come in and add the item to result
       getNamespaceItem(result.name, name, result.servers)
         .then(function(item) {
-          resultObservArr.push(item);
+          globItemsObservArr.push(item);
         }).catch(function(err) {
           debug.log('Failed to create item for "' + result.name + '"', err);
         });
     });
-  }).catch(function(err) {
-    debug.log('Failed to glob "' + name + '", "' + globQuery + '"', err);
+  }).then(function cacheAndReturnResult() {
+    globCache.set(cacheKey, globItemsObservArr);
+    return globItemsObservArr;
   });
 
-  // Return our observable array. It will get filled as data comes in.
-  return resultObservArr;
+  // Return our Promise of observable array. It will get filled as data comes in
+  return globItemsObservArrPromise;
 }
 
 /*
- * Given a name returns an observable array of its immediate children
+ * Given a name returns a promise of an observable array of immediate children
  * @param {string} name Object name to glob
- * @return {mercury.array} observable array of namespace items
+ * @return {Promise.<mercury.array>} Promise of an observable array
  */
 function getChildren(name) {
   name = name || '';
