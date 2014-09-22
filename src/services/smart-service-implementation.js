@@ -7,14 +7,17 @@ var addAttributes = require('../lib/addAttributes');
 var debug = require('debug')('services:smart-service');
 var perceptron = require('../lib/learning/perceptron');
 var rank = require('../lib/learning/rank');
+var _ = require('lodash');
 
 var LEARNER_SHORTCUT = 1;
 var LEARNER_AUTORPC = 2;
+var LEARNER_METHOD_INPUT = 3;
 
 // Associate the learner types with the constructor
 var LEARNER_MAP = {};
 LEARNER_MAP[LEARNER_SHORTCUT] = shortcutLearner;
 LEARNER_MAP[LEARNER_AUTORPC] = autoRPCLearner;
+LEARNER_MAP[LEARNER_METHOD_INPUT] = methodInputLearner;
 
 // Associate the learner types with additional functions.
 // Note: update and predict are required.
@@ -29,11 +32,17 @@ LEARNER_METHODS[LEARNER_AUTORPC] = {
   update: autoRPCLearnerUpdate,
   predict: autoRPCLearnerPredict
 };
+LEARNER_METHODS[LEARNER_METHOD_INPUT] = {
+  computeKey: methodInputLearnerComputeKey,
+  update: methodInputLearnerUpdate,
+  predict: methodInputLearnerPredict
+};
 
 // Export the implementation constants
 module.exports = {
   LEARNER_SHORTCUT: LEARNER_SHORTCUT,
   LEARNER_AUTORPC: LEARNER_AUTORPC,
+  LEARNER_METHOD_INPUT: LEARNER_METHOD_INPUT,
   LEARNER_MAP: LEARNER_MAP,
   LEARNER_METHODS: LEARNER_METHODS
 };
@@ -42,7 +51,7 @@ module.exports = {
  * Create a shortcut learner that analyzes directory paths visited and predicts
  * the most useful shortcuts.
  * The expected attributes in params include:
- * k, the max # of shortcuts to return
+ * - k, the max # of shortcuts to return
  */
 function shortcutLearner(type, params) {
   this.directoryCount = {};
@@ -161,7 +170,7 @@ function autoRPCLearnerFeatureExtractor(input) {
   features[input.methodName] = 1;
 
   // Same-named methods that share service signatures are likely similar.
-  features[input.methodName + '|' + JSON.stringify(input.signature)] = 1;
+  features[input.methodName + '|' + stringifySignature(input.signature)] = 1;
 
   // Services in the same namespace subtree may be queried similarly.
   var pathFeatures = pathFeatureExtractor(input.name);
@@ -197,6 +206,123 @@ function autoRPCLearnerUpdate(input) {
  */
 function autoRPCLearnerPredict(input) {
   return perceptron.predict(this.weights, this.featureExtractor(input));
+}
+
+/*
+ * Create a method input learner that suggests the most likely inputs to a
+ * given argument of a method.
+ * Params can optionally include:
+ * - minThreshold, the minimum score of a suggestable value
+ * - maxValues, the largest number of suggestable values that may be returned
+ * - penalty, a constant for the rate to penalize incorrect suggestions
+ * - reward, a constant for the rate to reward chosen values
+ */
+function methodInputLearner(type, params) {
+  this.type = type;
+  this.inputMap = {}; // map[string]map[string]number
+
+  // Override the default params with relevant fields from params.
+  this.params = {
+    penalty: 0.1,
+    reward: 0.4
+  };
+  _.assign(this.params, params);
+
+  addAttributes(this, LEARNER_METHODS[type]);
+}
+
+/*
+ * Given input data, compute the appropriate lookup key
+ * Input must have: argName, methodName, and signature.
+ */
+function methodInputLearnerComputeKey(input) {
+  var keyArr = [
+    stringifySignature(input.signature),
+    input.methodName,
+    input.argName
+  ];
+  return keyArr.join('|');
+}
+
+/*
+ * Given input data, boost the rank of the given value and
+ * penalize the other values.
+ * Input must have: argName, methodName, signature, and value
+ */
+function methodInputLearnerUpdate(input) {
+  var key = this.computeKey(input);
+  var predValues = this.predict(input);
+  var value = input.value;
+
+  // Setup the inputMap and values if not yet defined.
+  if (this.inputMap[key] === undefined) {
+    this.inputMap[key] = {};
+  }
+  var values = this.inputMap[key];
+  if (values[value] === undefined) {
+    values[value] = 0;
+  }
+
+  // Give a reward to the chosen value.
+  values[value] += this.params.reward * (1 - values[value]);
+
+  // Induce a penalty on failed predictions.
+  for (var i = 0; i < predValues.length; i++) {
+    var pred = predValues[i];
+    if (pred !== value) {
+      values[pred] += this.params.penalty * (0 - values[pred]);
+    }
+  }
+}
+
+/*
+ * Given input data, predict the most likely values for this method input.
+ * Input must have: argName, methodName, and signature.
+ */
+function methodInputLearnerPredict(input) {
+  var key = this.computeKey(input);
+  var values = this.inputMap[key];
+
+  // Immediately return nothing if there are no values to suggest.
+  if (values === undefined) {
+    return [];
+  }
+
+  // Convert the values to scored items for ranking.
+  var scoredItems = Object.getOwnPropertyNames(values).map(
+    function getScoredItem(value) {
+      return {
+        item: value,
+        score: values[value]
+      };
+    }
+  );
+
+  // Filter the scored items by minThreshold
+  if (this.params.minThreshold !== undefined) {
+    scoredItems = scoredItems.filter(function applyThreshold(scoredItem) {
+      return scoredItem.score >= this.minThreshold;
+    }, this);
+  }
+
+  // Rank the scored items and return the top values (limit to maxValues)
+  var maxValues = this.params.maxValues;
+  if (maxValues === undefined) {
+    maxValues = scoredItems.length;
+  }
+  return rank.getBestKItems(scoredItems, maxValues).map(function(goodItem) {
+    return goodItem.item;
+  });
+}
+
+/*
+ * Given an arbitrary method signature, compute a reasonable and consistent
+ * stringification for it.
+ */
+function stringifySignature(signature) {
+  var names = Object.getOwnPropertyNames(signature);
+  names.sort();
+  return JSON.stringify(names);
 }
 
 /*

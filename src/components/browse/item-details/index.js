@@ -10,6 +10,7 @@ var PaperInputValueEvent =
 var h = mercury.h;
 var css = require('./index.css');
 var debug = require('debug')('components:browse:item-details');
+var purgeMercuryArray = require('../../../lib/mercury/purgeMercuryArray');
 
 module.exports = create;
 module.exports.render = render;
@@ -64,7 +65,13 @@ function create() {
      * List of selected RPC method inputs
      * @type {Array<string>}
      */
-    methodInputArguments: mercury.array([])
+    methodInputArguments: mercury.array([]),
+
+    /*
+     * List of selected RPC method input suggestions for each input.
+     * @type {Array<Array<string>>}
+     */
+    methodInputArgumentSuggestions: mercury.array([])
   });
 
   var events = mercury.input([
@@ -217,7 +224,7 @@ function renderSignature(state, events) {
     return h('pre', {
       'ev-click': mercury.event(events.methodSelected, {
         methodName: name,
-        numArgs: param.inArgs.length
+        signature: sig
       })
     }, text);
   }
@@ -227,20 +234,23 @@ function renderSignature(state, events) {
  * Renders a input field form for the selected method.
  */
 function renderMethodInput(state, events) {
-  if (state.selectedMethod === '') {
+  var method = state.selectedMethod;
+  if (method === '') {
     return h('div.method-input', 'No method selected');
   }
   // Display the selected method name
-  var methodNameHeader = h('pre', state.selectedMethod);
+  var methodNameHeader = h('pre', method);
 
   // Form for filling up the arguments
-  var param = state.signature[state.selectedMethod];
+  var param = state.signature[method];
   var argForm = []; // contains form elements
   var args = state.methodInputArguments; // contains form values
   for (var i = 0; i < param.inArgs.length; i++) {
     // Fill argForm with the relevant form element.
+    var argName = param.inArgs[i];
+    var suggestions = state.methodInputArgumentSuggestions[i];
     argForm.push(
-      renderMethodInputArgument(state.selectedMethod, param.inArgs[i], args, i)
+      renderMethodInputArgument(method, argName, suggestions, args, i)
     );
   }
 
@@ -273,27 +283,22 @@ function renderMethodOutput(state) {
  * Renders an input element whose change events modify the given args array at
  * the specified index. The placeholder is generally an argument name.
  */
-function renderMethodInputArgument(methodName, placeholder, args, index) {
-  // TODO(alexfandrianto): Replace these children with the autocomplete
-  // suggestions relevant to this input, using paper-item components.
-  var children = [
-    h('paper-item', { 'label': new AttributeHook('churae') }),
-    h('paper-item', { 'label': new AttributeHook('donut') }),
-    h('paper-item', { 'label': new AttributeHook('churof') }),
-    h('paper-item', { 'label': new AttributeHook('donute') }),
-    h('paper-item', { 'label': new AttributeHook('churoo') }),
-    h('paper-item', { 'label': new AttributeHook('donua') }),
-    h('paper-item', { 'label': new AttributeHook('macaroon') })
-  ];
+function renderMethodInputArgument(
+  methodName, placeholder, suggestions, args, index) {
+
+  // The children are the suggestions for this paper-autocomplete input.
+  var children = suggestions.map(function(suggestion) {
+    return h('paper-item', { 'label': new AttributeHook(suggestion) });
+  });
 
   var changeEvent = new PaperInputValueEvent(function(data) {
-    debug('change', data);
+    debug(methodName, placeholder, 'value changed.', data);
     args[index] = data;
   });
   // TODO(alexfandrianto): Remove the inputEvent. It is only here for debug
   // while we are getting used to the paper-autocomplete element.
   var inputEvent = new PaperInputValueEvent(function(data) {
-    debug('input', data);
+    debug(methodName, placeholder, 'value inputted.', data);
   });
 
   // TODO(alexfandrianto): Note that Mercury and Polymer create a bug together.
@@ -445,11 +450,25 @@ function wireUpEvents(state, events) {
   });
   events.methodSelected(function(data) {
     state.selectedMethod.set(data.methodName);
-    state.methodInputArguments.splice(0,
-      state.methodInputArguments.getLength());
-    for (var i = 0; i < data.numArgs; i++) {
+
+    // Clear the current method input arguments and suggestions.
+    purgeMercuryArray(state.methodInputArguments);
+    purgeMercuryArray(state.methodInputArgumentSuggestions);
+
+    // Then prepare to initial arguments and their suggestions.
+    var argNames = data.signature[data.methodName].inArgs;
+    var input = {
+      methodName: data.methodName,
+      signature: data.signature
+    };
+    argNames.forEach(function(arg) {
       state.methodInputArguments.push(undefined);
-    }
+
+      input.argName = arg;
+      state.methodInputArgumentSuggestions.push(
+        smartService.predict('learner-method-input', input)
+      );
+    });
   });
   events.methodCalled(makeRPC.bind(null, state));
   events.methodRemoved(function(data) {
