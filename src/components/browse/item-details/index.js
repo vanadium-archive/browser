@@ -316,51 +316,17 @@ function renderMethodInputArgument(
 }
 
 /*
- * Renders the suggestion for an rpc.
- * Suggestion changes as the prediction level rises.
+ * Renders the suggestion buttons for an RPC.
  */
 function renderSuggestRPC(state, events, methodName, prediction) {
-  var extra = 'Recommended';
   var buttons = [];
   // The run button is rendered to initiate the RPC.
   buttons.push(renderRPCRunButton(state, events, methodName, false, []));
 
-  if (prediction > 0.75) {
-    // This hook is a Mercury workaround; webkitAnimationEnd is not supported.
-    var AnimationHook = function() {};
+  // A remove button is rendered to remove the recommendation.
+  buttons.push(renderRPCRemoveSuggestButton(state, events, methodName));
 
-    AnimationHook.prototype.hook = function (elem, propName) {
-      // On animation end, call the method.
-      function animationEndHandler(e) {
-        // TODO(alexfandrianto): I think mercury may be the one at fault, but...
-        // this handler is sometimes called several times on animation end.
-        events.methodCalled({
-          name: state.itemName,
-          methodName: methodName,
-          signature: state.signature,
-          hasParams: false,
-          args: []
-        });
-      }
-      elem.addEventListener('webkitAnimationEnd', animationEndHandler);
-    };
-
-    // Render the box that will fire methodCalled after the timeout.
-    // Chrome/Mercury workaround: Distinguish animated divs by assigning a key.
-    var uniqueID = state.itemName + '|' + methodName;
-    extra = h('div.animate', {
-      'key': uniqueID,
-      'ev-animationHook': new AnimationHook()
-    }, 'Automatic');
-
-    // A cancel button is rendered to stop this timeout.
-    buttons.push(renderRPCCancelButton(state, events, methodName));
-  } else {
-    // A remove button is rendered to remove the recommendation.
-    buttons.push(renderRPCRemoveSuggestButton(state, events, methodName));
-  }
-
-  return h('div', [ h('div.background', [extra]), buttons]);
+  return h('div', buttons);
 }
 
 /*
@@ -401,26 +367,6 @@ function renderRPCRemoveSuggestButton(state, events, methodName) {
       'href': '#',
       'ev-click': ev,
       'label': 'REMOVE'
-    }
-  );
-}
-
-/*
- * Renders a button to cancel an automatic RPC from occurring.
- */
-function renderRPCCancelButton(state, events, methodName) {
-  var ev = mercury.event(events.methodCancelled, {
-    name: state.itemName,
-    methodName: methodName,
-    signature: state.signature,
-    reward: 0
-  });
-  return h(
-    'paper-button.method-input-cancel',
-    {
-      'href': '#',
-      'ev-click': ev,
-      'label': 'CANCEL'
     }
   );
 }
@@ -478,6 +424,7 @@ function wireUpEvents(state, events) {
     // Log the removed RPC to the smart service.
     smartService.record('learner-autorpc', data);
     state.details.put(data.name, detail);
+    smartService.save('learner-autorpc');
   });
   events.methodCancelled(function(data) {
     var detail = state.details[data.name];
@@ -486,5 +433,6 @@ function wireUpEvents(state, events) {
     // Log the removed RPC to the smart service.
     smartService.record('learner-autorpc', data);
     state.details.put(data.name, detail);
+    smartService.save('learner-autorpc');
   });
 }
