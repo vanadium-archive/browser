@@ -305,7 +305,9 @@ function renderMethodInputArgument(
   // Polymer normally captures internal events and stops them from propagating.
   // Unfortunately, Mercury reads and replays events using capturing mode.
   // That means spurious 'change' and 'input' events may appear occasionally.
+  var uniqueID = methodName + '|' + index;
   var elem = h('paper-autocomplete.method-input-item.autocomplete', {
+    'key': uniqueID, // Enforce element refresh when switching between methods.
     'placeholder': placeholder,
     'value': args[index],
     'ev-change': changeEvent,

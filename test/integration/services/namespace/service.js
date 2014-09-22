@@ -22,7 +22,7 @@ var namespaceService =
 installMockVeyronExtension();
 
 test('getChildren of default namespace root', function(t) {
-  t.plan(18);
+  t.plan(9+9);
 
   var result = namespaceService.getChildren();
 
@@ -38,6 +38,7 @@ test('getChildren of default namespace root', function(t) {
     }
   });
 
+  // 9 assertions
   function assertBinaryd(item) {
     t.equal(item.mountedName, 'binaryd');
     t.equal(item.objectName, 'binaryd');
@@ -49,6 +50,7 @@ test('getChildren of default namespace root', function(t) {
     t.ok(item.serverInfo.signature);
   }
 
+  // 9 assertions
   function assertHouse(item) {
     t.equal(item.mountedName, 'house');
     t.equal(item.objectName, 'house');
@@ -62,7 +64,7 @@ test('getChildren of default namespace root', function(t) {
 });
 
 test('getChildren of cottage/lawn', function(t) {
-  t.plan(14);
+  t.plan(9+5);
 
   var result = namespaceService.getChildren('cottage/lawn');
 
@@ -78,6 +80,7 @@ test('getChildren of cottage/lawn', function(t) {
     }
   });
 
+  // 9 assertions
   function assertSprinkler(item) {
     t.equal(item.mountedName, 'master-sprinkler');
     t.equal(item.objectName, 'cottage/lawn/master-sprinkler');
@@ -89,6 +92,7 @@ test('getChildren of cottage/lawn', function(t) {
     t.ok(item.serverInfo.signature);
   }
 
+  // 5 assertions
   function assertBack(item) {
     t.equal(item.mountedName, 'back');
     t.equal(item.objectName, 'cottage/lawn/back');
@@ -99,21 +103,36 @@ test('getChildren of cottage/lawn', function(t) {
 });
 
 test('getChildren of rooted /localhost:8881/house/kitchen', function(t) {
-  t.plan(9);
+  t.plan(9+9);
 
   // 8881 is the expected root mounttable port to be running for the tests
   var result = namespaceService.getChildren('/localhost:8881/house/kitchen');
 
-  // Wait until we receive the 1 item, smoke-detector
+  // Wait until we receive the 2 items, lights and smoke-detector
   var numReturnedChildren;
   result(function(children) {
     numReturnedChildren = children.length;
-    if (numReturnedChildren === 1) {
-      assertSmokeDetector(children[0]);
+    if (numReturnedChildren === 2) {
+      children = _.sortBy(children, 'mountedName');
+      assertLightSwitch(children[0]);
+      assertSmokeDetector(children[1]);
       t.end();
     }
   });
 
+  // 9 assertions
+  function assertLightSwitch(item) {
+    t.equal(item.mountedName, 'lights');
+    t.equal(item.objectName, '/localhost:8881/house/kitchen/lights');
+    t.equal(item.isServer, true);
+    t.equal(item.isGlobbable, false);
+
+    assertUnknownServiceTypeInfo(t, item.serverInfo.typeInfo);
+
+    t.ok(item.serverInfo.signature);
+  }
+
+  // 9 assertions
   function assertSmokeDetector(item) {
     t.equal(item.mountedName, 'smoke-detector');
     t.equal(item.objectName, '/localhost:8881/house/kitchen/smoke-detector');
@@ -178,7 +197,8 @@ test('getSignature uses caching', function(t) {
  */
 
 /*
- * Asserts that a ServiceTypeInfo is of predefined type of Unknown Service
+ * Asserts that a ServiceTypeInfo is of predefined type of Unknown Service.
+ * 4 assertions
  */
 function assertUnknownServiceTypeInfo(t, typeInfo) {
   t.equal(typeInfo.key, 'veyron-unknown');
@@ -188,7 +208,8 @@ function assertUnknownServiceTypeInfo(t, typeInfo) {
 }
 
 /*
- * Asserts that a ServiceTypeInfo is of predefined type of mounttable
+ * Asserts that a ServiceTypeInfo is of predefined type of mounttable.
+ * 4 assertions
  */
 function assertMounttableServiceTypeInfo(t, typeInfo) {
   t.equal(typeInfo.key, 'veyron-mounttable');

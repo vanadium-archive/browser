@@ -14,6 +14,9 @@ import (
 func makeServerAlarm() interface{} {
 	return sample.NewServerAlarm(mocks.NewAlarm())
 }
+func makeServerLightSwitch() interface{} {
+	return sample.NewServerLightSwitch(mocks.NewLightSwitch())
+}
 func makeServerPoolHeater() interface{} {
 	return sample.NewServerPoolHeater(mocks.NewPoolHeater())
 }
@@ -61,17 +64,23 @@ func main() {
 
 	// Serve bunch of mock services under different names
 	defer listenAndServe("house/alarm", makeServerAlarm())()
+	defer listenAndServe("house/living-room/lights", makeServerLightSwitch())()
 	defer listenAndServe("house/living-room/smoke-detector", makeServerSmokeDetector())()
 	defer listenAndServe("house/living-room/blast-speaker", makeServerSpeaker())()
 	defer listenAndServe("house/living-room/soundbar", makeServerSpeaker())()
+	defer listenAndServe("house/master-bedroom/desk-lamp", makeServerLightSwitch())()
+	defer listenAndServe("house/master-bedroom/lights", makeServerLightSwitch())()
 	defer listenAndServe("house/master-bedroom/smoke-detector", makeServerSmokeDetector())()
 	defer listenAndServe("house/master-bedroom/speaker", makeServerSpeaker())()
+	defer listenAndServe("house/kitchen/lights", makeServerLightSwitch())()
 	defer listenAndServe("house/kitchen/smoke-detector", makeServerSmokeDetector())()
 
 	defer listenAndServe("cottage/smoke-detector", makeServerSmokeDetector())()
 	defer listenAndServe("cottage/alarm", makeServerAlarm())()
+	defer listenAndServe("cottage/lights", makeServerLightSwitch())()
 	defer listenAndServe("cottage/pool/heater", makeServerPoolHeater())()
 	defer listenAndServe("cottage/pool/speaker", makeServerSpeaker())()
+	defer listenAndServe("cottage/pool/pool-lights", makeServerLightSwitch())()
 	defer listenAndServe("cottage/lawn/front/sprinkler", makeServerSprinkler())()
 	defer listenAndServe("cottage/lawn/back/sprinkler", makeServerSprinkler())()
 	defer listenAndServe("cottage/lawn/master-sprinkler", makeServerSprinkler())()
