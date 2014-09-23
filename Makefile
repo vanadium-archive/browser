@@ -1,7 +1,5 @@
 PATH:=$(VEYRON_ROOT)/environment/cout/node/bin:$(PATH)
 PATH:=node_modules/.bin:$(PATH)
-CURRENT_DIR = $(shell pwd)
-GOPATH:=$(CURRENT_DIR)/go:$(VEYRON_ROOT)/veyron/go:$(GOPATH)
 
 # All JS and CSS files except build.js and third party
 BROWSERIFY_FILES = $(shell find src -name "*.js" -o -name "*.css")
@@ -17,7 +15,7 @@ GO_FILES = $(shell find go -name "*.go")
 VDL_FILES = $(shell find go -name "*.vdl")
 
 # Builds everything
-all: public/bundle.js public/bundle.html public/platform.js public/platform.js.map public/polymer.js.map go/bin
+all: public/bundle.js public/bundle.html public/platform.js public/platform.js.map public/polymer.js.map
 
 # Creating the bundle JS file
 public/bundle.js: $(BROWSERIFY_FILES) node_modules
@@ -37,14 +35,6 @@ public/platform.js.map: bower_components
 
 public/polymer.js.map: bower_components
 	cp bower_components/polymer/polymer.js.map public/polymer.js.map
-
-# Install the go binaries related to the sample mock service
-go/bin: $(GO_FILES) go/src/sample/generated
-	$(VEYRON_ROOT)/scripts/build/go install sample/...
-
-# Generate the vdl for the sample mock service
-go/src/sample/generated: $(VDL_FILES)
-	(cd go/src/sample && $(VEYRON_ROOT)/veyron/go/bin/vdl generate --lang=go --go_out_dir=generated ... )
 
 # Install what we need from NPM
 node_modules: package.json

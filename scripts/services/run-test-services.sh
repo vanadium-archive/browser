@@ -1,21 +1,20 @@
 #!/bin/bash
 
-# TODO(aghassemi) The need have a run-test-services.sh is temporary. We need to reuse or
-# at least take a similar approach as https://veyron-review.googlesource.com/#/c/4316 for veyron.js
-# when that CL is finalized
-VEYRON_MOUNTTABLE_PORT=8881
-VEYRON_MOUNTTABLE_PORT_HOUSE=8882
-VEYRON_MOUNTTABLE_PORT_COTTAGE=8883
-VEYRON_STORE_PORT=8884
-VEYRON_WSPR_PORT=8885
+# This script runs mounttables, proxy daemons and a few sample servers
+# needed to run the integration tests for the Veyron Browser.
 
-VEYRON_IDENTITY_PATH="${TMPDIR-/tmp}/veyron_browser_test_identity"
+source "${VEYRON_ROOT}/veyron-browser/scripts/services/common.sh"
 
-# Get an identity if we don't have one yet.
-if [ ! -f "${VEYRON_IDENTITY_PATH}" ]; then
-  identity generate > "${VEYRON_IDENTITY_PATH}"
-fi
+main() {
+  local -r MOUNTTABLE_PORT=8881
+  local -r MOUNTTABLE_PORT_HOUSE=8882
+  local -r MOUNTTABLE_PORT_COTTAGE=8883
+  local -r WSPR_PORT=8885
+  local -r VEYRON_IDENTITY_PATH="${TMPDIR-/tmp}/veyron_browser_test_identity"
+  local -r SEEK_BLESSSING=false
 
-source "${BASH_SOURCE%/*}/run-common.sh"
+  common::run "${MOUNTTABLE_PORT}" "${MOUNTTABLE_PORT_HOUSE}" "${MOUNTTABLE_PORT_COTTAGE}" "${WSPR_PORT}" "${VEYRON_IDENTITY_PATH}" "${SEEK_BLESSSING}"
+}
 
+main "$@"
 wait
