@@ -12,5 +12,11 @@ module.exports = {
   reset: function() {
     this.lastCallWasCacheHit = false;
     this.cache = {};
+  },
+  has: function(key) {
+    this.cache[key] !== undefined;
+  },
+  del: function(key) {
+    delete this.cache[key];
   }
 };

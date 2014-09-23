@@ -57,7 +57,7 @@ function glob(name, globQuery) {
     // TODO(aghassemi) use watchGlob if available, otherwise fallback to glob
     return globbableService.glob(globQuery).stream;
   }).then(function updateResult(globStream) {
-    globStream.on('data', function(result) {
+    globStream.on('data', function createNamespaceItem(result) {
       // Create an item as glob results come in and add the item to result
       getNamespaceItem(result.name, name, result.servers)
         .then(function(item) {
@@ -66,9 +66,21 @@ function glob(name, globQuery) {
           debug.log('Failed to create item for "' + result.name + '"', err);
         });
     });
+
+    globStream.on('error', function invalidateCacheAndLog(err) {
+      globCache.del(cacheKey);
+      // TODO(aghassemi) UI might want to know about this error so it can
+      // tell the user things won't be updated automatically anymore and maybe
+      // instruct them to reload.
+      debug('Glob stream error for', name, err);
+    });
+
   }).then(function cacheAndReturnResult() {
     globCache.set(cacheKey, globItemsObservArr);
     return globItemsObservArr;
+  }).catch( function invalidateCacheAndRethrow(err) {
+    globCache.del(cacheKey);
+    return Promise.reject(err);
   });
 
   // Return our Promise of observable array. It will get filled as data comes in
