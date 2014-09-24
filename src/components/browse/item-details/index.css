@@ -77,24 +77,6 @@
   white-space: pre-wrap;
 }
 
-.background {
-  width: 200px;
-  height: 30px;
-  background: black;
-  color: var(--color-bright);
-  display: inline-block;
-  vertical-align: top;
-  margin: 0.5em;
-}
-
-.animate {
-  height: 100%;
-  width: 0%;
-  background: cyan;
-  position: relative;
-  -webkit-animation: myfirst 5s; /* Chrome, Safari, Opera */
-}
-
 /* Chrome, Safari, Opera */
 @-webkit-keyframes myfirst {
   0%   {background:cyan; width:0%;}
