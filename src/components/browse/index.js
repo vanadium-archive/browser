@@ -1,10 +1,11 @@
 var mercury = require('mercury');
 var insertCss = require('insert-css');
 var AttributeHook = require('../../lib/mercury/attribute-hook');
-var PaperInputValueEvent = require('../../lib/mercury/paper-input-value-event');
+var PropertyValueEvent = require('../../lib/mercury/property-value-event');
 var exists = require('../../lib/exists');
 var browseRoute = require('../../routes/browse');
 var browseNamespace = require('./browse-namespace');
+var getNamespaceSuggestions = require('./get-namespace-suggestions');
 var itemDetailsComponent = require('./item-details/index');
 var browseService = require('../../services/browse-service');
 var smartService = require('../../services/smart-service');
@@ -51,7 +52,22 @@ function create() {
     globQuery: mercury.value('*'),
 
     /*
-     * List of children for the namespace
+     * List of direct descendants of the namespace input prefix.
+     * Used to make suggestions when interacting with the namespace input.
+     * @type {Array<string>}
+     */
+    namespaceSuggestions: mercury.array([]),
+
+    /*
+     * The namespace input prefix is the last namespace value that triggered
+     * a glob for direct descendants. Upon update of the namespace input prefix,
+     * new children will be globbed.
+     * @type {string}
+     */
+    namespacePrefix: mercury.value(''),
+
+    /*
+     * List of descendants for the namespace
      * @type {Array<Object>}
      */
     items: mercury.array([]),
@@ -82,6 +98,11 @@ function create() {
      */
     'browseNamespace',
 
+    /*
+     * Indicates a request to obtain the direct descendants of the given name.
+     */
+    'getNamespaceSuggestions',
+
     'selectedItemDetails',
 
     'error'
@@ -102,7 +123,7 @@ function create() {
  */
 function renderHeader(browseState, browseEvents, navigationEvents) {
   // Trigger an actual navigation event when value of the inputs change
-  var changeEvent = new PaperInputValueEvent(function(val) {
+  var changeEvent = new PropertyValueEvent(function(val) {
     var namespace = browseState.namespace;
     if (exists(val)) {
       namespace = val;
@@ -110,7 +131,17 @@ function renderHeader(browseState, browseEvents, navigationEvents) {
     navigationEvents.navigate({
       path: browseRoute.createUrl(namespace, browseState.globQuery)
     });
-  });
+  }, 'value');
+
+  var inputEvent = new PropertyValueEvent(function(val) {
+    browseEvents.getNamespaceSuggestions(val);
+  }, 'inputValue', true);
+
+  var children = browseState.namespaceSuggestions.map(
+    function renderChildItem(child) {
+      return h('paper-item', { 'label': new AttributeHook(child) });
+    }
+  );
 
   return h('div.namespace-box',
     h('core-tooltip.tooltip', {
@@ -126,12 +157,14 @@ function renderHeader(browseState, browseEvents, navigationEvents) {
         h('core-icon.icon', {
           'icon': new AttributeHook('explore')
         }),
-        h('paper-input', {
+        h('paper-autocomplete', {
           'flex': new AttributeHook('true'),
           'name': 'namespace',
           'value': browseState.namespace,
+          'delimiter': '/',
+          'ev-input': inputEvent,
           'ev-change': changeEvent
-        })
+        }, children)
       ])
     )
   );
@@ -162,7 +195,7 @@ function render(browseState, browseEvents, navigationEvents) {
 
   var sideViewWidth = '50%';
   if (browseState.items.length === 0) {
-    mainView.push(h('div.empty', 'No children to display.'));
+    mainView.push(h('div.empty', 'No descendants to display.'));
   } else {
     mainView.push(h('div.items-container',
       renderItems(browseState, browseEvents, navigationEvents)));
@@ -207,7 +240,7 @@ function render(browseState, browseEvents, navigationEvents) {
  */
 function renderSearch(browseState, navigationEvents) {
   // Trigger an actual navigation event when value of the inputs change
-  var changeEvent = new PaperInputValueEvent(function(val) {
+  var changeEvent = new PropertyValueEvent(function(val) {
     var globQuery = browseState.globQuery;
     if (exists(val)) {
       globQuery = val;
@@ -215,7 +248,7 @@ function renderSearch(browseState, navigationEvents) {
     navigationEvents.navigate({
       path: browseRoute.createUrl(browseState.namespace, globQuery)
     });
-  });
+  }, 'value');
 
   return h('div.search-box',
     h('core-tooltip.tooltip', {
@@ -343,4 +376,5 @@ function renderBreadcrumbs(browseState, navigationEvents) {
 // Wire up events that we know how to handle
 function wireUpEvents(state, events) {
   events.browseNamespace(browseNamespace.bind(null, state, events));
+  events.getNamespaceSuggestions(getNamespaceSuggestions.bind(null, state));
 }

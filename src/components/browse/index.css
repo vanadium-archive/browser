@@ -147,8 +147,7 @@
 }
 
 .namespace-box {
-  background: var(--color-white);
-  opacity: 0.7;
+  background: var(--color-white-transparent);
   height: 2.7em;
   font-size: 0.7em;
   padding: 0 0.8em;
@@ -179,15 +178,18 @@ paper-autocomplete.autocomplete {
 }
 paper-autocomplete.autocomplete::shadow #suggest-box {
   background-color: var(--color-grey-light);
+}
+
+paper-autocomplete::shadow #suggest-box {
   border: var(--border);
   box-shadow: var(--shadow-all-around);
 }
 
-paper-autocomplete.autocomplete paper-item.highlighted,
-paper-autocomplete.autocomplete paper-item:hover {
+paper-autocomplete paper-item.highlighted,
+paper-autocomplete paper-item:hover {
   background-color: var(--color-bright);
 }
 
-paper-autocomplete.autocomplete paper-item {
+paper-autocomplete paper-item {
   color: var(--color-text-primary);
 }

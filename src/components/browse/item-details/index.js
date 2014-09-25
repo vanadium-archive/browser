@@ -5,8 +5,8 @@ var displayItemDetails = require('./display-item-details');
 var makeRPC = require('./make-rpc');
 var browseService = require('../../../services/browse-service');
 var smartService = require('../../../services/smart-service');
-var PaperInputValueEvent =
-  require('../../../lib/mercury/paper-input-value-event');
+var PropertyValueEvent =
+  require('../../../lib/mercury/property-value-event');
 var h = mercury.h;
 var css = require('./index.css');
 var debug = require('debug')('components:browse:item-details');
@@ -291,15 +291,15 @@ function renderMethodInputArgument(
     return h('paper-item', { 'label': new AttributeHook(suggestion) });
   });
 
-  var changeEvent = new PaperInputValueEvent(function(data) {
+  var changeEvent = new PropertyValueEvent(function(data) {
     debug(methodName, placeholder, 'value changed.', data);
     args[index] = data;
-  });
+  }, 'value');
   // TODO(alexfandrianto): Remove the inputEvent. It is only here for debug
   // while we are getting used to the paper-autocomplete element.
-  var inputEvent = new PaperInputValueEvent(function(data) {
+  var inputEvent = new PropertyValueEvent(function(data) {
     debug(methodName, placeholder, 'value inputted.', data);
-  });
+  }, 'inputValue');
 
   // TODO(alexfandrianto): Note that Mercury and Polymer create a bug together.
   // Polymer normally captures internal events and stops them from propagating.

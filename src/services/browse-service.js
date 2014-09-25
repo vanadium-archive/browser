@@ -14,6 +14,7 @@ module.exports = {
   makeRPC: makeRPC,
   isRooted: isRooted,
   isGlobbable: isGlobbable,
+  getPrefix: getPrefix,
   getSuffix: getSuffix
 };
 
@@ -134,20 +135,22 @@ function isRooted(name) {
 }
 
 /*
- * Given a name, determine its suffix.
+ * Given a name, determine its prefix. Note: Likely has a trailing '/'.
+ * TODO(alexfandrianto): Update. This is likely going to be in veyron.js
  */
-function getSuffix(name) {
-  if (name === '' || name === '/') {
-    return name;
-  }
-  var parts = name.split('/');
-  var last = parts[parts.length - 1];
-  if (last === '') {
-    return parts[parts.length - 2];
-  }
-  return last;
+function getPrefix(name) {
+  var lastSlash = name.lastIndexOf('/');
+  return name.substring(0, lastSlash + 1);
 }
 
+/*
+ * Given a name, determine its suffix.
+ * TODO(alexfandrianto): Update. This is likely going to be in veyron.js
+ */
+function getSuffix(name) {
+  var lastSlash = name.lastIndexOf('/');
+  return name.substring(lastSlash + 1);
+}
 
 /*
  * Given signature of an item returns type information

@@ -30,6 +30,9 @@
   /* White. Use where-ever traditionally regular white is used such as reading backgrounds. Off-white */
   --color-white: #fafafa;
 
+  /* Transparent white. Alpha channel for opacity. Use to pseudo-inherit the parent container's background-color. */
+  --color-white-transparent: rgba(250, 250, 250, 0.7);
+
   /* Dark Primary background color for top-level status bar. Material Design level 700 of the primary color. Dark Blue */
   --color-dark: #0288d1;
 
