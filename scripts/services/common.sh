@@ -7,7 +7,7 @@
 # as arguments to the function.
 # This script shuts down these services on exit.
 
-source "${VEYRON_ROOT}/environment/scripts/lib/shell.sh"
+source "${VEYRON_ROOT}/scripts/lib/shell.sh"
 
 trap at_exit INT TERM EXIT
 
