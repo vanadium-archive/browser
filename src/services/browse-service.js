@@ -12,8 +12,8 @@ module.exports = {
   makeRPC: makeRPC,
   isRooted: isRooted,
   isGlobbable: isGlobbable,
-  getPrefix: getPrefix,
-  getSuffix: getSuffix
+  stripBasename: stripBasename,
+  basename: basename
 };
 
 /*
@@ -144,21 +144,17 @@ function isRooted(name) {
 }
 
 /*
- * Given a name, determine its prefix. Note: Likely has a trailing '/'.
- * TODO(alexfandrianto): Update. This is likely going to be in veyron.js
+ * Given a name, drop its basename (e.g., /a/b => /a/).
  */
-function getPrefix(name) {
-  var lastSlash = name.lastIndexOf('/');
-  return name.substring(0, lastSlash + 1);
+function stripBasename(name) {
+  return namespaceUtil.stripBasename(name);
 }
 
 /*
- * Given a name, determine its suffix.
- * TODO(alexfandrianto): Update. This is likely going to be in veyron.js
+ * Given a name, extract its basename (e.g., /a/b => b).
  */
-function getSuffix(name) {
-  var lastSlash = name.lastIndexOf('/');
-  return name.substring(lastSlash + 1);
+function basename(name) {
+  return namespaceUtil.basename(name);
 }
 
 /*

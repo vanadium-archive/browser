@@ -20,7 +20,6 @@ PropertyValueEvent.prototype.handleEvent = handleEvent;
 function handleEvent(ev) {
   if (!this.rawTypeIsCustom || ev._rawEvent instanceof CustomEvent) {
     var data = ev.currentTarget[this.property];
-    console.warn(data);
     if (typeof this.sink === 'function') {
       this.sink(data);
     } else {

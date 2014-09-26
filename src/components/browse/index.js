@@ -283,7 +283,7 @@ function renderShortcuts(browseState, browseEvents, navigationEvents) {
     var item = {
       isGlobbable: shortcut.isGlobbable,
       itemName: shortcut.itemName,
-      mountedName: browseService.getSuffix(shortcut.itemName)
+      mountedName: browseService.basename(shortcut.itemName)
     };
     return renderItem(browseState, browseEvents, navigationEvents, item);
   });

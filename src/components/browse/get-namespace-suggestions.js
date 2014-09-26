@@ -12,7 +12,7 @@ module.exports = getNamespaceSuggestions;
  * TODO(alexfandrianto): Update this when we switch to the new glob service.
  */
 function getNamespaceSuggestions(browseState, namespace) {
-  var prefix = browseService.getPrefix(namespace);
+  var prefix = browseService.stripBasename(namespace);
 
   if (prefix === browseState.namespacePrefix()) {
     return; // The children are already based on the correct glob.
