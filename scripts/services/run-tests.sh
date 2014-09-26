@@ -27,10 +27,10 @@ main() {
   cd "${VEYRON_ROOT}/veyron-browser"
   local PROVA_OPTIONS="--browser --launch chrome --plugin proxyquireify/plugin --transform ./css-transform"
   local -r PROVA="${VEYRON_ROOT}/veyron-browser/node_modules/.bin/prova"
-  local -r PROVA_OUTPUT_FILE="${TMPDIR}/test_output"
+  local -r PROVA_OUTPUT_FILE="${PROVA_OUTPUT_FILE-${TMPDIR}/test_output}"
   if [[ "${PROVA_WATCH}" = false ]]; then
     PROVA_OPTIONS="${PROVA_OPTIONS} --headless --quit --progress --tap"
-    echo -e "\033[34m-Executing tests. See ${TMPDIR}/test_output for test output.\033[0m"
+    echo -e "\033[34m-Executing tests. See ${PROVA_OUTPUT_FILE} for test output.\033[0m"
   else
     echo -e "\033[34m-Running tests in watch mode - go to \033[32mhttp://0.0.0.0:7559\033[34m to see tests running.\033[0m"
   fi
