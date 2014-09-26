@@ -1,10 +1,10 @@
 ##
 # Provides targets to build, test and run the Veyron Browser application.
 #
-# make  # Builds the project
-# make test  # Runs unit and integration tests
+# make  # Builds the project.
+# make test  # Runs unit and integration tests.
 # make start  # Starts the services and http server needed to run the application at http://localhost:9000
-# make clean  # Deleted all build, testing and other artifacts
+# make clean  # Deleted all build, testing and other artifacts.
 #
 # Note: :; at the beginning of commands is a work-around for an issue in MacOS version of GNU `make` where
 # `make` may not invoke shell to run a command if command is deemed simple enough causing environment variables
@@ -15,34 +15,32 @@
 
 PATH:=$(VEYRON_ROOT)/environment/cout/node/bin:$(PATH)
 PATH:=node_modules/.bin:$(PATH)
+ifndef TMPDIR
+	export TMPDIR:=/tmp
+endif
+TMPDIR:=$(TMPDIR)/veyron_browser
 
-# All JS and CSS files except build.js and third party
+# All JS and CSS files except build.js and third party.
 BROWSERIFY_FILES = $(shell find src -name "*.js" -o -name "*.css")
 BROWSERIFY_OPTIONS = --transform ./css-transform --debug
 
-# All Go and VDL files
+# All Go and VDL files.
 GO_FILES = $(shell find go -name "*.go")
 VDL_FILES = $(shell find go -name "*.vdl")
 
-TMPDIR=/tmp/veyron_browser
+# Builds everything.
+all: directories public/bundle.js public/bundle.html public/platform.js public/platform.js.map public/polymer.js.map
 
-# Builds everything
-all: /tmp/veyron_browser public/bundle.js public/bundle.html public/platform.js public/platform.js.map public/polymer.js.map
-
-# Create temp folder
-/tmp/veyron_browser:
-	mkdir -p $(TMPDIR)
-
-# Creating the bundle JS file
+# Creating the bundle JS file.
 public/bundle.js: $(BROWSERIFY_FILES) node_modules
-	:;jshint src # lint all src JavaScript files
-	:;browserify src/app.js $(BROWSERIFY_OPTIONS) $< | exorcist $@.map > $@ # Browserify and generate map file
+	:;jshint src # lint all src JavaScript files.
+	:;browserify src/app.js $(BROWSERIFY_OPTIONS) $< | exorcist $@.map > $@ # Browserify and generate map file.
 
-# Creating the bundle HTML file
+# Creating the bundle HTML file.
 public/bundle.html: web-component-dependencies.html node_modules bower_components
 	:;vulcanize --output public/bundle.html web-component-dependencies.html --inline
 
-# Copies the web components platform file
+# Copies the web components platform file.
 public/platform.js: bower_components
 	cp bower_components/platform/platform.js public/platform.js
 
@@ -52,13 +50,13 @@ public/platform.js.map: bower_components
 public/polymer.js.map: bower_components
 	cp bower_components/polymer/polymer.js.map public/polymer.js.map
 
-# Install what we need from NPM
+# Install what we need from NPM.
 node_modules: package.json
 	:;npm prune
 	:;npm install
 	touch node_modules
 
-# Install non-JS dependencies from bower
+# Install non-JS dependencies from bower.
 bower_components: bower.json node_modules
 	:;bower prune
 	:;bower install
@@ -66,25 +64,29 @@ bower_components: bower.json node_modules
 
 # PHONY targets:
 
-# Run unit and integration tests
+# Run unit and integration tests.
 test: all
-	:;TMPDIR=$(TMPDIR) ./scripts/services/run-tests.sh
+	:;./scripts/services/run-tests.sh
 
 # Continuously watch for changes to .js, .html or .css files.
-# Rebundles the appropriate bundles when local files change
+# Rebundles the appropriate bundles when local files change.
 watch:
 	watch -n 1 make
 
-# Continuously reruns the tests as they change
+# Continuously reruns the tests as they change.
 watch-test:
-	:;TMPDIR=$(TMPDIR) PROVA_WATCH=true ./scripts/services/run-tests.sh
+	:;PROVA_WATCH=true ./scripts/services/run-tests.sh
 
 # Serves the needed daemons and starts a server at http://localhost:9000
 # CTRL-C to stop
 start: all
-	:;TMPDIR=$(TMPDIR) ./scripts/services/run-webapp.sh
+	:;./scripts/services/run-webapp.sh
 
-# Clean all build artifacts
+# Create needed directories like temp.
+directories:
+	mkdir -p $(TMPDIR)
+
+# Clean all build artifacts.
 clean:
 	rm -f public/bundle.js
 	rm -f public/bundle.html
@@ -95,4 +97,4 @@ clean:
 	rm -rf bower_components
 	rm -rf $(TMPDIR)
 
-.PHONY: start clean watch test watch-test
+.PHONY: start clean watch test watch-test directories
