@@ -33,15 +33,14 @@ terminate() {
 build() {
   export GOPATH="${VEYRON_ROOT}/veyron-browser/go:${PATH}"
   export GOBIN="${VEYRON_ROOT}/veyron-browser/go/bin"
-  local -r GO="${VEYRON_ROOT}/scripts/build/go"
 
-  "${GO}" install veyron.io/veyron/veyron/services/mounttable/mounttabled
-  "${GO}" install veyron.io/veyron/veyron/services/proxy/proxyd
-  "${GO}" install veyron.io/veyron/veyron/services/wsprd
-  "${GO}" install veyron.io/veyron/veyron/services/mgmt/binary/binaryd
-  "${GO}" install veyron.io/veyron/veyron/services/mgmt/build/buildd
-  "${GO}" install veyron.io/veyron/veyron/tools/identity
-  "${GO}" install sample/sampled
+  veyron go install veyron.io/veyron/veyron/services/mounttable/mounttabled
+  veyron go install veyron.io/veyron/veyron/services/proxy/proxyd
+  veyron go install veyron.io/veyron/veyron/services/wsprd
+  veyron go install veyron.io/veyron/veyron/services/mgmt/binary/binaryd
+  veyron go install veyron.io/veyron/veyron/services/mgmt/build/buildd
+  veyron go install veyron.io/veyron/veyron/tools/identity
+  veyron go install sample/sampled
 }
 
 # common::fail will output a red FAILED message along with and optional message given

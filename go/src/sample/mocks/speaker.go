@@ -3,7 +3,8 @@ package mocks
 import (
 	"errors"
 	"fmt"
-	"sample/generated/sample"
+
+	"sample"
 	"veyron.io/veyron/veyron2/ipc"
 )
 

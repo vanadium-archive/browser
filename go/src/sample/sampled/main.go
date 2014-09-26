@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log"
 
-	"sample/generated/sample"
+	"sample"
 	"sample/mocks"
 	"veyron.io/veyron/veyron/lib/signals"
 	"veyron.io/veyron/veyron2/ipc"
