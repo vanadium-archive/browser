@@ -36,7 +36,7 @@ main() {
 
   # Execute the test runner.
   set -o pipefail
-  "${PROVA}" test/**/*.js ${PROVA_OPTIONS} | tee "${PROVA_OUTPUT_FILE}" || common::fail "Some tests failed"
+  DEBUG=false "${PROVA}" test/**/*.js ${PROVA_OPTIONS} | tee "${PROVA_OUTPUT_FILE}" || common::fail "Some tests failed"
   echo -e "\033[32m\033[1mPASS\033[0m"
 }
 
