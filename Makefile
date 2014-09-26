@@ -1,21 +1,37 @@
+##
+# Provides targets to build, test and run the Veyron Browser application.
+#
+# make  # Builds the project
+# make test  # Runs unit and integration tests
+# make start  # Starts the services and http server needed to run the application at http://localhost:9000
+# make clean  # Deleted all build, testing and other artifacts
+#
+# Note: :; at the beginning of commands is a work-around for an issue in MacOS version of GNU `make` where
+# `make` may not invoke shell to run a command if command is deemed simple enough causing environment variables
+# like PATH that are modified here not to be used.
+# :; tricks make to assume command is not simple and needs to invoke shell.
+# see http://stackoverflow.com/questions/21708839/problems-setting-path-in-makefile for details.
+##
+
 PATH:=$(VEYRON_ROOT)/environment/cout/node/bin:$(PATH)
 PATH:=node_modules/.bin:$(PATH)
 
 # All JS and CSS files except build.js and third party
 BROWSERIFY_FILES = $(shell find src -name "*.js" -o -name "*.css")
 BROWSERIFY_OPTIONS = --transform ./css-transform --debug
-PROVA_OPTIONS = --browser --launch chrome --plugin proxyquireify/plugin --transform ./css-transform
-PROVA_HEADLESS_OPTIONS = --headless --progress --quit
-JS_ALL_TEST_FILES = $(shell find test -name "*.js")
-JS_UNIT_TEST_FILES = $(shell find test/unit -name "*.js")
-JS_INTEGRATION_TEST_FILES = $(shell find test/integration -name "*.js")
 
 # All Go and VDL files
 GO_FILES = $(shell find go -name "*.go")
 VDL_FILES = $(shell find go -name "*.vdl")
 
+TMPDIR=/tmp/veyron_browser
+
 # Builds everything
-all: public/bundle.js public/bundle.html public/platform.js public/platform.js.map public/polymer.js.map
+all: /tmp/veyron_browser public/bundle.js public/bundle.html public/platform.js public/platform.js.map public/polymer.js.map
+
+# Create temp folder
+/tmp/veyron_browser:
+	mkdir -p $(TMPDIR)
 
 # Creating the bundle JS file
 public/bundle.js: $(BROWSERIFY_FILES) node_modules
@@ -51,22 +67,8 @@ bower_components: bower.json node_modules
 # PHONY targets:
 
 # Run unit and integration tests
-# TODO(aghassemi) add integration tests back when running/shutting down of services is figured out
-test: test-unit
-
-# Uses prova to run unit tests in a headless chrome and then quit after all test finish
-test-unit: all
-	@echo -e "\e[1;35mRunning Unit Tests\e[0m"
-	@:;jshint test/unit # lint unit test JavaScript files
-	@:;prova $(JS_UNIT_TEST_FILES) $(PROVA_OPTIONS) $(PROVA_HEADLESS_OPTIONS)
-
-# Uses prova to run integration tests in a headless chrome and then quit after all test finish
-# TODO(aghassemi) The need to manually run run-test-services.sh is temporary. We need to reuse or
-# at least take a similar approach as https://veyron-review.googlesource.com/#/c/4316 for veyron.js integration tests
-test-integration: all
-	@echo -e "\e[1;35mRunning Integration Tests - Ensure ./scripts/services/run-test-services.sh is running\e[0m"
-	@:;jshint test/integration # lint integration test JavaScript files
-	@:;prova $(JS_INTEGRATION_TEST_FILES) $(PROVA_OPTIONS) $(PROVA_HEADLESS_OPTIONS)
+test: all
+	:;TMPDIR=$(TMPDIR) ./scripts/services/run-tests.sh
 
 # Continuously watch for changes to .js, .html or .css files.
 # Rebundles the appropriate bundles when local files change
@@ -75,12 +77,12 @@ watch:
 
 # Continuously reruns the tests as they change
 watch-test:
-	@:;prova $(JS_ALL_TEST_FILES) $(PROVA_OPTIONS)
+	:;TMPDIR=$(TMPDIR) PROVA_WATCH=true ./scripts/services/run-tests.sh
 
-# Serves the needed daemons and starts a server at http://localhost:$(HTTP_PORT)
+# Serves the needed daemons and starts a server at http://localhost:9000
 # CTRL-C to stop
 start: all
-	./scripts/services/run-webapp-services.sh
+	:;TMPDIR=$(TMPDIR) ./scripts/services/run-webapp.sh
 
 # Clean all build artifacts
 clean:
@@ -91,5 +93,6 @@ clean:
 	rm -rf node_modules
 	rm -rf go/bin
 	rm -rf bower_components
+	rm -rf $(TMPDIR)
 
-.PHONY: start clean watch test watch-test test-unit test-integration
+.PHONY: start clean watch test watch-test

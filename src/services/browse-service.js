@@ -4,8 +4,6 @@ var veyronConfig = require('../veyron-config');
 var MountPoint = require('../lib/mountpoint');
 var debug = require('debug')('services:browse-service');
 
-var runtimePromise = veyron.init(veyronConfig);
-
 module.exports = {
   glob: glob,
   join: join,
@@ -19,12 +17,23 @@ module.exports = {
 };
 
 /*
+ * Lazy getter and initializer for Veyron runtime
+ */
+var _runtimePromiseInstance;
+function getRuntime() {
+  if(!_runtimePromiseInstance) {
+    _runtimePromiseInstance = veyron.init(veyronConfig);
+  }
+  return _runtimePromiseInstance;
+}
+
+/*
  * Cache of Name to MountPoint objects
  */
 var mpcache = {
   _cacheMap: {},
   get: function(name) {
-    return runtimePromise.then(function(rt) {
+    return getRuntime().then(function(rt) {
       return rt.newNamespace().then(function(ns) {
         // TODO(aghassemi) why is namespace a promise?!
         if (!mpcache._cacheMap[name]) {
@@ -93,7 +102,7 @@ function signature(name) {
   if( sigcache[name] ) {
     return Promise.resolve(sigcache[name]);
   }
-  return runtimePromise.then(function(rt){
+  return getRuntime().then(function(rt){
     return rt.bindTo(name).then(function(service) {
       return service.signature().then(function(sig) {
         sigcache[name] = sig;
@@ -110,7 +119,7 @@ function signature(name) {
  * args (optional): array of arguments for the service method
  */
 function makeRPC(name, methodName, args) {
-  return runtimePromise.then(function(rt){
+  return getRuntime().then(function(rt){
     return rt.bindTo(name).then(function(service) {
       debug('Calling', methodName, 'on', name, 'with', args);
       return service[methodName].apply(null, args).then(function(result) {

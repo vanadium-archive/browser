@@ -14,7 +14,16 @@ module.exports = {
   util: namespaceUtil
 };
 
-var onRuntimeReady = veyron.init(veyronConfig);
+/*
+ * Lazy getter and initializer for Veyron runtime
+ */
+var _runtimePromiseInstance;
+function getRuntime() {
+  if(!_runtimePromiseInstance) {
+    _runtimePromiseInstance = veyron.init(veyronConfig);
+  }
+  return _runtimePromiseInstance;
+}
 
 /*
  * globCache holds (name + globQuery, result) cache entry for
@@ -44,7 +53,7 @@ function glob(name, globQuery) {
   var runtime;
   var globItemsObservArr = mercury.array([]);
   var globItemsObservArrPromise =
-  onRuntimeReady.then(function getNamespace(rt) {
+  getRuntime().then(function getNamespace(rt) {
     runtime = rt;
     return runtime.newNamespace();
   }).then(function resolveName(namespace) {
@@ -116,7 +125,7 @@ function getSignature(objectName) {
   if (cacheHit) {
     return cacheHit;
   }
-  return onRuntimeReady.then(function bindToName(rt) {
+  return getRuntime().then(function bindToName(rt) {
     return rt.bindTo(objectName);
   }).then(function invokeSignatureMethod(service) {
     return service.signature();
@@ -147,7 +156,7 @@ function isGlobbable(objectName) {
  * args (optional): array of arguments for the service method
  */
 function makeRPC(name, methodName, args) {
-  return onRuntimeReady.then(function bindToName(rt) {
+  return getRuntime().then(function bindToName(rt) {
     return rt.bindTo(name);
   }).then(function callMethod(service) {
     debug('Calling', methodName, 'on', name, 'with', args);

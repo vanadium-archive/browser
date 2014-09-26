@@ -2,11 +2,15 @@ var test = require('prova');
 var _ = require('lodash');
 var proxyquire = require('proxyquireify')(require);
 var mockLRUCache = require('./mocks/lru-cache');
-var installMockVeyronExtension = require('./mocks/veyron-extension');
 
 // 8885 is the expected wspr port to be running for the tests
+// @noCallThru ensures this completely overrdies the original config
+// instead of inheriting the properties that are not defined here from
+// the original dependency
 var veyronConfigForTest = {
-  'wspr': 'http://localhost:8885'
+  'authenticate': false,
+  'wspr': 'http://localhost:8885',
+  '@noCallThru': true
 };
 
 // Require namespaceService but using test specific mocks and configs
@@ -17,9 +21,6 @@ var namespaceService =
       return mockLRUCache;
     }
   });
-
-// instantiate the mock veyron extension
-installMockVeyronExtension();
 
 test('getChildren of default namespace root', function(t) {
   t.plan(9+9);
