@@ -78,14 +78,15 @@ common::run() {
   local -r PROXY_ADDR=127.0.0.1:"${PROXY_PORT}"
   local -r IDENTITY_SERVER=/proxy.envyor.com:8101/identity/veyron-test/google
 
-  # Get an identity if we don't have one yet.
-  if [[ ! -f "${IDENTITY_PATH}" ]] || [[ ! -s "${IDENTITY_PATH}" ]]; then
-    if [[ "${SEEK_BLESSSING}" = true ]]; then
+  # Get an identity
+  if [[ "${SEEK_BLESSSING}" = true ]]; then
+    if [[ ! -f "${IDENTITY_PATH}" ]] || [[ ! -s "${IDENTITY_PATH}" ]]; then
       ./identity seekblessing > "${IDENTITY_PATH}"
-    else
-      ./identity generate > "${IDENTITY_PATH}"
     fi
+  else
+    ./identity generate > "${IDENTITY_PATH}"
   fi
+
   export VEYRON_IDENTITY="${IDENTITY_PATH}";
 
   local -r MTLOG_MESSAGE="Mount table service at"
