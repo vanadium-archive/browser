@@ -268,15 +268,32 @@ function renderMethodInput(state, events) {
 
 /*
  * Renders the method outputs received by the current service object.
+ * Prints each output received in reverse order; most recent is on top.
  */
 function renderMethodOutput(state) {
   if (state.methodOutputs.length === 0) {
     return h('div.method-output', 'No method output');
   }
-  var outputs = state.methodOutputs.map(function(output) {
-    return h('pre', output);
-  });
-  return h('div.method-output', outputs);
+  var outputRows = [h('tr', [
+    h('th', '#'),
+    h('th', 'Method'),
+    h('th', 'Output')
+  ])];
+  for (var i = state.methodOutputs.length - 1; i >= 0; i--) {
+    outputRows.push(
+      h('tr', [
+        h('td', { 'scope': 'row' }, '' + (i + 1)),
+        h('td', h('pre', state.methodOutputs[i][0])),
+        h('td', h('pre', state.methodOutputs[i][1]))
+      ])
+    );
+  }
+
+  var outputTable = h('table', {
+    'summary': new AttributeHook('Table showing the outputs of methods run' +
+      'on the service. The results are shown in reverse order.')
+  }, outputRows);
+  return h('div.method-output', outputTable);
 }
 
 /*
