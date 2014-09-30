@@ -34,8 +34,9 @@ main() {
     echo -e "\033[34m-Executing tests. See ${PROVA_OUTPUT_FILE} for test output.\033[0m"
   else
     PROVA_PORT=8892
-    echo -e "\033[34m-Running tests in watch mode - go to \033[32mhttp://0.0.0.0:${PROVA_PORT}\033[34m to see tests running.\033[0m"
+    echo -e "\033[34m-Running tests in watch mode.\033[0m"
   fi
+  echo -e "\033[34m-Go to \033[32mhttp://0.0.0.0:${PROVA_PORT}\033[34m to see tests running.\033[0m"
   PROVA_OPTIONS="${PROVA_OPTIONS} --port ${PROVA_PORT}"
 
   # Execute the test runner.
