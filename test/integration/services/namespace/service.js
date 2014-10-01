@@ -28,28 +28,28 @@ test('getChildren of default namespace root', function(t) {
   namespaceService.getChildren().
   then(function assertResult(result) {
     // Wait until we receive the 4 top level items,
-    // binaryd, buildd, cottage, house
+    // cottage, house
     var numReturnedChildren;
     result(function(children) {
       numReturnedChildren = children.length;
-      if (numReturnedChildren === 4) {
+      if (numReturnedChildren === 2) {
         children = _.sortBy(children, 'mountedName');
-        assertBinaryd(children[0]);
-        assertHouse(children[3]);
+        assertCottage(children[0]);
+        assertHouse(children[1]);
       }
     });
-  }).catch(t.end);
+  }).catch();
 
   // 9 assertions
-  function assertBinaryd(item) {
-    t.equal(item.mountedName, 'binaryd');
-    t.equal(item.objectName, 'binaryd');
+  function assertCottage(item) {
+    t.equal(item.mountedName, 'cottage');
+    t.equal(item.objectName, 'cottage');
     t.equal(item.isServer, true);
-    t.equal(item.isGlobbable, false);
-
-    assertUnknownServiceTypeInfo(t, item.serverInfo.typeInfo);
+    t.equal(item.isGlobbable, true);
 
     t.ok(item.serverInfo.signature);
+
+    assertMounttableServiceTypeInfo(t, item.serverInfo.typeInfo);
   }
 
   // 9 assertions

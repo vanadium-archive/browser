@@ -25,7 +25,6 @@ echo "false" > "${TERMINATING}"
 # can not access variables in parent's scope and we like to run services in subshells
 # so we can easily track if they have exited or not.
 
-
 # terminate is automatically called when receiving a signal or can be manually
 # called from other functions to exit the script
 # The string 'force' can be provided as the first argument to indicate whether
@@ -196,20 +195,6 @@ common::run() {
   shell::wait_for "${WSPRLOG}" "Listening on port ${WSPR_PORT}"
 
   # Run some veyron services for demo and integration testing.
-  local -r BINARYDLOG="${TMPDIR}/binaryd.log"
-  cat /dev/null > "${BINARYDLOG}"
-  (
-    ./binaryd --name="binaryd" &> "${BINARYDLOG}" &
-    fail_on_exit $! "binaryd" "${BINARYDLOG}"
-  ) &
-
-  local -r BUILDDLOG="${TMPDIR}/buildd.log"
-  cat /dev/null > "${BUILDDLOG}"
-  (
-    ./buildd --name="buildd" &> "${BUILDDLOG}" &
-    fail_on_exit $! "buildd" "${BUILDDLOG}"
-  ) &
-
   local -r SAMPLEDLOG="${TMPDIR}/sampled.log"
   cat /dev/null > "${SAMPLEDLOG}"
   (
