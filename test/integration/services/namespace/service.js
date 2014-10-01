@@ -147,19 +147,19 @@ test('glob uses caching', function(t) {
 
   namespaceService.glob('house', '*').
   then(function assertNoCacheHit() {
-    t.notOk(mockLRUCache.lastCallWasCacheHit,
+    t.notOk(mockLRUCache.wasCacheHit('house/*'),
       'first glob call is not a cache hit');
 
     // Call second time, there should have been a cache hit
     return namespaceService.glob('house', '*');
   }).then( function assertCacheHit() {
-    t.ok(mockLRUCache.lastCallWasCacheHit,
+    t.ok(mockLRUCache.wasCacheHit('house/*'),
       'second glob call is a cache hit');
 
     // Call glob with same name, different query
     return namespaceService.glob('house', 'foo*');
   }).then(function assertNoCacheHit() {
-    t.notOk(mockLRUCache.lastCallWasCacheHit,
+    t.notOk(mockLRUCache.wasCacheHit('house/foo*'),
       'third glob call with different query is not a cache hit');
     t.end();
   }).catch(t.end);
@@ -169,20 +169,20 @@ test('getSignature uses caching', function(t) {
   mockLRUCache.reset();
 
   namespaceService.getSignature('house/alarm').then(function() {
-    t.notOk(mockLRUCache.lastCallWasCacheHit,
+    t.notOk(mockLRUCache.wasCacheHit('house/alarm'),
       'first getSignature call is not a cache hit');
     // Call a second time
     return namespaceService.getSignature('house/alarm');
   }).then(function() {
-    t.ok(mockLRUCache.lastCallWasCacheHit,
+    t.ok(mockLRUCache.wasCacheHit('house/alarm'),
       'second getSignature call is a cache hit');
     // Call a different name
     return namespaceService.getSignature('house/kitchen/smoke-detector');
   }).then(function() {
-    t.notOk(mockLRUCache.lastCallWasCacheHit,
+    t.notOk(mockLRUCache.wasCacheHit('house/kitchen/smoke-detector'),
       'third getSignature call to a different name is not a cache hit');
     t.end();
-  });
+  }).catch(t.end);
 });
 
 //TODO(aghassemi)
