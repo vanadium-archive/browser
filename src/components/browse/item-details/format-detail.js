@@ -4,6 +4,8 @@
  * The default plugin should always be last.
  */
 var plugins = [
+  require('./plugins/empty.js'),
+  require('./plugins/error.js'),
   require('./plugins/histogram.js'),
   require('./plugins/default.js')
 ];

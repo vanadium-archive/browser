@@ -53,6 +53,9 @@ function makeRPC(state, data) {
         data.methodName,
         err, (err && err.stack) ? err.stack : undefined
       );
+
+      // Also add the fact that there was a failure to the method outputs.
+      formatResult(state, data, err);
     }
   );
 }
@@ -63,7 +66,7 @@ function makeRPC(state, data) {
 function formatResult(state, data, result) {
   // Use formatDetail to process the raw result into a renderable format.
   var formattedResult = formatDetail(result);
-  state.methodOutputs.push(formattedResult);
+  state.methodOutputs.push([data.methodName, formattedResult]);
 
   // If we received a result for a 0-parameter RPC, add to the details page.
   if (!data.hasParams) {

@@ -73,8 +73,21 @@
   margin: 0.5em;
 }
 
+.method-output table, .method-output th {
+  border-bottom: var(--border);
+}
+
+.method-output th, .method-output td {
+  text-align: left;
+  padding: 3px;
+}
+
 .method-output pre, .field pre {
   white-space: pre-wrap;
+}
+
+.error {
+  color: crimson;
 }
 
 /* Chrome, Safari, Opera */
