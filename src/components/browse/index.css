@@ -174,7 +174,7 @@
 }
 
 paper-autocomplete.autocomplete {
-  width: 250px;
+  width: 16em;
 }
 paper-autocomplete.autocomplete::shadow #suggest-box {
   background-color: var(--color-grey-light);

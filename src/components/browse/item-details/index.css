@@ -41,7 +41,6 @@
 }
 
 .signature {
-  overflow: auto;
   margin: 0.5em;
 }
 
@@ -51,13 +50,22 @@
 }
 
 .method-input {
-  max-height: 15em;
-  margin: 0.5em;
+  display: inline-block;
+  vertical-align: top;
+  width: 17em;
+}
+
+.method-input .label {
+  align-items: baseline;
+  overflow: hidden;
+}
+
+.method-input-expanded {
+  border-bottom: var(--border);
 }
 
 .method-input-item {
   margin: 0.5em;
-  font-size: 80%;
 }
 
 .method-input-run, .method-input-remove, .method-input-cancel {

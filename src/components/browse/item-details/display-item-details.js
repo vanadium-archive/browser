@@ -4,6 +4,7 @@ var smartService = require('../../../services/smart-service');
 var debug = require('debug')(
   'components:browse:item-details:display-item-details'
 );
+var methodForm = require('./method-form/index.js');
 
 module.exports = displayItemDetails;
 
@@ -11,7 +12,7 @@ module.exports = displayItemDetails;
  * Ask the browseService for a service signature.
  * Use the signature and smartService to pick which RPCs to do automatically.
  */
-function displayItemDetails(state, data) {
+function displayItemDetails(state, events, data) {
   var name = data.name;
 
   // Don't refresh if we are already looking at this name's details.
@@ -27,16 +28,38 @@ function displayItemDetails(state, data) {
   // Set the new name and reset the selected method and outputs.
   // TODO(alexfandrianto): Instead of resetting, should we remember this info?
   state.itemName.set(name);
-  state.selectedMethod.set('');
   purgeMercuryArray(state.methodOutputs);
-  purgeMercuryArray(state.methodInputArguments);
 
   browseService.signature(name).then(function(signatureResult) {
     state.signature.set(signatureResult);
 
-    // Go through each signature method and decide whether to perform it or not.
+    // Go through each signature method, preparing the state needed for its form
+    // to be rendered and deciding if the method should be recommended.
     for (var m in signatureResult) {
       if (signatureResult.hasOwnProperty(m)) {
+        // Initialize the method form for future rendering.
+        // TODO(alexfandrianto): As written, this will never refresh its state.
+        // There may be edge cases that necessitate full or partial refresh.
+        if (state.methodForm.get(m) === undefined) {
+          var form = methodForm(name, signatureResult, m, events.methodCalled);
+          state.methodForm.put(m, form.state);
+          events.methodForm.put(m, form.events);
+
+          // TODO(alexfandrianto): Fill in the area below.
+          /*
+          x.events.methodForm.methodStart(
+            // TODO(alexfandrianto): Handler for this method's start
+          );
+          x.events.methodForm.methodEnd(
+            // TODO(alexfandrianto): Handler for this method's end
+          );
+          */
+        }
+
+        // TODO(alexfandrianto): It's likely this logic will be moved to
+        // renderMethod since these recommendations are no longer very useful.
+
+        // Prepare data needed to predict if this method should be recommended.
         var param = signatureResult[m];
         var input = {
           name: name,

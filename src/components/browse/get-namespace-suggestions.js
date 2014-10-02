@@ -29,9 +29,11 @@ function getNamespaceSuggestions(browseState, namespace) {
 
   // Glob the children using this prefix.
   browseService.glob(prefix, '*').then(function received(globResult) {
-    debug('Name and Glob result', namespace, globResult);
+    debug('Name and Glob result', prefix, globResult);
     globResult.forEach(function(i) {
       browseState.namespaceSuggestions.push(i.mountedName);
     });
+  }).catch(function(err) {
+    debug('Could not glob', prefix, err);
   });
 }

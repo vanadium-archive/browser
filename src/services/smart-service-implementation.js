@@ -301,7 +301,7 @@ function methodInputLearnerPredict(input) {
   // Filter the scored items by minThreshold
   if (this.params.minThreshold !== undefined) {
     scoredItems = scoredItems.filter(function applyThreshold(scoredItem) {
-      return scoredItem.score >= this.minThreshold;
+      return scoredItem.score >= this.params.minThreshold;
     }, this);
   }
 
@@ -310,7 +310,8 @@ function methodInputLearnerPredict(input) {
   if (maxValues === undefined) {
     maxValues = scoredItems.length;
   }
-  return rank.getBestKItems(scoredItems, maxValues).map(function(goodItem) {
+  var bestK = rank.getBestKItems(scoredItems, maxValues);
+  return bestK === null ? [] : bestK.map(function(goodItem) {
     return goodItem.item;
   });
 }
