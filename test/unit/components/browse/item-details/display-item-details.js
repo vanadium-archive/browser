@@ -52,7 +52,9 @@ proxyquire(
 test('Updates state.signature', function(t) {
   t.plan(2);
 
-  var state = itemDetailsComponent().state;
+  var component = itemDetailsComponent();
+  var state = component.state;
+  var events = component.events;
 
   state.signature(function(signature) {
     t.equal(signature, 'signature');
@@ -64,7 +66,7 @@ test('Updates state.signature', function(t) {
   });
 
   // Should update the signature to items returned by glob method call (async)
-  displayItemDetails(state, {
+  displayItemDetails(state, events, {
     name: mockName
   });
 
@@ -73,7 +75,9 @@ test('Updates state.signature', function(t) {
 test('Updates state.signature to empty on failure', function(t) {
   t.plan(1);
 
-  var state = itemDetailsComponent().state;
+  var component = itemDetailsComponent();
+  var state = component.state;
+  var events = component.events;
 
   // Give initial value
   state.signature.set('not-empty');
@@ -83,7 +87,7 @@ test('Updates state.signature to empty on failure', function(t) {
     t.equal(signature, '');
   });
 
-  displayItemDetailsWithFailure(state, {
+  displayItemDetailsWithFailure(state, events, {
     name: mockName
   });
 });
