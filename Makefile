@@ -88,8 +88,7 @@ directories:
 
 # Clean all build artifacts.
 clean:
-	rm -f public/bundle.js
-	rm -f public/bundle.html
+	rm -f public/bundle.*
 	rm -f public/platform.*
 	rm -f public/polymer.*
 	rm -rf node_modules
