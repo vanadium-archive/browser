@@ -1,3 +1,4 @@
+@import "common-style/sizes.css";
 @import "common-style/theme.css";
 
 .tabs {
@@ -92,6 +93,28 @@
 
 .method-output pre, .field pre {
   white-space: pre-wrap;
+}
+
+.method-input .invocation {
+  margin-top: 0em;
+  margin-bottom: 0em;
+  height: 1.5em;
+}
+
+.method-input .invocation a {
+  padding: 0em;
+}
+.method-input .invocation div {
+  font-size: var(--size-font-xsmall);
+  background-color: var(--color-white-transparent);
+}
+
+.run {
+  color: green;
+}
+
+.star {
+  color: var(--color-bright);
 }
 
 .error {

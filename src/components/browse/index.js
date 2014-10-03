@@ -35,6 +35,11 @@ function create() {
     smartService.constants.LEARNER_METHOD_INPUT,
     { minThreshold: 0.2, maxValues: 5 }
   );
+  smartService.loadOrRegister(
+    'learner-method-invocation',
+    smartService.constants.LEARNER_METHOD_INVOCATION,
+    { minThreshold: 0.25, maxValues: 2 }
+  );
 
   var selectedItemDetails = itemDetailsComponent();
 

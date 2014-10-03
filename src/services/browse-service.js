@@ -51,7 +51,7 @@ var globcache = {};
  * Given a name and a glob query, returns promise of items that match the query
  * Each item is of the form:
  * {
- *    mountedName: 'CornerThermostat' //The  mount name of the item
+ *    mountedName: 'CornerThermostat' //The mount name of the item
  *    name: 'JohnHouse/LivingRoom/CornerThermostat' //Full name of the item
  * }
  */

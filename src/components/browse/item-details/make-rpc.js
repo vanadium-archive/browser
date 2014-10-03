@@ -29,6 +29,7 @@ function makeRPC(state, data) {
       // Since the RPC was successful, we can assume the inputs were good.
       if (data.signature[data.methodName].inArgs.length > 0) {
         learnMethodInput(state, data);
+        learnMethodInvocation(state, data);
       }
 
       // Do not process results we expect to be empty.
@@ -98,11 +99,33 @@ function learnMethodInput(state, data) {
     // For debug, display what our prediction would be.
     debug('PredictMI:', smartService.predict('learner-method-input', input));
 
-    // Save after making a successful parameterless RPC.
+    // Save after learning.
     smartService.save('learner-method-input');
   }
 }
 
+/*
+ * Learn from this invocation to be able to suggest them in the future.
+ */
+function learnMethodInvocation(state, data) {
+  var input = {
+    methodName: data.methodName,
+    signature: data.signature,
+    value: JSON.stringify(data.args)
+  };
+  debug('Update Invocation:', input);
+
+  smartService.record('learner-method-invocation', input);
+
+  // For debug, display what our prediction would be.
+  debug(
+    'PredictMIv:',
+    smartService.predict('learner-method-invocation', input)
+  );
+
+  // Save after learning.
+  smartService.save('learner-method-invocation');
+}
 
 /*
  * Learn to recommend this method to the user.

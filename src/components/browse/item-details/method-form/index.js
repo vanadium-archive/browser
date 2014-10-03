@@ -1,5 +1,7 @@
 var mercury = require('mercury');
 var h = mercury.h;
+var _ = require('lodash');
+var setMercuryArray = require('../../../../lib/mercury/setMercuryArray');
 var AttributeHook = require('../../../../lib/mercury/attribute-hook');
 var PropertyValueEvent =
   require('../../../../lib/mercury/property-value-event');
@@ -16,25 +18,6 @@ module.exports.render = render;
  * makeRPC needs a rework before this can actually be done, unfortunately.
  */
 function create(itemName, signature, methodName, makeRPC) {
-  var param = signature[methodName];
-
-  // Prepare the suggestions and initial value for each method input argument.
-  var input = {
-    signature: signature,
-    methodName: methodName,
-  };
-  var suggestions = mercury.array([]);
-  var args = mercury.array([]);
-  for (var i = 0; i < param.inArgs.length; i++) {
-    args.push(undefined);
-
-    input.argName = param.inArgs[i];
-    suggestions.push(smartService.predict('learner-method-input', input));
-  }
-
-  // TODO(alexfandrianto): The smart-service should make predictions here.
-  // We should also collect starred invocations from local storage.
-
   var state = mercury.struct({
     /*
      * Item name to target RPCs against.
@@ -58,15 +41,16 @@ function create(itemName, signature, methodName, makeRPC) {
      * Argument values that can be used to invoke the methodName RPC.
      * @type {Array<string>}
      */
-    args: args,
+    args: mercury.array([]),
 
     /*
      * Set of starred invocations saved by the user. There is no size limit.
-     * Each map key is an invocation, a JSON-encoded array of argument values.
-     * The value is true iff the item exists.
-     * @type {map[string]boolean}
+     * An array is used to preserve order.
+     * Each value in this array is a JSON-encoded array of argument values.
+     * This only contains keys of starred items; unstarred ones are removed.
+     * @type {Array<string>}
      */
-    starred: mercury.varhash(),
+    starred: mercury.array([]),
 
     /*
      * Limited list of invocations recommended to the user.
@@ -80,7 +64,7 @@ function create(itemName, signature, methodName, makeRPC) {
      * The autocomplete suggestions for each of this method's inputs.
      * @type {Array<string>}
      */
-    suggestions: suggestions,
+    inputSuggestions: mercury.array([]),
 
     /*
      * Whether the method form is in its expanded state or not.
@@ -94,6 +78,13 @@ function create(itemName, signature, methodName, makeRPC) {
      */
     running: mercury.value(false)
   });
+
+  // Initialize state with reset/refresh functions.
+  initializeInputArguments(state);
+  refreshInputSuggestions(state);
+  // TODO(alexfandrianto): Collect starred invocations from local storage.
+  // loadStarredInvocations(state);
+  refreshRecommendations(state);
 
   var events = mercury.input([
     'methodStart',  // for parent element to be notified of RPC start
@@ -112,6 +103,49 @@ function create(itemName, signature, methodName, makeRPC) {
 }
 
 /*
+ * Clear the mercury values related to the input arguments.
+ */
+function initializeInputArguments(state) {
+  var param = state.signature()[state.methodName()];
+  var startingArgs = _.range(param.inArgs.length).map(function() {
+    return undefined; // Initialize array with undefined values using lodash.
+  });
+  setMercuryArray(state.args, startingArgs);
+}
+
+/*
+ * Refresh the suggestions to the input arguments.
+ */
+function refreshInputSuggestions(state) {
+  var param = state.signature()[state.methodName()];
+  var input = {
+    signature: state.signature(),
+    methodName: state.methodName(),
+  };
+  setMercuryArray(state.inputSuggestions,
+    _.map(param.inArgs, function(inArg) {
+      // For each argname, predict which inputs should be suggested.
+      return smartService.predict('learner-method-input',
+        _.assign({argName: inArg}, input)
+      );
+    })
+  );
+}
+
+/*
+ * Refresh the recommended values in the state.
+ */
+function refreshRecommendations(state) {
+  var input = {
+    signature: state.signature(),
+    methodName: state.methodName(),
+  };
+  setMercuryArray(state.recommended,
+    smartService.predict('learner-method-invocation', input)
+  );
+}
+
+/*
  * Wire up the events for the method form mercury component.
  * Note: Some events are left for the parent component to hook up.
  */
@@ -124,9 +158,17 @@ function wireUpEvents(state, events, makeRPC) {
   events.expandAction(function() {
     state.expanded.set(!state.expanded());
   });
-  events.starAction(function(args, star) {
+  events.starAction(function(data) {
     // TODO(alexfandrianto): Handle the star action.
     // Depending on the star boolean, add/remove a star for the given arguments.
+    var index = state.starred().indexOf(data.argsStr);
+    if (data.star && index === -1) { // needs to be added
+      state.starred.push(data.argsStr);
+    } else if (!data.star && index !== -1) { // needs to be removed
+      state.starred.splice(index, 1);
+    }
+
+    // TODO(alexfandrianto): Save to local storage?
   });
 }
 
@@ -146,8 +188,9 @@ function render(state, events) {
     return h('div.method-input', methodNameHeader);
   }
 
-  // TODO(alexfandrianto): Then we have the pinned and recommended things.
-  // It's possible that one of these should be shown even when collapsed.
+  // Render the stars first, and if there's extra room, the recommendations.
+  // TODO(alexfandrianto): Show 1 of the pinned items even when not expanded?
+  var recs = renderStarsAndRecommendations(state, events);
 
   // Form for filling up the arguments
   var argForm = []; // contains form elements
@@ -162,51 +205,44 @@ function render(state, events) {
   var runButton = renderRPCRunButton(state, events);
 
   var footer = h('div.method-input-expanded', [argForm, runButton]);
-  return h('div.method-input', [methodNameHeader, footer]);
+  return h('div.method-input', [methodNameHeader, recs, footer]);
 }
 
 /*
  * Draw the method header: A method signature and either a run or expand button.
  */
 function renderMethodHeader(state, events) {
+  if (state.args.length === 0) {
+    return renderInvocation(state, events);
+  }
   var labelText = getMethodSignature(state);
   var label = h('div.label', {
     'title': labelText
   }, labelText);
 
-  var runOrExpand;
-  if (state.args.length === 0) { // runOrExpand is a run button
-    runOrExpand = h('a.drill', {
-      'href': '#',
-      'title': 'Run ' + state.methodName,
-      'ev-click': getRunEvent(state, events, state.args)
-    }, h('core-icon.icon', {
-      'icon': new AttributeHook('av:play-circle-outline')
-    }));
-  } else { // runOrExpand is an expand/contract button
-    runOrExpand = h('a.drill', {
-      'href': '#',
-      'title': state.expanded ? 'Hide form' : 'Show form',
-      'ev-click': mercury.event(events.expandAction)
-    }, h('core-icon.icon', {
-      'icon': new AttributeHook(
-        state.expanded ? 'expand-less' : 'expand-more'
-      )
-    }));
-  }
+  var expand = h('a.drill', {
+    'href': '#',
+    'title': state.expanded ? 'Hide form' : 'Show form',
+    'ev-click': mercury.event(events.expandAction)
+  }, h('core-icon.icon', {
+    'icon': new AttributeHook(
+      state.expanded ? 'expand-less' : 'expand-more'
+    )
+  }));
 
-  return h('div.item.card', [label, runOrExpand]);
+  return h('div.item.card', [label, expand]);
 }
 
 /*
  * Extracts a pretty-printed version of the method signature.
+ * args is an optional parameter.
  */
-function getMethodSignature(state) {
+function getMethodSignature(state, args) {
   var methodName = state.methodName;
   var param = state.signature[methodName];
   var text = methodName + '(';
   for (var i = 0; i < param.inArgs.length; i++) {
-    var arg = param.inArgs[i];
+    var arg = args !== undefined ? args[i] : param.inArgs[i];
     if (i > 0) {
       text += ',';
     }
@@ -219,6 +255,78 @@ function getMethodSignature(state) {
   return text;
 }
 
+
+var SOFTCAP_INVOCATIONS = 3;
+/*
+ * Renders the starred invocations followed by the recommended ones. Stars are
+ * shown with no limit. Recommendations are only shown if there is extra room.
+ */
+function renderStarsAndRecommendations(state, events) {
+  var s = state.starred.map(
+    function addStarred(invocation) {
+      return renderInvocation(state, events, invocation);
+    }
+  );
+
+  // Add the remaining recommenations, as long as they are not duplicates and
+  // don't exceed the soft cap on the # of invocations shown.
+  var remainingRecommendations = Math.min(
+    SOFTCAP_INVOCATIONS - s.length,
+    state.recommended.length
+  );
+  var count = 0;
+  state.recommended.forEach(function(rec) {
+    if (count < remainingRecommendations && state.starred.indexOf(rec) === -1) {
+      s.push(renderInvocation(state, events, rec));
+      count++;
+    }
+  });
+
+  return s;
+}
+
+/*
+ * Render the invocation, showing the method signature and a run button.
+ * argsStr is optional and is used for starred and recommended invocations.
+ * When given, then the card is smaller and has a star icon.
+ */
+function renderInvocation(state, events, argsStr) {
+  var noArgs = argsStr === undefined;
+  var args = noArgs ? [] : JSON.parse(argsStr);
+  var labelText = getMethodSignature(state, args);
+  var label = h('div.label', {
+    'title': labelText
+  }, labelText);
+
+  var runButton = h('a.drill', {
+    'href': '#',
+    'title': 'Run ' + state.methodName,
+    'ev-click': getRunEvent(state, events, args)
+  }, h('core-icon.icon.run', {
+    'icon': new AttributeHook('av:play-circle-outline')
+  }));
+
+  if (noArgs) {
+    return h('div.item.card', [label, runButton]);
+  }
+
+  var starred = state.starred.indexOf(argsStr) !== -1;
+  var starButton = h('a.drill', {
+    'href': '#',
+    'title': starred ? 'Unstar' : 'Star',
+    'ev-click': mercury.event(events.starAction, {
+      argsStr: argsStr,
+      star: !starred
+    })
+  }, h('core-icon.icon.star', {
+    'icon': new AttributeHook(
+      starred ? 'star' : 'star-outline'
+    )
+  }));
+
+  return h('div.item.card.invocation', [starButton, label, runButton]);
+}
+
 /*
  * Draws a single method argument input using the paper-autocomplete element.
  * Includes a placeholder and suggestions from the internal state.
@@ -226,11 +334,11 @@ function getMethodSignature(state) {
 function renderMethodInput(state, index) {
   var methodName = state.methodName;
   var argName = state.signature[methodName].inArgs[index];
-  var suggestions = state.suggestions[index];
+  var inputSuggestions = state.inputSuggestions[index];
   var args = state.args;
 
   // The children are the suggestions for this paper-autocomplete input.
-  var children = suggestions.map(function(suggestion) {
+  var children = inputSuggestions.map(function(suggestion) {
     return h('paper-item', { 'label': new AttributeHook(suggestion) });
   });
 

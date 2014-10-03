@@ -12,12 +12,14 @@ var _ = require('lodash');
 var LEARNER_SHORTCUT = 1;
 var LEARNER_AUTORPC = 2;
 var LEARNER_METHOD_INPUT = 3;
+var LEARNER_METHOD_INVOCATION = 4;
 
 // Associate the learner types with the constructor
 var LEARNER_MAP = {};
 LEARNER_MAP[LEARNER_SHORTCUT] = shortcutLearner;
 LEARNER_MAP[LEARNER_AUTORPC] = autoRPCLearner;
 LEARNER_MAP[LEARNER_METHOD_INPUT] = methodInputLearner;
+LEARNER_MAP[LEARNER_METHOD_INVOCATION] = methodInvocationLearner;
 
 // Associate the learner types with additional functions.
 // Note: update and predict are required.
@@ -34,8 +36,14 @@ LEARNER_METHODS[LEARNER_AUTORPC] = {
 };
 LEARNER_METHODS[LEARNER_METHOD_INPUT] = {
   computeKey: methodInputLearnerComputeKey,
-  update: methodInputLearnerUpdate,
-  predict: methodInputLearnerPredict
+  update: topKLearnerUpdate,
+  predict: topKLearnerPredict
+};
+
+LEARNER_METHODS[LEARNER_METHOD_INVOCATION] = {
+  computeKey: methodInvocationLearnerComputeKey,
+  update: topKLearnerUpdate,
+  predict: topKLearnerPredict
 };
 
 // Export the implementation constants
@@ -43,6 +51,7 @@ module.exports = {
   LEARNER_SHORTCUT: LEARNER_SHORTCUT,
   LEARNER_AUTORPC: LEARNER_AUTORPC,
   LEARNER_METHOD_INPUT: LEARNER_METHOD_INPUT,
+  LEARNER_METHOD_INVOCATION: LEARNER_METHOD_INVOCATION,
   LEARNER_MAP: LEARNER_MAP,
   LEARNER_METHODS: LEARNER_METHODS
 };
@@ -216,6 +225,10 @@ function autoRPCLearnerPredict(input) {
  * - maxValues, the largest number of suggestable values that may be returned
  * - penalty, a constant for the rate to penalize incorrect suggestions
  * - reward, a constant for the rate to reward chosen values
+ *
+ * Uses a simple topK Update and Prediction function.
+ * This learner's input needs to have argName, methodName, and signature.
+ * Update also needs an argument value.
  */
 function methodInputLearner(type, params) {
   this.type = type;
@@ -232,8 +245,7 @@ function methodInputLearner(type, params) {
 }
 
 /*
- * Given input data, compute the appropriate lookup key
- * Input must have: argName, methodName, and signature.
+ * Given input data, compute the appropriate lookup key.
  */
 function methodInputLearnerComputeKey(input) {
   var keyArr = [
@@ -245,11 +257,49 @@ function methodInputLearnerComputeKey(input) {
 }
 
 /*
- * Given input data, boost the rank of the given value and
- * penalize the other values.
- * Input must have: argName, methodName, signature, and value
+ * Create a method invocation learner that suggests the most likely invocations
+ * for a given method.
+ * Params can optionally include:
+ * - minThreshold, the minimum score of a suggestable value
+ * - maxValues, the largest number of suggestable values that may be returned
+ * - penalty, a constant for the rate to penalize incorrect suggestions
+ * - reward, a constant for the rate to reward chosen values
+ *
+ * Uses a simple topK Update and Prediction function.
+ * This learner's input needs to have a methodName and signature.
+ * Update also needs a JSON-encoded arguments string.
  */
-function methodInputLearnerUpdate(input) {
+function methodInvocationLearner(type, params) {
+  this.type = type;
+  this.inputMap = {}; // map[string]map[string]number
+
+  // Override the default params with relevant fields from params.
+  this.params = {
+    penalty: 0.1,
+    reward: 0.4
+  };
+  _.assign(this.params, params);
+
+  addAttributes(this, LEARNER_METHODS[type]);
+}
+
+/*
+ * Given input data, compute the appropriate lookup key
+ * Input must have: methodName and signature.
+ */
+function methodInvocationLearnerComputeKey(input) {
+  var keyArr = [
+    stringifySignature(input.signature),
+    input.methodName
+  ];
+  return keyArr.join('|');
+}
+
+/*
+ * Given input data, boost the rank of the given value and penalize others.
+ * Note: Learners using this predict function need to be similar structurally.
+ */
+function topKLearnerUpdate(input) {
   var key = this.computeKey(input);
   var predValues = this.predict(input);
   var value = input.value;
@@ -276,10 +326,10 @@ function methodInputLearnerUpdate(input) {
 }
 
 /*
- * Given input data, predict the most likely values for this method input.
- * Input must have: argName, methodName, and signature.
+ * Given input data, predict the most likely values.
+ * Note: Learners using this predict function need to be similar structurally.
  */
-function methodInputLearnerPredict(input) {
+function topKLearnerPredict(input) {
   var key = this.computeKey(input);
   var values = this.inputMap[key];
 
