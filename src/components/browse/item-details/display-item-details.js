@@ -38,23 +38,19 @@ function displayItemDetails(state, events, data) {
     for (var m in signatureResult) {
       if (signatureResult.hasOwnProperty(m)) {
         // Initialize the method form for future rendering.
-        // TODO(alexfandrianto): As written, this will never refresh its state.
-        // There may be edge cases that necessitate full or partial refresh.
-        if (state.methodForm.get(m) === undefined) {
-          var form = methodForm(name, signatureResult, m, events.methodCalled);
-          state.methodForm.put(m, form.state);
-          events.methodForm.put(m, form.events);
+        var form = methodForm(name, signatureResult, m, events.methodCalled);
+        state.methodForm.put(m, form.state);
+        events.methodForm.put(m, form.events);
 
-          // TODO(alexfandrianto): Fill in the area below.
-          /*
-          x.events.methodForm.methodStart(
-            // TODO(alexfandrianto): Handler for this method's start
-          );
-          x.events.methodForm.methodEnd(
-            // TODO(alexfandrianto): Handler for this method's end
-          );
-          */
-        }
+        // TODO(alexfandrianto): Fill in the area below.
+        /*
+        x.events.methodForm.methodStart(
+          // TODO(alexfandrianto): Handler for this method's start
+        );
+        x.events.methodForm.methodEnd(
+          // TODO(alexfandrianto): Handler for this method's end
+        );
+        */
 
         // TODO(alexfandrianto): It's likely this logic will be moved to
         // renderMethod since these recommendations are no longer very useful.
