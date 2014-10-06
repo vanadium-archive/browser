@@ -2,7 +2,6 @@ var mercury = require('mercury');
 var AttributeHook = require('../../../lib/mercury/attribute-hook');
 var insertCss = require('insert-css');
 var displayItemDetails = require('./display-item-details');
-var makeRPC = require('./make-rpc');
 var browseService = require('../../../services/browse-service');
 var smartService = require('../../../services/smart-service');
 var h = mercury.h;
@@ -62,7 +61,6 @@ function create() {
   var events = mercury.input([
     'displayItemDetails',
     'tabSelected',
-    'methodCalled',
     'methodRemoved',
     'methodCancelled',
     'methodForm'
@@ -237,21 +235,14 @@ function renderSuggestRPC(state, events, methodName, prediction) {
 }
 
 /*
- * Renders a Run button to make RPCs
+ * Renders a Run button to make RPCs.
+ * TODO(alexfandrianto): Is going to go away soon!
  */
 function renderRPCRunButton(state, events, methodName, hasParams, args) {
-  var ev = mercury.event(events.methodCalled, {
-    name: state.itemName,
-    methodName: methodName,
-    hasParams: hasParams,
-    signature: state.signature,
-    args: args
-  });
   var runButton = h(
     'paper-button.method-input-run',
     {
       'href': '#',
-      'ev-click': ev,
       'label': 'RUN',
       'icon': new AttributeHook('av:play-circle-outline')
     }
@@ -303,7 +294,6 @@ function wireUpEvents(state, events) {
   events.tabSelected(function(data) {
     state.selectedTabIndex.set(data.index);
   });
-  events.methodCalled(makeRPC.bind(null, state));
   events.methodRemoved(function(data) {
     var detail = state.details[data.name];
     delete detail[data.methodName];

@@ -5,6 +5,8 @@ var debug = require('debug')(
   'components:browse:item-details:display-item-details'
 );
 var methodForm = require('./method-form/index.js');
+var methodStart = require('./method-start.js');
+var methodEnd = require('./method-end.js');
 
 module.exports = displayItemDetails;
 
@@ -38,19 +40,17 @@ function displayItemDetails(state, events, data) {
     for (var m in signatureResult) {
       if (signatureResult.hasOwnProperty(m)) {
         // Initialize the method form for future rendering.
-        var form = methodForm(name, signatureResult, m, events.methodCalled);
+        var form = methodForm(name, signatureResult, m);
         state.methodForm.put(m, form.state);
         events.methodForm.put(m, form.events);
 
-        // TODO(alexfandrianto): Fill in the area below.
-        /*
-        x.events.methodForm.methodStart(
-          // TODO(alexfandrianto): Handler for this method's start
+        // Hook up the new form's method start and end events.
+        form.events.methodStart(
+          methodStart.bind(null, state, m)
         );
-        x.events.methodForm.methodEnd(
-          // TODO(alexfandrianto): Handler for this method's end
+        form.events.methodEnd(
+          methodEnd.bind(null, state, m)
         );
-        */
 
         // TODO(alexfandrianto): It's likely this logic will be moved to
         // renderMethod since these recommendations are no longer very useful.
@@ -94,5 +94,7 @@ function displayItemDetails(state, events, data) {
       err, (err && err.stack) ? err.stack : undefined
     );
     state.signature.set('');
+  }).catch(function(err) {
+    debug('Error when handling the received signature', err);
   });
 }
