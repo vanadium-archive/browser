@@ -7,17 +7,15 @@ var PropertyValueEvent =
   require('../../../../lib/mercury/property-value-event');
 var debug = require('debug')('components:browse:item-details:method-form');
 var smartService = require('../../../../services/smart-service');
+var makeRPC = require('./make-rpc.js');
 
 module.exports = create;
 module.exports.render = render;
 
 /*
  * Create the state and events necessary to render a working method form.
- *
- * TODO(alexfandrianto): Remove the makeRPC parameter since it's a crutch.
- * makeRPC needs a rework before this can actually be done, unfortunately.
  */
-function create(itemName, signature, methodName, makeRPC) {
+function create(itemName, signature, methodName) {
   var state = mercury.struct({
     /*
      * Item name to target RPCs against.
@@ -94,7 +92,7 @@ function create(itemName, signature, methodName, makeRPC) {
     'starAction'    // TODO(alexfandrianto): star/unstar a method invocation
   ]);
 
-  wireUpEvents(state, events, makeRPC);
+  wireUpEvents(state, events);
 
   return {
     state: state,
@@ -149,11 +147,23 @@ function refreshRecommendations(state) {
  * Wire up the events for the method form mercury component.
  * Note: Some events are left for the parent component to hook up.
  */
-function wireUpEvents(state, events, makeRPC) {
-  // TODO(alexfandrianto): Move the makeRPC invocation to this file's runAction.
-  // makeRPC currently modifies the output variable (owned by the parent elem),
-  // so to prevent a CL blowup, this call is temporarily deferred to the parent.
-  events.runAction(makeRPC);
+function wireUpEvents(state, events) {
+  // The run action triggers a start event, RPC call, and end event.
+  events.runAction(function(data) {
+    events.methodStart();
+    makeRPC(data).then(function success(result) {
+      events.methodEnd({
+        args: data.args,
+        result: result
+      });
+    }, function failure(error) {
+      events.methodEnd({
+        error: error
+      });
+    }).catch(function(err) {
+      debug('Error handling makeRPC', err);
+    });
+  });
 
   events.expandAction(function() {
     state.expanded.set(!state.expanded());
@@ -385,8 +395,6 @@ function getRunEvent(state, events, args) {
   return mercury.event(events.runAction, {
     name: state.itemName,
     methodName: state.methodName,
-    hasParams: state.args.length === 0,
-    signature: state.signature,
     args: args
   });
 }
