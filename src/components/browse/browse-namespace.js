@@ -1,6 +1,6 @@
 var mercury = require('mercury');
 var exists = require('../../lib/exists');
-var purgeMercuryArray = require('../../lib/mercury/purgeMercuryArray');
+var setMercuryArray = require('../../lib/mercury/setMercuryArray');
 var debug = require('debug')('components:browse:browse-namespace');
 var browseService = require('../../services/browse-service');
 
@@ -57,7 +57,7 @@ function browseNamespace(browseState, browseEvents, data) {
   });
 
   function emptyOutItems() {
-    purgeMercuryArray(browseState.items);
+    setMercuryArray(browseState.items, []);
   }
 }
 

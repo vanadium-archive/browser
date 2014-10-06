@@ -1,4 +1,4 @@
-var purgeMercuryArray = require('../../../lib/mercury/purgeMercuryArray');
+var setMercuryArray = require('../../../lib/mercury/setMercuryArray');
 var browseService = require('../../../services/browse-service');
 var smartService = require('../../../services/smart-service');
 var debug = require('debug')(
@@ -25,10 +25,9 @@ function displayItemDetails(state, events, data) {
   // Save every time we look at a service's details.
   smartService.save('learner-shortcut');
 
-  // Set the new name and reset the selected method and outputs.
-  // TODO(alexfandrianto): Instead of resetting, should we remember this info?
+  // Set the new name and reset the outputs.
   state.itemName.set(name);
-  purgeMercuryArray(state.methodOutputs);
+  setMercuryArray(state.methodOutputs, []);
 
   browseService.signature(name).then(function(signatureResult) {
     state.signature.set(signatureResult);

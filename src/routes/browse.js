@@ -5,7 +5,7 @@ var exists = require('../lib/exists');
 var store = require('../lib/local-storage');
 var smartService = require('../services/smart-service');
 var browseService = require('../services/browse-service');
-var purgeMercuryArray = require('../lib/mercury/purgeMercuryArray');
+var setMercuryArray = require('../lib/mercury/setMercuryArray');
 
 module.exports = function(routes) {
   // Url pattern: /browse/veyronNameSpace?glob=*
@@ -49,31 +49,20 @@ function handleBrowseRoute(state, events, params) {
   // Put the URL in the store, so we know where to reload next time.
   store.setValue('index', namespace);
 
-  // TODO(alexfandrianto): Remove these debug lines.
-  // For debug, display what our prediction would be.
-  console.log('PredictS:', smartService.predict('learner-shortcut', ''));
-
   // Update our shortcuts with these predictions.
   var predictions = smartService.predict('learner-shortcut', '');
-  // TODO(alexfandrianto): When observ-array's set() method works properly,
-  // update the observ-array variables to use set instead of purge + push.
-  purgeMercuryArray(state.browse.shortcuts);
-
-  // For each prediction made, setup the shortcut. The shortcut needs to know
-  // isGlobbable to render similarly to the other globbed names.
-  predictions.forEach(function(prediction) {
+  var shortcuts = predictions.map(function(prediction) {
     var shortcut = mercury.struct({
       itemName: mercury.value(prediction.item),
       isGlobbable: mercury.value(false)
     });
-    state.browse.shortcuts.push(shortcut);
-
     // If it turns out that the shortcut is globbable, it will be updated.
     browseService.isGlobbable(shortcut.itemName()).then(function(isGlobbable) {
       shortcut.isGlobbable.set(isGlobbable);
     });
+    return shortcut;
   });
-
+  setMercuryArray(state.browse.shortcuts, shortcuts);
 
   // Trigger browse components browseNamespace event
   events.browse.browseNamespace({

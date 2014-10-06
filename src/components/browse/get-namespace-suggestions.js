@@ -1,4 +1,4 @@
-var purgeMercuryArray = require('../../lib/mercury/purgeMercuryArray');
+var setMercuryArray = require('../../lib/mercury/setMercuryArray');
 var debug = require('debug')('components:browse:browse-children');
 var browseService = require('../../services/browse-service');
 
@@ -20,7 +20,7 @@ function getNamespaceSuggestions(browseState, namespace) {
 
   // Update the state prefix and clear out the children.
   browseState.namespacePrefix.set(prefix);
-  purgeMercuryArray(browseState.namespaceSuggestions);
+  setMercuryArray(browseState.namespaceSuggestions, []);
 
   // There is nothing to glob without a rooted name.
   if (prefix === '' || prefix === '/') {
