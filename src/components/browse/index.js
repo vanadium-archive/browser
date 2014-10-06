@@ -23,8 +23,9 @@ module.exports.renderHeader = renderHeader;
 function create() {
   smartService.loadOrRegister(
     'learner-shortcut',
-    smartService.constants.LEARNER_SHORTCUT,
-    { k: 3 }
+    smartService.constants.LEARNER_SHORTCUT, {
+      k: 3
+    }
   );
   smartService.loadOrRegister(
     'learner-autorpc',
@@ -32,18 +33,22 @@ function create() {
   );
   smartService.loadOrRegister(
     'learner-method-input',
-    smartService.constants.LEARNER_METHOD_INPUT,
-    { minThreshold: 0.2, maxValues: 5 }
+    smartService.constants.LEARNER_METHOD_INPUT, {
+      minThreshold: 0.2,
+      maxValues: 5
+    }
   );
   smartService.loadOrRegister(
     'learner-method-invocation',
-    smartService.constants.LEARNER_METHOD_INVOCATION,
-    { minThreshold: 0.25, maxValues: 2 }
+    smartService.constants.LEARNER_METHOD_INVOCATION, {
+      minThreshold: 0.25,
+      maxValues: 2
+    }
   );
 
   var selectedItemDetails = itemDetailsComponent();
 
-  var state = mercury.struct({
+  var state = mercury.varhash({
     /*
      * Veyron namespace being displayed and queried
      * @type {string}
@@ -72,8 +77,9 @@ function create() {
     namespacePrefix: mercury.value(''),
 
     /*
-     * List of descendants for the namespace
-     * @type {Array<Object>}
+     * List of namespace items to display
+     * @see services/namespace/item
+     * @type {Array<namespaceitem>}
      */
     items: mercury.array([]),
 
@@ -144,17 +150,19 @@ function renderHeader(browseState, browseEvents, navigationEvents) {
 
   var children = browseState.namespaceSuggestions.map(
     function renderChildItem(child) {
-      return h('paper-item', { 'label': new AttributeHook(child) });
+      return h('paper-item', {
+        'label': new AttributeHook(child)
+      });
     }
   );
 
   return h('div.namespace-box',
     h('core-tooltip.tooltip', {
-      'label': new AttributeHook(
-        'Enter a name to browse, e.g. house/living-room'
-      ),
-      'position': 'right'
-    },
+        'label': new AttributeHook(
+          'Enter a name to browse, e.g. house/living-room'
+        ),
+        'position': 'right'
+      },
       h('div', {
         'layout': new AttributeHook('true'),
         'horizontal': new AttributeHook('true')
@@ -257,11 +265,11 @@ function renderSearch(browseState, navigationEvents) {
 
   return h('div.search-box',
     h('core-tooltip.tooltip', {
-      'label': new AttributeHook(
-        'Enter Glob query for searching, e.g. */*/a*'
-      ),
-      'position': 'left'
-    },
+        'label': new AttributeHook(
+          'Enter Glob query for searching, e.g. */*/a*'
+        ),
+        'position': 'left'
+      },
       h('div', {
         'layout': new AttributeHook('true'),
         'horizontal': new AttributeHook('true')
@@ -287,7 +295,7 @@ function renderShortcuts(browseState, browseEvents, navigationEvents) {
   return browseState.shortcuts.map(function(shortcut) {
     var item = {
       isGlobbable: shortcut.isGlobbable,
-      itemName: shortcut.itemName,
+      objectName: shortcut.itemName,
       mountedName: browseService.basename(shortcut.itemName)
     };
     return renderItem(browseState, browseEvents, navigationEvents, item);
@@ -305,30 +313,62 @@ function renderItems(browseState, browseEvents, navigationEvents) {
 
 /*
  * Render a browse item card with the additional drill if it is globbable.
- * item needs to have attributes: itemName, isGlobbable, and mountedName
  */
 function renderItem(browseState, browseEvents, navigationEvents, item) {
-  var selected = browseState.selectedItemDetails.itemName === item.itemName;
+  var selected = browseState.selectedItemDetails.itemName === item.objectName;
 
   var expandAction = null;
   if (item.isGlobbable) {
     expandAction = h('a.drill', {
-      'href': browseRoute.createUrl(item.itemName, browseState.globQuery),
+      'href': browseRoute.createUrl(item.objectName, browseState.globQuery),
       'ev-click': mercury.event(navigationEvents.navigate, {
-        path: browseRoute.createUrl(item.itemName, browseState.globQuery)
+        path: browseRoute.createUrl(item.objectName, browseState.globQuery)
       })
     }, h('core-icon.icon', {
       'icon': new AttributeHook('chevron-right')
     }));
   }
-  return h('div.item.card' + (selected ? '.selected' : ''), [
+
+  var iconNode = null;
+  var isAccessible = true;
+  var itemTooltip = item.mountedName;
+
+  if (item.serverInfo) {
+    if (item.serverInfo.typeInfo.icon) {
+      iconNode = h('core-icon.service-type-icon', {
+        'icon': new AttributeHook(item.serverInfo.typeInfo.icon),
+        'title': new AttributeHook(item.serverInfo.typeInfo.typeName),
+      });
+    }
+    isAccessible = item.serverInfo.isAccessible;
+    if (!isAccessible) {
+      itemTooltip += ' - Service seems to be offline or inaccessible';
+    }
+  } else {
+    iconNode = h('core-icon.service-type-icon', {
+      'icon': new AttributeHook('folder-open'),
+      'title': new AttributeHook('Intermediary Name'),
+    });
+  }
+
+  var itemClassNames = 'item.card' +
+    (selected ? '.selected' : '') +
+    (!isAccessible ? '.inaccessible' : '');
+
+  return h('div.' + itemClassNames, {
+    'title': itemTooltip
+  }, [
     h('a.label', {
-      'href': '#',
-      'ev-click': mercury.event(
-        browseEvents.selectedItemDetails.displayItemDetails, {
-          name: item.itemName
-        })
-    }, item.mountedName),
+        'href': '#',
+        'ev-click': mercury.event(
+          browseEvents.selectedItemDetails.displayItemDetails, {
+            name: item.objectName
+          })
+      }, [
+        iconNode,
+        h('span', item.mountedName)
+      ]
+    ),
     expandAction
   ]);
 }

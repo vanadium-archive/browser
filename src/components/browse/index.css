@@ -52,7 +52,7 @@
 }
 .item .label, .item .drill {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
   padding: 0.5em;
 }
@@ -79,6 +79,10 @@
 .item.card .icon {
   align-self: center;
   padding-right: 0.5em;
+}
+
+.item.inaccessible {
+  opacity: 0.5;
 }
 
 .item.selected.card {
@@ -171,9 +175,15 @@
   font-size: var(--size-space-small)
 }
 
+.service-type-icon {
+  transform: scale(0.7);
+  padding-right: 0.75em;
+}
+
 paper-autocomplete.autocomplete {
   width: 16em;
 }
+
 paper-autocomplete.autocomplete::shadow #suggest-box {
   background-color: var(--color-grey-light);
 }

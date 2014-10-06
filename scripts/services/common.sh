@@ -108,7 +108,7 @@ fail_on_exit() {
   # Service no longer running.
   # Ignore if we are already terminating, this is necessary to differentiate between
   # a process exiting/not starting during the run vs. being shutdown by the script itself.
-  if [[ $(cat ${TERMINATING}) = true ]]; then
+  if [[ ! -e "${TERMINATING}" ]] || [[ $(cat ${TERMINATING}) = true ]]; then
     return
   fi
 

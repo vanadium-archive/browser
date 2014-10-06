@@ -47,7 +47,7 @@ function glob(name, globQuery) {
   var cacheKey = namespaceUtil.join(name, globQuery);
   var cacheHit = globCache.get(cacheKey);
   if (cacheHit) {
-    return cacheHit;
+    return Promise.resolve(cacheHit);
   }
 
   var runtime;
@@ -123,7 +123,7 @@ var signatureCache = new LRU({
 function getSignature(objectName) {
   var cacheHit = signatureCache.get(objectName);
   if (cacheHit) {
-    return cacheHit;
+    return Promise.resolve(cacheHit);
   }
   return getRuntime().then(function bindToName(rt) {
     return rt.bindTo(objectName);
@@ -208,13 +208,22 @@ function getNamespaceItem(mountedName, parentName, servers) {
  */
 function getServerInfo(objectName) {
   var signature;
-  return getSignature(objectName).then(function(sig) {
+  var isAccessible;
+  return getSignature(objectName).then(function gotSignature(sig) {
     signature = sig;
+    isAccessible = true;
     return getServerTypeInfo(sig);
+  },function failedToGetSignature(err) {
+    signature = {};
+    //TODO(aghassemi): We should at least be able to tell if inaccessible
+    //because not authorized vs other reasons.
+    isAccessible = false;
+    return createUnkownServiceTypeInfo();
   }).then(function(serverTypeInfo) {
     return itemFactory.createServerInfo({
       typeInfo: serverTypeInfo,
-      signature: signature
+      signature: signature,
+      isAccessible: isAccessible
     });
   });
 }
@@ -246,11 +255,15 @@ function getServerTypeInfo(signature) {
       icon: 'social:circles-extended'
     });
   } else {
-    return itemFactory.createServerTypeInfo({
-      key: 'veyron-unknown',
-      typeName: 'Service',
-      description: null,
-      icon: 'cloud-queue'
-    });
+    return createUnkownServiceTypeInfo();
   }
+}
+
+function createUnkownServiceTypeInfo() {
+  return itemFactory.createServerTypeInfo({
+    key: 'veyron-unknown',
+    typeName: 'Service',
+    description: null,
+    icon: 'cloud-queue'
+  });
 }

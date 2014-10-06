@@ -42,12 +42,15 @@ function createItem(obj) {
  * @see #createServerTypeInfo method for details on typeInfo.
  * @param {object} obj.signature object representing the method signature of the
  * server.
+ * @param {boolean} obj.isAccessible Whether the server instance is online and
+ * accessible by the user.
  * @return {mercury.struct}
  */
 function createServerInfo(obj) {
   return mercury.struct({
     typeInfo: obj.typeInfo,
-    signature: mercury.value(obj.signature)
+    signature: mercury.value(obj.signature),
+    isAccessible: mercury.value(obj.isAccessible)
   });
 }
 

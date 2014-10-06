@@ -1,8 +1,7 @@
 var mercury = require('mercury');
 var exists = require('../../lib/exists');
-var setMercuryArray = require('../../lib/mercury/setMercuryArray');
 var debug = require('debug')('components:browse:browse-namespace');
-var browseService = require('../../services/browse-service');
+var namespaceService = require('../../services/namespace/service');
 
 module.exports = browseNamespace;
 
@@ -27,28 +26,15 @@ function browseNamespace(browseState, browseEvents, data) {
     browseState.globQuery.set(data.globQuery);
   }
 
+  emptyOutItems();
+
   var namespace = browseState.namespace();
-  browseService.isGlobbable(namespace).then(function(isGlobbable) {
-    if(!isGlobbable) {
-      debug('Not Globbable:', namespace);
-      emptyOutItems();
-      return;
-    }
-    return browseService.glob(namespace, browseState.globQuery())
-    .then(function globResultsReceived(globResult) {
-      debug('Name and Glob result', namespace, globResult);
-      emptyOutItems();
-      globResult.map(constructItemStruct).forEach(function(i) {
-        browseState.items.push(i);
-      });
-    });
+  namespaceService.glob(namespace, browseState.globQuery()).
+  then(function globResultsReceived(items) {
+    browseState.put('items', items);
   }).catch(function(err) {
-    emptyOutItems();
     browseEvents.error(err);
-    debug('Failed to glob',
-      browseState.namespace(), browseState.globQuery(),
-      err, (err && err.stack) ? err.stack : undefined
-    );
+    debug(err);
   });
 
   // trigger display items event
@@ -57,20 +43,6 @@ function browseNamespace(browseState, browseEvents, data) {
   });
 
   function emptyOutItems() {
-    setMercuryArray(browseState.items, []);
+    browseState.put('items', mercury.array([]));
   }
-}
-
-function constructItemStruct(globResultItem) {
-  var item = mercury.struct({
-    itemName: mercury.value(globResultItem.name),
-    mountedName: mercury.value(globResultItem.mountedName),
-    isGlobbable: mercury.value(false)
-  });
-
-  // async call to set isGlobbable
-  browseService.isGlobbable(globResultItem.name).then(function(isGlobbable) {
-    item.isGlobbable.set(isGlobbable);
-  });
-  return item;
 }

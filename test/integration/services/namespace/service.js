@@ -44,6 +44,7 @@ test('getChildren of default namespace root', function(t) {
     assertIsServer(t, item);
     assertIsGlobbable(t, item);
     assertHasSignature(t, item);
+    assertIsAccessible(t, item);
     assertMounttableServiceTypeInfo(t, item);
   }
 
@@ -53,6 +54,7 @@ test('getChildren of default namespace root', function(t) {
     assertIsServer(t, item);
     assertIsGlobbable(t, item);
     assertHasSignature(t, item);
+    assertIsAccessible(t, item);
     assertMounttableServiceTypeInfo(t, item);
   }
 });
@@ -80,6 +82,7 @@ test('getChildren of cottage/lawn', function(t) {
     assertIsServer(t, item);
     assertIsNotGlobbable(t, item);
     assertHasSignature(t, item);
+    assertIsAccessible(t, item);
     assertUnknownServiceTypeInfo(t, item);
   }
 
@@ -116,6 +119,7 @@ test('getChildren of rooted /localhost:8881/house/kitchen', function(t) {
     assertIsServer(t, item);
     assertIsNotGlobbable(t, item);
     assertHasSignature(t, item);
+    assertIsAccessible(t, item);
     assertUnknownServiceTypeInfo(t, item);
   }
 
@@ -126,6 +130,7 @@ test('getChildren of rooted /localhost:8881/house/kitchen', function(t) {
     assertIsServer(t, item);
     assertIsNotGlobbable(t, item);
     assertHasSignature(t, item);
+    assertIsAccessible(t, item);
     assertUnknownServiceTypeInfo(t, item);
   }
 });
@@ -227,6 +232,10 @@ function assertIsNotGlobbable(t, item) {
 
 function assertHasSignature(t, item) {
   t.ok(item.serverInfo.signature, item.mountedName  +': has a signature');
+}
+
+function assertIsAccessible(t, item) {
+  t.ok(item.serverInfo.isAccessible, item.mountedName  +': is accessible');
 }
 
 /*

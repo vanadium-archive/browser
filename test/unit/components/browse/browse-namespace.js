@@ -1,4 +1,5 @@
 var test = require('prova');
+var mercury = require('mercury');
 var proxyquire = require('proxyquireify')(require);
 var browseComponent = proxyquire('../../../../src/components/browse/index', {
   './item-details/index': itemDetailsComponentMock
@@ -11,22 +12,19 @@ var browseComponent = proxyquire('../../../../src/components/browse/index', {
  */
 var mockItem = {
   mountedName: 'mockItem',
-  name: 'foo/bar/mockItem'
-};
-var mockItemResult = {
-  itemName: 'foo/bar/mockItem',
-  mountedName: 'mockItem',
+  objectName: 'foo/bar/mockItem',
   isGlobbable: true
 };
-var browseServiceMock = {
+
+var namespaceServiceMock = {
   isGlobbable: function(name) {
     return Promise.resolve(true);
   },
   glob: function(name, globQuery) {
-    return Promise.resolve([mockItem]);
+    return Promise.resolve(mercury.array([mockItem]));
   }
 };
-var browseServiceMockWithFailure = {
+var namespaceServiceMockWithFailure = {
   isGlobbable: function(name) {
     return Promise.resolve(true);
   },
@@ -48,12 +46,12 @@ function itemDetailsComponentMock() {
 // Require the browseNamespace using the proxy so mocked browse-service is used
 var browseNamespace =
 proxyquire('../../../../src/components/browse/browse-namespace',{
-  '../../services/browse-service': browseServiceMock
+  '../../services/namespace/service': namespaceServiceMock
 });
 
 var browseNamespaceWithFailure =
 proxyquire('../../../../src/components/browse/browse-namespace',{
-  '../../services/browse-service': browseServiceMockWithFailure
+  '../../services/namespace/service': namespaceServiceMockWithFailure
 });
 
 test('Updates state.namespace', function(t) {
@@ -120,12 +118,6 @@ test('Updates state.items', function(t) {
   var state = browseComponent().state;
   var events = browseComponent().events;
 
-  // Should update the items to items returned by glob method call (async)
-  browseNamespace(state, events, {
-    globQuery: '*',
-    namespace: 'foo/bar'
-  });
-
   // The observ-array will callback each time we change state.items
   // Here, we expect exactly 1 changeset to match.
   // We cannot ask all of them to match, so t.deepEquals cannot be used.
@@ -134,14 +126,20 @@ test('Updates state.items', function(t) {
       return;
     }
     var match = true;
-    for (var prop in mockItemResult) {
-      if (mockItemResult[prop] !== items[0][prop]) {
+    for (var prop in mockItem) {
+      if (mockItem[prop] !== items[0][prop]) {
         match = false;
       }
     }
     if (match) {
       t.pass();
     }
+  });
+
+    // Should update the items to items returned by glob method call (async)
+  browseNamespace(state, events, {
+    globQuery: '*',
+    namespace: 'foo/bar'
   });
 });
 
@@ -154,15 +152,16 @@ test('Updates state.items to empty on failure', function(t) {
   // Give initial non-empty value
   state.items.push([mockItem]);
 
+  // The observ-array will callback each time we change state.items
+  // Here, we expect a single clear.
+  state.items(function(items) {
+    t.deepEqual(items, []);
+  });
+
   //Should reset the items to empty on failed glob method call (async)
   browseNamespaceWithFailure(state, events, {
     globQuery: '*',
     namespace: 'foo/bar'
   });
 
-  // The observ-array will callback each time we change state.items
-  // Here, we expect a single clear.
-  state.items(function(items) {
-    t.deepEqual(items, []);
-  });
 });
