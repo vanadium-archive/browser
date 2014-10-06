@@ -108,7 +108,7 @@ fail_on_exit() {
   # Service no longer running.
   # Ignore if we are already terminating, this is necessary to differentiate between
   # a process exiting/not starting during the run vs. being shutdown by the script itself.
-  if [[ $(cat ${TERMINATING}) = true ]] ; then
+  if [[ $(cat ${TERMINATING}) = true ]]; then
     return
   fi
 
@@ -154,7 +154,7 @@ common::run() {
   local -r MTLOG_MESSAGE="Mount table service at"
   cat /dev/null > "${ROOT_MTLOG}"
   (
-    ./mounttabled --address=:"${ROOT_MOUNTTABLE_PORT}" &> "${ROOT_MTLOG}" &
+    ./mounttabled --veyron.tcp.address=:"${ROOT_MOUNTTABLE_PORT}" &> "${ROOT_MTLOG}" &
     fail_on_exit $! "root mounttable" "${ROOT_MTLOG}"
   ) &
   shell::wait_for "${ROOT_MTLOG}" "${MTLOG_MESSAGE}"
@@ -164,7 +164,7 @@ common::run() {
   local -r HOUSE_MTLOG="${TMPDIR}/mt_house.log"
   cat /dev/null > "${HOUSE_MTLOG}"
   (
-    ./mounttabled --address=:"${HOUSE_MOUNTTABLE_PORT}" --name="house" &> "${HOUSE_MTLOG}" &
+    ./mounttabled --veyron.tcp.address=:"${HOUSE_MOUNTTABLE_PORT}" --name="house" &> "${HOUSE_MTLOG}" &
     fail_on_exit $! "house mounttable" "${HOUSE_MTLOG}"
   ) &
   shell::wait_for "${HOUSE_MTLOG}" "${MTLOG_MESSAGE}"
@@ -172,7 +172,7 @@ common::run() {
   local -r COTTAGE_MTLOG="${TMPDIR}/mt_cottage.log"
   cat /dev/null > "${COTTAGE_MTLOG}"
   (
-    ./mounttabled --address=:"${COTTAGE_MOUNTTABLE_PORT}" --name="cottage" &> "${COTTAGE_MTLOG}" &
+    ./mounttabled --veyron.tcp.address=:"${COTTAGE_MOUNTTABLE_PORT}" --name="cottage" &> "${COTTAGE_MTLOG}" &
     fail_on_exit $! "cottage mounttable" "${COTTAGE_MTLOG}"
   ) &
   shell::wait_for "${COTTAGE_MTLOG}" "${MTLOG_MESSAGE}"
