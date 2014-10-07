@@ -100,9 +100,8 @@ fail_on_exit() {
   echo "${PID}" >> "${PIDS}"
 
   # Ensure the service is still running.
-  while [ -d "/proc/${PID}" ]
-  do
-    sleep 0.5
+  while sleep 0.5; do
+    ps -p "${PID}" 1>&2 2>/dev/null || break
   done
 
   # Service no longer running.
