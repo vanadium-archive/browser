@@ -22,6 +22,7 @@
   "dependencies": {
     "bars": "git+https://github.com/steel/bars.git",
     "debug": "^1.0.4",
+    "guid": "^0.0.12",
     "insert-css": "^0.2.0",
     "mercury": "^6.0.1",
     "routes": "^1.2.0",

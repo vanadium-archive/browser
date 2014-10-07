@@ -45,8 +45,8 @@ function create() {
     details: mercury.varhash(),
 
     /*
-     * List of RPC method outputs
-     * @type {Array<string>}
+     * List of RPC method outputs in call-order.
+     * @type {Array<map[string]value>}
      */
     methodOutputs: mercury.array([]),
 
@@ -204,13 +204,16 @@ function renderMethodOutput(state) {
     h('th', 'Output')
   ])];
   for (var i = state.methodOutputs.length - 1; i >= 0; i--) {
-    outputRows.push(
-      h('tr', [
-        h('td', { 'scope': 'row' }, '' + (i + 1)),
-        h('td', h('pre', state.methodOutputs[i][0])),
-        h('td', h('pre', state.methodOutputs[i][1]))
-      ])
-    );
+    var output = state.methodOutputs[i];
+    if (output.shouldShow) {
+      outputRows.push(
+        h('tr', [
+          h('td', { 'scope': 'row' }, '' + (i + 1)),
+          h('td', h('pre', output.method)),
+          h('td', h('pre', output.result))
+        ])
+      );
+    }
   }
 
   var outputTable = h('table', {

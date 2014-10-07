@@ -8,12 +8,12 @@ module.exports = methodEnd;
  * Use the data from a successful/failed RPC to record the results properly.
  * Note that the recorded results are rendered according to formatDetail.
  * Successful RPCs also update the smartService.
- * data needs to have either (error) or (result and args)
+ * data needs to have runID and either (error) or (result and args)
  */
 function methodEnd(state, method, data) {
   // Simply draw the error message if there was an error.
   if (data.error !== undefined) {
-    formatResult(state, method, data.error, false);
+    formatResult(state, method, data.runID, data.error, false);
     return;
   }
 
@@ -30,11 +30,12 @@ function methodEnd(state, method, data) {
   // TODO(alexfandrianto): Streaming results are ignored with this logic.
   var expectedOutArgs = state.signature()[method].numOutArgs;
   if (expectedOutArgs === 1) { // Error is the only possible out argument.
+    replaceResult(state, data.runID, '<ok>');
     return;
   }
 
   // Draw the results.
-  formatResult(state, method, data.result, numInArgs === 0);
+  formatResult(state, method, data.runID, data.result, numInArgs === 0);
 
   // Learn which parameterless RPCs are good to recommend.
   if (numInArgs === 0) {
@@ -43,12 +44,14 @@ function methodEnd(state, method, data) {
 }
 
 /*
- * The result will be rendered. The rendering is stored in the state.
+ * The result will be rendered, overwriting the placeholder identified by runID.
  */
-function formatResult(state, method, result, addToDetails) {
+function formatResult(state, method, runID, result, addToDetails) {
   // Use formatDetail to process the raw result into a renderable format.
   var formattedResult = formatDetail(result);
-  state.methodOutputs.push([method, formattedResult]);
+
+  // Then overwrite the old value.
+  replaceResult(state, runID, formattedResult);
 
   // If we received a result for a 0-parameter RPC, add to the details page.
   if (addToDetails) {
@@ -59,6 +62,19 @@ function formatResult(state, method, result, addToDetails) {
     }
     detail[method] = formattedResult;
     state.details.put(name, detail);
+  }
+}
+
+/*
+ * Find the correct output replacement mercury struct and replace its result.
+ * If the replacement cannot be found, then no substitution occurs.
+ */
+function replaceResult(state, runID, newResult) {
+  var match = state.methodOutputs.filter(function matchesRunID(output) {
+    return output.get('runID').equals(runID);
+  }).get(0);
+  if (match !== undefined) {
+    match.put('result', newResult);
   }
 }
 

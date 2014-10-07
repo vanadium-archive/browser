@@ -1,6 +1,7 @@
 var mercury = require('mercury');
 var h = mercury.h;
 var _ = require('lodash');
+var guid = require('guid');
 var setMercuryArray = require('../../../../lib/mercury/setMercuryArray');
 var AttributeHook = require('../../../../lib/mercury/attribute-hook');
 var PropertyValueEvent =
@@ -68,13 +69,7 @@ function create(itemName, signature, methodName) {
      * Whether the method form is in its expanded state or not.
      * @type {boolean}
      */
-    expanded: mercury.value(false),
-
-    /*
-     * TODO(alexfandrianto): Indicates if the RPC is running.
-     * @type {boolean}
-     */
-    running: mercury.value(false)
+    expanded: mercury.value(false)
   });
 
   // Initialize state with reset/refresh functions.
@@ -150,14 +145,22 @@ function refreshRecommendations(state) {
 function wireUpEvents(state, events) {
   // The run action triggers a start event, RPC call, and end event.
   events.runAction(function(data) {
-    events.methodStart();
+    // This random value allows us to uniquely identify this RPC.
+    var randomID = guid.create();
+    events.methodStart({
+      runID: randomID
+    });
+
+    // Make the RPC, tracking when the method is in-progress or complete.
     makeRPC(data).then(function success(result) {
       events.methodEnd({
+        runID: randomID,
         args: data.args,
         result: result
       });
     }, function failure(error) {
       events.methodEnd({
+        runID: randomID,
         error: error
       });
     }).catch(function(err) {
