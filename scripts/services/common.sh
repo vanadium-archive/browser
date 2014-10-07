@@ -101,7 +101,7 @@ fail_on_exit() {
 
   # Ensure the service is still running.
   while sleep 0.5; do
-    ps -p "${PID}" 1>&2 2>/dev/null || break
+    ps -p "${PID}" &> /dev/null || break
   done
 
   # Service no longer running.
