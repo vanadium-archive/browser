@@ -18,4 +18,8 @@ type Speaker interface {
  Volume(volumeLevel uint16) (error)
  // GetVolume retrieves the Speaker's volume.
  GetVolume() (uint16, error)
+ // AddSongs adds the list of given songs to the song library.
+ AddSongs(songs []string) (error)
+ // RemoveSongs removes the list of given songs from the song library.
+ RemoveSongs(songs []string) (error)
 }

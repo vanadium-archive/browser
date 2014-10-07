@@ -39,6 +39,10 @@ type Speaker_ExcludingUniversal interface {
 	Volume(ctx _gen_context.T, volumeLevel uint16, opts ..._gen_ipc.CallOpt) (err error)
 	// GetVolume retrieves the Speaker's volume.
 	GetVolume(ctx _gen_context.T, opts ..._gen_ipc.CallOpt) (reply uint16, err error)
+	// AddSongs adds the list of given songs to the song library.
+	AddSongs(ctx _gen_context.T, songs []string, opts ..._gen_ipc.CallOpt) (err error)
+	// RemoveSongs removes the list of given songs from the song library.
+	RemoveSongs(ctx _gen_context.T, songs []string, opts ..._gen_ipc.CallOpt) (err error)
 }
 type Speaker interface {
 	_gen_ipc.UniversalServiceMethods
@@ -64,6 +68,10 @@ type SpeakerService interface {
 	Volume(context _gen_ipc.ServerContext, volumeLevel uint16) (err error)
 	// GetVolume retrieves the Speaker's volume.
 	GetVolume(context _gen_ipc.ServerContext) (reply uint16, err error)
+	// AddSongs adds the list of given songs to the song library.
+	AddSongs(context _gen_ipc.ServerContext, songs []string) (err error)
+	// RemoveSongs removes the list of given songs from the song library.
+	RemoveSongs(context _gen_ipc.ServerContext, songs []string) (err error)
 }
 
 // SpeakerPlayStreamCall is the interface for call object of the method
@@ -348,6 +356,28 @@ func (__gen_c *clientStubSpeaker) GetVolume(ctx _gen_context.T, opts ..._gen_ipc
 	return
 }
 
+func (__gen_c *clientStubSpeaker) AddSongs(ctx _gen_context.T, songs []string, opts ..._gen_ipc.CallOpt) (err error) {
+	var call _gen_ipc.Call
+	if call, err = __gen_c.client(ctx).StartCall(ctx, __gen_c.name, "AddSongs", []interface{}{songs}, opts...); err != nil {
+		return
+	}
+	if ierr := call.Finish(&err); ierr != nil {
+		err = ierr
+	}
+	return
+}
+
+func (__gen_c *clientStubSpeaker) RemoveSongs(ctx _gen_context.T, songs []string, opts ..._gen_ipc.CallOpt) (err error) {
+	var call _gen_ipc.Call
+	if call, err = __gen_c.client(ctx).StartCall(ctx, __gen_c.name, "RemoveSongs", []interface{}{songs}, opts...); err != nil {
+		return
+	}
+	if ierr := call.Finish(&err); ierr != nil {
+		err = ierr
+	}
+	return
+}
+
 func (__gen_c *clientStubSpeaker) UnresolveStep(ctx _gen_context.T, opts ..._gen_ipc.CallOpt) (reply []string, err error) {
 	var call _gen_ipc.Call
 	if call, err = __gen_c.client(ctx).StartCall(ctx, __gen_c.name, "UnresolveStep", nil, opts...); err != nil {
@@ -409,6 +439,10 @@ func (__gen_s *ServerStubSpeaker) GetMethodTags(call _gen_ipc.ServerCall, method
 		return []interface{}{}, nil
 	case "GetVolume":
 		return []interface{}{}, nil
+	case "AddSongs":
+		return []interface{}{}, nil
+	case "RemoveSongs":
+		return []interface{}{}, nil
 	default:
 		return nil, nil
 	}
@@ -416,6 +450,14 @@ func (__gen_s *ServerStubSpeaker) GetMethodTags(call _gen_ipc.ServerCall, method
 
 func (__gen_s *ServerStubSpeaker) Signature(call _gen_ipc.ServerCall) (_gen_ipc.ServiceSignature, error) {
 	result := _gen_ipc.ServiceSignature{Methods: make(map[string]_gen_ipc.MethodSignature)}
+	result.Methods["AddSongs"] = _gen_ipc.MethodSignature{
+		InArgs: []_gen_ipc.MethodArgument{
+			{Name: "songs", Type: 61},
+		},
+		OutArgs: []_gen_ipc.MethodArgument{
+			{Name: "", Type: 65},
+		},
+	}
 	result.Methods["GetSong"] = _gen_ipc.MethodSignature{
 		InArgs: []_gen_ipc.MethodArgument{},
 		OutArgs: []_gen_ipc.MethodArgument{
@@ -456,6 +498,14 @@ func (__gen_s *ServerStubSpeaker) Signature(call _gen_ipc.ServerCall) (_gen_ipc.
 			{Name: "", Type: 65},
 		},
 		InStream: 67,
+	}
+	result.Methods["RemoveSongs"] = _gen_ipc.MethodSignature{
+		InArgs: []_gen_ipc.MethodArgument{
+			{Name: "songs", Type: 61},
+		},
+		OutArgs: []_gen_ipc.MethodArgument{
+			{Name: "", Type: 65},
+		},
 	}
 	result.Methods["Stop"] = _gen_ipc.MethodSignature{
 		InArgs: []_gen_ipc.MethodArgument{},
@@ -534,5 +584,15 @@ func (__gen_s *ServerStubSpeaker) Volume(call _gen_ipc.ServerCall, volumeLevel u
 
 func (__gen_s *ServerStubSpeaker) GetVolume(call _gen_ipc.ServerCall) (reply uint16, err error) {
 	reply, err = __gen_s.service.GetVolume(call)
+	return
+}
+
+func (__gen_s *ServerStubSpeaker) AddSongs(call _gen_ipc.ServerCall, songs []string) (err error) {
+	err = __gen_s.service.AddSongs(call, songs)
+	return
+}
+
+func (__gen_s *ServerStubSpeaker) RemoveSongs(call _gen_ipc.ServerCall, songs []string) (err error) {
+	err = __gen_s.service.RemoveSongs(call, songs)
 	return
 }

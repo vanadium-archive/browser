@@ -1,6 +1,7 @@
 package mocks
 
 import (
+	"time"
 	"veyron.io/veyron/veyron2/ipc"
 )
 
@@ -18,14 +19,16 @@ type smokeDetector struct {
 	sensitivity int16
 }
 
-// Status retrieves the current status of the SmokeDetector (i.e., detecting, not detecting)
-func (s *smokeDetector) Status(ipc.ServerContext) (string, error) {
-	return s.status, nil
+// Status retrieves the current status and sensitivity of the SmokeDetector.
+func (s *smokeDetector) Status(ipc.ServerContext) (status string, sensitivity int16, err error) {
+	return s.status, s.sensitivity, nil
 }
 
 // Test the SmokeDetector to check if it is working.
 func (s *smokeDetector) Test(ipc.ServerContext) (bool, error) {
-	return true, nil
+	success := s.sensitivity > 0        // succeed only if sensitivity is positive
+	time.Sleep(2500 * time.Millisecond) // simulate testing for 2.5 seconds
+	return success, nil
 }
 
 // Sensitivity adjusts the SmokeDetector's sensitivity to smoke.

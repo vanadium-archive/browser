@@ -22,8 +22,8 @@ const _ = _gen_wiretype.TypeIDInvalid
 // SmokeDetector_ExcludingUniversal is the interface without internal framework-added methods
 // to enable embedding without method collisions.  Not to be used directly by clients.
 type SmokeDetector_ExcludingUniversal interface {
-	// Status retrieves the current status of the SmokeDetector (i.e., detecting, not detecting)
-	Status(ctx _gen_context.T, opts ..._gen_ipc.CallOpt) (reply string, err error)
+	// Status retrieves the current status and sensitivity of the SmokeDetector.
+	Status(ctx _gen_context.T, opts ..._gen_ipc.CallOpt) (status string, sensitivity int16, err error)
 	// Test the SmokeDetector to check if it is working.
 	Test(ctx _gen_context.T, opts ..._gen_ipc.CallOpt) (reply bool, err error)
 	// Sensitivity adjusts the SmokeDetector's sensitivity to smoke.
@@ -37,8 +37,8 @@ type SmokeDetector interface {
 // SmokeDetectorService is the interface the server implements.
 type SmokeDetectorService interface {
 
-	// Status retrieves the current status of the SmokeDetector (i.e., detecting, not detecting)
-	Status(context _gen_ipc.ServerContext) (reply string, err error)
+	// Status retrieves the current status and sensitivity of the SmokeDetector.
+	Status(context _gen_ipc.ServerContext) (status string, sensitivity int16, err error)
 	// Test the SmokeDetector to check if it is working.
 	Test(context _gen_ipc.ServerContext) (reply bool, err error)
 	// Sensitivity adjusts the SmokeDetector's sensitivity to smoke.
@@ -92,12 +92,12 @@ func (__gen_c *clientStubSmokeDetector) client(ctx _gen_context.T) _gen_ipc.Clie
 	return _gen_veyron2.RuntimeFromContext(ctx).Client()
 }
 
-func (__gen_c *clientStubSmokeDetector) Status(ctx _gen_context.T, opts ..._gen_ipc.CallOpt) (reply string, err error) {
+func (__gen_c *clientStubSmokeDetector) Status(ctx _gen_context.T, opts ..._gen_ipc.CallOpt) (status string, sensitivity int16, err error) {
 	var call _gen_ipc.Call
 	if call, err = __gen_c.client(ctx).StartCall(ctx, __gen_c.name, "Status", nil, opts...); err != nil {
 		return
 	}
-	if ierr := call.Finish(&reply, &err); ierr != nil {
+	if ierr := call.Finish(&status, &sensitivity, &err); ierr != nil {
 		err = ierr
 	}
 	return
@@ -194,8 +194,9 @@ func (__gen_s *ServerStubSmokeDetector) Signature(call _gen_ipc.ServerCall) (_ge
 	result.Methods["Status"] = _gen_ipc.MethodSignature{
 		InArgs: []_gen_ipc.MethodArgument{},
 		OutArgs: []_gen_ipc.MethodArgument{
-			{Name: "", Type: 3},
-			{Name: "", Type: 65},
+			{Name: "status", Type: 3},
+			{Name: "sensitivity", Type: 35},
+			{Name: "err", Type: 65},
 		},
 	}
 	result.Methods["Test"] = _gen_ipc.MethodSignature{
@@ -230,8 +231,8 @@ func (__gen_s *ServerStubSmokeDetector) UnresolveStep(call _gen_ipc.ServerCall) 
 	return
 }
 
-func (__gen_s *ServerStubSmokeDetector) Status(call _gen_ipc.ServerCall) (reply string, err error) {
-	reply, err = __gen_s.service.Status(call)
+func (__gen_s *ServerStubSmokeDetector) Status(call _gen_ipc.ServerCall) (status string, sensitivity int16, err error) {
+	status, sensitivity, err = __gen_s.service.Status(call)
 	return
 }
 

@@ -10,17 +10,12 @@ import (
 
 const speakerDefaultVolume = uint16(10)
 
-// Prepopulate the music library with a few songs
-var speakerLibrary = map[string]bool{
-	"Happy Birthday":          true,
-	"Never Gonna Give You Up": true,
-}
-
 // Speaker allows clients to control the music being played.
 type speaker struct {
-	currentSong string
-	playing     bool
-	volume      uint16
+	currentSong    string
+	playing        bool
+	volume         uint16
+	speakerLibrary map[string]bool
 }
 
 // Play starts or continues the current song.
@@ -34,7 +29,7 @@ func (s *speaker) Play(ipc.ServerContext) error {
 
 // PlaySong plays back the given song title, if possible.
 func (s *speaker) PlaySong(_ ipc.ServerContext, title string) error {
-	if !speakerLibrary[title] {
+	if !s.speakerLibrary[title] {
 		return errors.New(fmt.Sprintf("%q does not exist", title))
 	}
 	s.currentSong = title
@@ -78,10 +73,34 @@ func (s *speaker) GetVolume(ipc.ServerContext) (uint16, error) {
 	return s.volume, nil
 }
 
+// AddSongs adds the list of given songs to the song library.
+func (s *speaker) AddSongs(_ ipc.ServerContext, songs []string) error {
+	for _, song := range songs {
+		s.speakerLibrary[song] = true // No-op if the song is there.
+	}
+	return nil
+}
+
+// RemoveSongs removes the list of given songs from the song library.
+func (s *speaker) RemoveSongs(_ ipc.ServerContext, songs []string) error {
+	for _, song := range songs {
+		delete(s.speakerLibrary, song) // No-op if the song isn't there.
+		if s.currentSong == song {     // Stop playing the current song if it was removed.
+			s.currentSong = ""
+			s.playing = false
+		}
+	}
+	return nil
+}
+
 // NewSpeaker creates a new speaker stub.
 func NewSpeaker() *speaker {
 	return &speaker{
 		playing: false,
 		volume:  speakerDefaultVolume,
+		speakerLibrary: map[string]bool{ // Start with some default songs.
+			"Happy Birthday":          true,
+			"Never Gonna Give You Up": true,
+		},
 	}
 }

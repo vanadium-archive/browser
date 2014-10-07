@@ -27,7 +27,7 @@ type Alarm_ExcludingUniversal interface {
 	// Arm sets the Alarm to the armed state.
 	Arm(ctx _gen_context.T, opts ..._gen_ipc.CallOpt) (err error)
 	// DelayArm sets the Alarm to the armed state after the given delay in seconds.
-	DelayArm(ctx _gen_context.T, seconds uint16, opts ..._gen_ipc.CallOpt) (err error)
+	DelayArm(ctx _gen_context.T, seconds float32, opts ..._gen_ipc.CallOpt) (err error)
 	// Unarm sets the Alarm to the unarmed state.
 	Unarm(ctx _gen_context.T, opts ..._gen_ipc.CallOpt) (err error)
 	// Panic sets the Alarm to the panicking state.
@@ -46,7 +46,7 @@ type AlarmService interface {
 	// Arm sets the Alarm to the armed state.
 	Arm(context _gen_ipc.ServerContext) (err error)
 	// DelayArm sets the Alarm to the armed state after the given delay in seconds.
-	DelayArm(context _gen_ipc.ServerContext, seconds uint16) (err error)
+	DelayArm(context _gen_ipc.ServerContext, seconds float32) (err error)
 	// Unarm sets the Alarm to the unarmed state.
 	Unarm(context _gen_ipc.ServerContext) (err error)
 	// Panic sets the Alarm to the panicking state.
@@ -122,7 +122,7 @@ func (__gen_c *clientStubAlarm) Arm(ctx _gen_context.T, opts ..._gen_ipc.CallOpt
 	return
 }
 
-func (__gen_c *clientStubAlarm) DelayArm(ctx _gen_context.T, seconds uint16, opts ..._gen_ipc.CallOpt) (err error) {
+func (__gen_c *clientStubAlarm) DelayArm(ctx _gen_context.T, seconds float32, opts ..._gen_ipc.CallOpt) (err error) {
 	var call _gen_ipc.Call
 	if call, err = __gen_c.client(ctx).StartCall(ctx, __gen_c.name, "DelayArm", []interface{}{seconds}, opts...); err != nil {
 		return
@@ -225,7 +225,7 @@ func (__gen_s *ServerStubAlarm) Signature(call _gen_ipc.ServerCall) (_gen_ipc.Se
 	}
 	result.Methods["DelayArm"] = _gen_ipc.MethodSignature{
 		InArgs: []_gen_ipc.MethodArgument{
-			{Name: "seconds", Type: 51},
+			{Name: "seconds", Type: 25},
 		},
 		OutArgs: []_gen_ipc.MethodArgument{
 			{Name: "", Type: 65},
@@ -285,7 +285,7 @@ func (__gen_s *ServerStubAlarm) Arm(call _gen_ipc.ServerCall) (err error) {
 	return
 }
 
-func (__gen_s *ServerStubAlarm) DelayArm(call _gen_ipc.ServerCall, seconds uint16) (err error) {
+func (__gen_s *ServerStubAlarm) DelayArm(call _gen_ipc.ServerCall, seconds float32) (err error) {
 	err = __gen_s.service.DelayArm(call, seconds)
 	return
 }
