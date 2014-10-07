@@ -188,10 +188,10 @@ common::run() {
   local -r WSPRLOG="${TMPDIR}/wspr.log"
   cat /dev/null > "${WSPRLOG}"
   (
-    ./wsprd --v=1 --vproxy="${PROXY_ADDR}" --port="${WSPR_PORT}" --identd="${IDENTITY_SERVER}" &> "${WSPRLOG}" &
+    ./wsprd --v=1 --veyron.proxy="${PROXY_ADDR}" --port="${WSPR_PORT}" --identd="${IDENTITY_SERVER}" &> "${WSPRLOG}" &
     fail_on_exit $! "wspr" "${WSPRLOG}"
   ) &
-  shell::wait_for "${WSPRLOG}" "Listening on port ${WSPR_PORT}"
+  shell::wait_for "${WSPRLOG}" "Listening at port ${WSPR_PORT}"
 
   # Run some veyron services for demo and integration testing.
   local -r SAMPLEDLOG="${TMPDIR}/sampled.log"
