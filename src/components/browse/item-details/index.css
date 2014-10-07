@@ -74,6 +74,8 @@
   color: var(--color-bright);
   display: inline-block;
   margin: 0.5em;
+  padding-top: 0.3em;
+  padding-bottom: 0.3em;
 }
 
 .method-output {
@@ -88,7 +90,7 @@
 
 .method-output th, .method-output td {
   text-align: left;
-  padding: 3px;
+  padding: 0.2em;
 }
 
 .method-output pre, .field pre {
