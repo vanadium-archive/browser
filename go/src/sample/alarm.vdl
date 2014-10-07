@@ -7,7 +7,7 @@ type Alarm interface {
  // Arm sets the Alarm to the armed state.
  Arm() (error)
  // DelayArm sets the Alarm to the armed state after the given delay in seconds.
- DelayArm(seconds uint16) (error)
+ DelayArm(seconds float32) (error)
  // Unarm sets the Alarm to the unarmed state.
  Unarm() (error)
  // Panic sets the Alarm to the panicking state.

@@ -1,7 +1,6 @@
 package mocks
 
 import (
-	"fmt"
 	"time"
 
 	"veyron.io/veyron/veyron2/ipc"
@@ -31,14 +30,13 @@ func (a *alarm) Arm(ipc.ServerContext) error {
 }
 
 // DelayArm sets the Alarm to the armed state after the given delay in seconds.
-func (a *alarm) DelayArm(_ ipc.ServerContext, delay uint16) error {
-	d, err := time.ParseDuration(fmt.Sprintf("%ds", delay))
-	if err != nil {
-		return fmt.Errorf("%s could not parse delay %d", err, delay)
-	}
-	time.AfterFunc(d, func() {
-		a.status = alarmArmed
-	})
+func (a *alarm) DelayArm(_ ipc.ServerContext, delay float32) error {
+	time.AfterFunc(
+		time.Duration(delay)*time.Second,
+		func() {
+			a.status = alarmArmed
+		},
+	)
 	return nil
 }
 

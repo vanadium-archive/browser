@@ -20,9 +20,9 @@ type poolHeater struct {
 	currTemperature uint64
 }
 
-// Status retrieves the PoolHeater's status (i.e., active, idle)
-func (p *poolHeater) Status(ipc.ServerContext) (string, error) {
-	return p.status, nil
+// Status retrieves the PoolHeater's status (i.e., active, idle) and temperature.
+func (p *poolHeater) Status(ipc.ServerContext) (status string, temperature uint64, err error) {
+	return p.status, p.currTemperature, nil
 }
 
 // Start informs the PoolHeater to heat the pool to the given temperature until the duration expires.
