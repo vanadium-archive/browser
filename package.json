@@ -28,6 +28,7 @@
     "routes": "^1.2.0",
     "veyron": "git+ssh://git@github.com:veyron/veyron.js.git",
     "vis": "^3.1.0",
-    "lodash": "~2.4.1"
+    "lodash": "~2.4.1",
+    "xtend": "~4.0.0"
   }
 }

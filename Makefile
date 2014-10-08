@@ -66,6 +66,7 @@ bower_components: bower.json node_modules
 
 # Run unit and integration tests.
 test: all
+	:;jshint test # lint all test JavaScript files.
 	:;./scripts/services/run-tests.sh
 
 # Continuously watch for changes to .js, .html or .css files.
