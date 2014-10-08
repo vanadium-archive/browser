@@ -2,7 +2,7 @@ var insertCss = require('insert-css');
 var vis = require('vis');
 var css = require('./index.css');
 var browseService = require('../../services/browse-service');
-var debug = require('debug')('components:visualize');
+var log = require('../../lib/log')('components:visualize');
 
 module.exports = create;
 module.exports.render = render;
@@ -85,7 +85,7 @@ TreeWidget.prototype.initNetwork = function(elem) {
   var self = this;
   network.on('click', function onClick(data) {
     var nodeId = data.nodes[0];
-    debug('click', nodeId);
+    log.debug('click', nodeId);
 
     var node = self.nodes.get(nodeId);
     self.loadSubNodes(node);
@@ -93,8 +93,8 @@ TreeWidget.prototype.initNetwork = function(elem) {
 
   network.on('doubleClick', function onClick(data) {
     var nodeId = data.nodes[0];
-    debug('doubleClick', nodeId);
-    debug(self.browseState);
+    log.debug('doubleClick', nodeId);
+    log.debug(self.browseState);
   });
 
   return network;

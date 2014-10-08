@@ -6,7 +6,7 @@ var browse = require('./components/browse/index');
 var error = require('./components/error/index');
 var errorRoute = require('./routes/error');
 
-window.debug = require('debug');
+window.log = require('./lib/log');
 
 onDocumentReady(function startApp() {
 

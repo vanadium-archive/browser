@@ -1,5 +1,5 @@
 var setMercuryArray = require('../../lib/mercury/setMercuryArray');
-var debug = require('debug')('components:browse:browse-children');
+var log = require('../../lib/log')('components:browse:browse-children');
 var browseService = require('../../services/browse-service');
 
 module.exports = getNamespaceSuggestions;
@@ -29,11 +29,11 @@ function getNamespaceSuggestions(browseState, namespace) {
 
   // Glob the children using this prefix.
   browseService.glob(prefix, '*').then(function received(globResult) {
-    debug('Name and Glob result', prefix, globResult);
+    log.debug('Name and Glob result', prefix, globResult);
     globResult.forEach(function(i) {
       browseState.namespaceSuggestions.push(i.mountedName);
     });
   }).catch(function(err) {
-    debug('Could not glob', prefix, err);
+    log.warn('Could not glob', prefix, err);
   });
 }

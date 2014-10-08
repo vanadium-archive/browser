@@ -1,5 +1,6 @@
 var smartService = require('../../../services/smart-service');
-var debug = require('debug')('components:browse:item-details:method-end');
+var log = require('../../../lib/log')(
+  'components:browse:item-details:method-end');
 var formatDetail = require('./format-detail');
 
 module.exports = methodEnd;
@@ -90,12 +91,13 @@ function learnMethodInput(state, method, args) {
       signature: state.signature(),
       value: args[i]
     };
-    debug('Update Input:', input);
+    log.debug('Update Input:', input);
 
     smartService.record('learner-method-input', input);
 
     // For debug, display what our prediction would be.
-    debug('PredictMI:', smartService.predict('learner-method-input', input));
+    log.debug('PredictMI:',
+      smartService.predict('learner-method-input', input));
 
     // Save after learning.
     smartService.save('learner-method-input');
@@ -111,12 +113,12 @@ function learnMethodInvocation(state, method, args) {
     signature: state.signature(),
     value: JSON.stringify(args)
   };
-  debug('Update Invocation:', input);
+  log.debug('Update Invocation:', input);
 
   smartService.record('learner-method-invocation', input);
 
   // For debug, display what our prediction would be.
-  debug(
+  log.debug(
     'PredictMIv:',
     smartService.predict('learner-method-invocation', input)
   );
@@ -139,7 +141,7 @@ function learnAutoRPC(state, method) {
   smartService.record('learner-autorpc', input);
 
   // For debug, display what our prediction would be.
-  debug('PredictA:', smartService.predict('learner-autorpc', input));
+  log.debug('PredictA:', smartService.predict('learner-autorpc', input));
 
   // Save after making a successful parameterless RPC.
   smartService.save('learner-autorpc');

@@ -2,13 +2,13 @@
  * smart-service provides an interface for machine learning.
  * Hooks to this service should make updates and ask for predictions.
  * A few basic learners are implemented as wrappers around the learning library.
- * TODO(alexfandrianto): All functions fail silently (with just console) at
+ * TODO(alexfandrianto): All functions fail silently (with logging) at
  * the moment. Decide whether we want to throw errors or not.
  */
 
 var addAttributes = require('../lib/addAttributes');
 var store = require('../lib/local-storage');
-var debug = require('debug')('services:smart-service');
+var log = require('../lib/log')('services:smart-service');
 var constants = require('./smart-service-implementation');
 
 // Export methods and constants
@@ -29,7 +29,7 @@ var learners = {};
  * Fails when the id is taken, or the type is invalid.
  */
 function loadOrRegister(id, type, params) {
-  debug('load or register', id, type, params);
+  log.debug('load or register', id, type, params);
   load(id);
   if (learners[id] === undefined) {
     register(id, type, params);
@@ -40,10 +40,10 @@ function loadOrRegister(id, type, params) {
  * Given an id, delete it from the local store and in-memory buffer.
  */
 function reset(id) {
-  debug('reset', id);
+  log.debug('reset', id);
   store.removeValue(id);
   if (learners[id] === undefined) {
-    console.error('Cannot reset unused learner id', id);
+    log.error('Cannot reset unused learner id', id);
     return;
   }
   delete learners[id];
@@ -54,7 +54,7 @@ function reset(id) {
  */
 function save(id) {
   if (learners[id] === undefined) {
-    console.error('Cannot save unused learner id', id);
+    log.error('Cannot save unused learner id', id);
     return;
   }
   store.setValue(id, learners[id]);
@@ -65,7 +65,7 @@ function save(id) {
  */
 function record(id, input) {
   if (learners[id] === undefined) {
-    console.error('Cannot record to unused learner id', id);
+    log.error('Cannot record to unused learner id', id);
     return;
   }
   learners[id].update(input);
@@ -76,7 +76,7 @@ function record(id, input) {
  */
 function predict(id, input) {
   if (learners[id] === undefined) {
-    console.error('Cannot predict with unused learner id', id);
+    log.error('Cannot predict with unused learner id', id);
     return;
   }
   return learners[id].predict(input);
@@ -86,13 +86,13 @@ function predict(id, input) {
  * Helper function to register a new learner.
  */
 function register(id, type, params) {
-  debug('register', id, type, params);
+  log.debug('register', id, type, params);
   if (learners[id] !== undefined) {
-    console.error('Cannot reuse learner id', id);
+    log.error('Cannot reuse learner id', id);
     return;
   }
   if (constants.LEARNER_MAP[type] === undefined) {
-    console.error('Could not resolve learner type', type);
+    log.error('Could not resolve learner type', type);
     return;
   }
   var Constructor = constants.LEARNER_MAP[type];
@@ -104,17 +104,17 @@ function register(id, type, params) {
  * Helper function to load a new learner from local-storage.
  */
 function load(id) {
-  debug('load', id);
+  log.debug('load', id);
   if (learners[id] !== undefined) {
-    console.error('Cannot reuse learner id', id);
+    log.error('Cannot reuse learner id', id);
     return;
   }
   var learner = store.getValue(id);
   if (learner === null) {
-    debug('Learner was not present in the store.');
+    log.debug('Learner was not present in the store.');
     return;
   }
-  debug('Loaded Learner:', learner);
+  log.debug('Loaded Learner:', learner);
   addAttributes(learner, constants.LEARNER_METHODS[learner.type]);
 
   learners[id] = learner;

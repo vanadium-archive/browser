@@ -2,7 +2,7 @@ var veyron = require('veyron');
 var namespaceUtil = veyron.namespaceUtil;
 var veyronConfig = require('../veyron-config');
 var MountPoint = require('../lib/mountpoint');
-var debug = require('debug')('services:browse-service');
+var log = require('../lib/log')('services:browse-service');
 
 module.exports = {
   glob: glob,
@@ -121,7 +121,7 @@ function signature(name) {
 function makeRPC(name, methodName, args) {
   return getRuntime().then(function(rt){
     return rt.bindTo(name).then(function(service) {
-      debug('Calling', methodName, 'on', name, 'with', args);
+      log.debug('Calling', methodName, 'on', name, 'with', args);
       return service[methodName].apply(null, args).then(function(result) {
         return result;
       });

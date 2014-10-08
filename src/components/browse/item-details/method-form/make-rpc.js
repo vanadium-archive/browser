@@ -1,5 +1,5 @@
 var browseService = require('../../../../services/browse-service');
-var debug = require('debug')(
+var log = require('../../../../lib/log')(
   'components:browse:item-details:method-form:make-rpc'
 );
 
@@ -25,7 +25,7 @@ function makeRPC(data) {
 
   return browseService.makeRPC(data.name, data.methodName, args).catch(
     function(err) {
-      debug('Error during RPC',
+      log.error('Error during RPC',
         data.name,
         data.methodName,
         err, (err && err.stack) ? err.stack : undefined

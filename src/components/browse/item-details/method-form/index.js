@@ -6,7 +6,8 @@ var setMercuryArray = require('../../../../lib/mercury/setMercuryArray');
 var AttributeHook = require('../../../../lib/mercury/attribute-hook');
 var PropertyValueEvent =
   require('../../../../lib/mercury/property-value-event');
-var debug = require('debug')('components:browse:item-details:method-form');
+var log = require('../../../../lib/log')(
+  'components:browse:item-details:method-form');
 var smartService = require('../../../../services/smart-service');
 var makeRPC = require('./make-rpc.js');
 
@@ -164,7 +165,7 @@ function wireUpEvents(state, events) {
         error: error
       });
     }).catch(function(err) {
-      debug('Error handling makeRPC', err);
+      log.error('Error handling makeRPC', err);
     });
   });
 
@@ -356,7 +357,7 @@ function renderMethodInput(state, index) {
   });
 
   var changeEvent = new PropertyValueEvent(function(data) {
-    debug(methodName, argName, 'value changed.', data);
+    log.debug(methodName, argName, 'value changed.', data);
     args[index] = data;
   }, 'value');
 

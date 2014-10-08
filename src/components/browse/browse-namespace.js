@@ -1,6 +1,6 @@
 var mercury = require('mercury');
 var exists = require('../../lib/exists');
-var debug = require('debug')('components:browse:browse-namespace');
+var log = require('../../lib/log')('components:browse:browse-namespace');
 var namespaceService = require('../../services/namespace/service');
 
 module.exports = browseNamespace;
@@ -34,7 +34,7 @@ function browseNamespace(browseState, browseEvents, data) {
     browseState.put('items', items);
   }).catch(function(err) {
     browseEvents.error(err);
-    debug(err);
+    log.error(err);
   });
 
   // trigger display items event

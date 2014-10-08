@@ -4,7 +4,7 @@
  */
 
 var addAttributes = require('../lib/addAttributes');
-var debug = require('debug')('services:smart-service');
+var log = require('../lib/log')('services:smart-service');
 var perceptron = require('../lib/learning/perceptron');
 var rank = require('../lib/learning/rank');
 var _ = require('lodash');
@@ -107,7 +107,8 @@ function shortcutLearnerPredict(input) {
     k = 1;
   }
 
-  debug('Predict top', k, 'children under', input, 'with', this.directoryCount);
+  log.debug('Predict top', k, 'children under', input,
+    'with', this.directoryCount);
 
   // First score all the items.
   var scoredItems = [];
@@ -207,7 +208,7 @@ function autoRPCLearnerUpdate(input) {
     input.reward,
     this.learningRate
   );
-  debug('Final weights: ', this.weights);
+  log.debug('Final weights: ', this.weights);
 }
 
 /*

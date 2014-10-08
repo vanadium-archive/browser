@@ -1,7 +1,7 @@
 var setMercuryArray = require('../../../lib/mercury/setMercuryArray');
 var browseService = require('../../../services/browse-service');
 var smartService = require('../../../services/smart-service');
-var debug = require('debug')(
+var log = require('../../../lib/log')(
   'components:browse:item-details:display-item-details'
 );
 var methodForm = require('./method-form/index.js');
@@ -75,7 +75,7 @@ function displayItemDetails(state, events, data) {
         // If the prediction power is strong enough, recommend the method.
         var prediction = smartService.predict('learner-autorpc', input);
         if (prediction > 0.5) {
-          debug('Recommend', m, 'with', prediction);
+          log.debug('Recommend', m, 'with', prediction);
 
           // Set the state detail with the prediction value (a float).
           var detail = state.details.get(data.name);
@@ -88,12 +88,12 @@ function displayItemDetails(state, events, data) {
       }
     }
   }, function(err) {
-    debug('Failed to get signature',
+    log.error('Failed to get signature',
       name,
       err, (err && err.stack) ? err.stack : undefined
     );
     state.signature.set('');
   }).catch(function(err) {
-    debug('Error when handling the received signature', err);
+    log.error('Error when handling the received signature', err);
   });
 }

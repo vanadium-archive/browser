@@ -1,3 +1,6 @@
+var log = require('../../../lib/log')(
+  'components:browse:item-details:format-detail');
+
 /*
  * The plugins listed here are listed in order with highest priority first.
  * Plugins must export functions shouldFormat(input) and format(input).
@@ -23,5 +26,5 @@ function formatDetail(input) {
       return plugins[i].format(input);
     }
   }
-  console.error('No plugins rendered the detail', input);
+  log.error('No plugins rendered the detail', input);
 }

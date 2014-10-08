@@ -4,7 +4,7 @@ var LRU = require('lru-cache');
 var namespaceUtil = veyron.namespaceUtil;
 var veyronConfig = require('../../veyron-config');
 var itemFactory = require('./item');
-var debug = require('debug')('services:namespace:service');
+var log = require('../../lib/log')('services:namespace:service');
 
 module.exports = {
   getChildren: getChildren,
@@ -72,7 +72,7 @@ function glob(name, globQuery) {
         .then(function(item) {
           globItemsObservArr.push(item);
         }).catch(function(err) {
-          debug.log('Failed to create item for "' + result.name + '"', err);
+          log.error('Failed to create item for "' + result.name + '"', err);
         });
     });
 
@@ -81,7 +81,7 @@ function glob(name, globQuery) {
       // TODO(aghassemi) UI might want to know about this error so it can
       // tell the user things won't be updated automatically anymore and maybe
       // instruct them to reload.
-      debug('Glob stream error for', name, err);
+      log.error('Glob stream error for', name, err);
     });
 
   }).then(function cacheAndReturnResult() {
@@ -159,7 +159,7 @@ function makeRPC(name, methodName, args) {
   return getRuntime().then(function bindToName(rt) {
     return rt.bindTo(name);
   }).then(function callMethod(service) {
-    debug('Calling', methodName, 'on', name, 'with', args);
+    log.debug('Calling', methodName, 'on', name, 'with', args);
     return service[methodName].apply(null, args);
   }).then(function returnResult(result) {
     return result;

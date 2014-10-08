@@ -1,6 +1,7 @@
 /*
  * local-storage allows key-value store for string keys and any value.
  */
+var log = require('./log')('lib:local-storage');
 
 module.exports = {
   setValue: setValue,
@@ -25,7 +26,7 @@ function getValue(name) {
     try {
         return JSON.parse(value);
     } catch (exception) {
-        console.error('JSON parse failed for key:', name, 'and value:', value);
+        log.error('JSON parse failed for key:', name, 'and value:', value);
     }
     return null;
 }
