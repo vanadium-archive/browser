@@ -37,6 +37,9 @@ terminate() {
   trap - EXIT INT TERM
   exec &> /dev/null
 
+  # Kill any tail started by shell::wait_for in this script or they will be left running
+  pkill -P $$ tail || true
+
   # Kill all the spawned processes.
   while read ID; do
     kill -KILL "${ID}" || true
