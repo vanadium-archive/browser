@@ -61,10 +61,10 @@ build() {
 
   veyron go install veyron.io/veyron/veyron/services/mounttable/mounttabled
   veyron go install veyron.io/veyron/veyron/services/proxy/proxyd
-  veyron go install veyron.io/veyron/veyron/services/wsprd
   veyron go install veyron.io/veyron/veyron/services/mgmt/binary/binaryd
   veyron go install veyron.io/veyron/veyron/services/mgmt/build/buildd
   veyron go install veyron.io/veyron/veyron/tools/identity
+  veyron go install veyron.io/wspr/veyron/services/wsprd
   veyron go install sample/sampled
 }
 
