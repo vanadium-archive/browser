@@ -26,6 +26,7 @@ test('getChildren of default namespace root', function(t) {
   namespaceService.getChildren().
   then(function assertResult(result) {
     // Wait until we receive the 2 top level items: cottage, house
+    assertIsImmutable(t, result);
     var numReturnedChildren;
     result(function(children) {
       numReturnedChildren = children.length;
@@ -64,6 +65,7 @@ test('getChildren of cottage/lawn', function(t) {
   then(function assertResult(result) {
     // Wait until we receive the 3 items,
     // back, front and master-sprinkler come back
+    assertIsImmutable(t, result);
     var numReturnedChildren;
     result(function(children) {
       numReturnedChildren = children.length;
@@ -100,6 +102,7 @@ test('getChildren of rooted /localhost:8881/house/kitchen', function(t) {
   namespaceService.getChildren('/localhost:8881/house/kitchen').
   then(function assertResult(result) {
   // Wait until we receive the 2 items, lights and smoke-detector
+    assertIsImmutable(t, result);
     var numReturnedChildren;
     result(function(children) {
       numReturnedChildren = children.length;
@@ -236,6 +239,10 @@ function assertHasSignature(t, item) {
 
 function assertIsAccessible(t, item) {
   t.ok(item.serverInfo.isAccessible, item.mountedName  +': is accessible');
+}
+
+function assertIsImmutable(t, observable) {
+  t.ok(observable.set === undefined, 'is immutable');
 }
 
 /*

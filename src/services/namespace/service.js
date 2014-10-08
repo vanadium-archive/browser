@@ -4,6 +4,7 @@ var LRU = require('lru-cache');
 var namespaceUtil = veyron.namespaceUtil;
 var veyronConfig = require('../../veyron-config');
 var itemFactory = require('./item');
+var freeze = require('../../lib/mercury/freeze');
 var log = require('../../lib/log')('services:namespace:service');
 
 module.exports = {
@@ -85,8 +86,9 @@ function glob(name, globQuery) {
     });
 
   }).then(function cacheAndReturnResult() {
-    globCache.set(cacheKey, globItemsObservArr);
-    return globItemsObservArr;
+    var immutableResult = freeze(globItemsObservArr);
+    globCache.set(cacheKey, immutableResult);
+    return immutableResult;
   }).catch( function invalidateCacheAndRethrow(err) {
     globCache.del(cacheKey);
     return Promise.reject(err);
