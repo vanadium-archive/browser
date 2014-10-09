@@ -1,4 +1,3 @@
-var mercury = require('mercury');
 var exists = require('../../lib/exists');
 var log = require('../../lib/log')('components:browse:browse-namespace');
 var namespaceService = require('../../services/namespace/service');
@@ -43,6 +42,6 @@ function browseNamespace(browseState, browseEvents, data) {
   });
 
   function emptyOutItems() {
-    browseState.put('items', mercury.array([]));
+    browseState.put('items', []);
   }
 }

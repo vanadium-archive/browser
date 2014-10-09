@@ -1,6 +1,5 @@
-var setMercuryArray = require('../../lib/mercury/setMercuryArray');
 var log = require('../../lib/log')('components:browse:browse-children');
-var browseService = require('../../services/browse-service');
+var namespaceService = require('../../services/namespace/service');
 
 module.exports = getNamespaceSuggestions;
 
@@ -12,7 +11,7 @@ module.exports = getNamespaceSuggestions;
  * TODO(alexfandrianto): Update this when we switch to the new glob service.
  */
 function getNamespaceSuggestions(browseState, namespace) {
-  var prefix = browseService.stripBasename(namespace);
+  var prefix = namespaceService.util.stripBasename(namespace);
 
   if (prefix === browseState.namespacePrefix()) {
     return; // The children are already based on the correct glob.
@@ -20,7 +19,7 @@ function getNamespaceSuggestions(browseState, namespace) {
 
   // Update the state prefix and clear out the children.
   browseState.namespacePrefix.set(prefix);
-  setMercuryArray(browseState.namespaceSuggestions, []);
+  emptyOutItems();
 
   // There is nothing to glob without a rooted name.
   if (prefix === '' || prefix === '/') {
@@ -28,12 +27,17 @@ function getNamespaceSuggestions(browseState, namespace) {
   }
 
   // Glob the children using this prefix.
-  browseService.glob(prefix, '*').then(function received(globResult) {
-    log.debug('Name and Glob result', prefix, globResult);
-    globResult.forEach(function(i) {
-      browseState.namespaceSuggestions.push(i.mountedName);
+  namespaceService.glob(prefix, '*').then(function received(items) {
+    var itemNames = items.map(function(item) {
+      return item.mountedName;
     });
+    browseState.put('namespaceSuggestions', itemNames);
   }).catch(function(err) {
     log.warn('Could not glob', prefix, err);
   });
+
+  function emptyOutItems() {
+    browseState.put('namespaceSuggestions', []);
+  }
 }
+
