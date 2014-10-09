@@ -51,10 +51,15 @@ public/polymer.js.map: bower_components
 	cp bower_components/polymer/polymer.js.map public/polymer.js.map
 
 # Install what we need from NPM.
-node_modules: package.json
+node_modules: package.json | node_modules/veyron/src/veyron.js
 	:;npm prune
 	:;npm install
 	touch node_modules
+
+# TODO(aghassemi) Temporarily use local veyron.js instead of github one
+node_modules/veyron/src/veyron.js:
+	cd "$(VEYRON_ROOT)/veyron.js" && npm link
+	:;npm link veyron
 
 # Install non-JS dependencies from bower.
 bower_components: bower.json node_modules
