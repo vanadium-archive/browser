@@ -37,9 +37,6 @@ terminate() {
   trap - EXIT INT TERM
   exec &> /dev/null
 
-  # Kill any tail started by shell::wait_for in this script or they will be left running
-  pkill -P $$ tail || true
-
   # Kill all the spawned processes.
   while read ID; do
     kill -KILL "${ID}" || true
@@ -151,6 +148,10 @@ common::run() {
   # Run each server in a sub shell so we can call common::fail if process fails to start
   # or panics as it is running.
 
+  # Allowed seconds for each service to start
+  local -r SRV_TIMEOUT=2
+  local -r TIMEDOUT_MSG="Timed out waiting for:"
+
   # Run mounttables.
   local -r ROOT_MTLOG="${TMPDIR}/mt_root.log"
   local -r MTLOG_MESSAGE="Mount table service at"
@@ -159,7 +160,7 @@ common::run() {
     ./mounttabled --veyron.tcp.address="localhost:${ROOT_MOUNTTABLE_PORT}" &> "${ROOT_MTLOG}" &
     fail_on_exit $! "root mounttable" "${ROOT_MTLOG}"
   ) &
-  shell::wait_for "${ROOT_MTLOG}" "${MTLOG_MESSAGE}"
+  shell::timed_wait_for "${SRV_TIMEOUT}" "${ROOT_MTLOG}" "${MTLOG_MESSAGE}" || common::fail "${TIMEDOUT_MSG} mounttable root"
 
   export NAMESPACE_ROOT=/localhost:"${ROOT_MOUNTTABLE_PORT}";
 
@@ -169,7 +170,7 @@ common::run() {
     ./mounttabled --veyron.tcp.address="localhost:${HOUSE_MOUNTTABLE_PORT}" --name="house" &> "${HOUSE_MTLOG}" &
     fail_on_exit $! "house mounttable" "${HOUSE_MTLOG}"
   ) &
-  shell::wait_for "${HOUSE_MTLOG}" "${MTLOG_MESSAGE}"
+  shell::timed_wait_for "${SRV_TIMEOUT}" "${HOUSE_MTLOG}" "${MTLOG_MESSAGE}" || common::fail "${TIMEDOUT_MSG} house mounttable"
 
   local -r COTTAGE_MTLOG="${TMPDIR}/mt_cottage.log"
   cat /dev/null > "${COTTAGE_MTLOG}"
@@ -177,7 +178,7 @@ common::run() {
     ./mounttabled --veyron.tcp.address="localhost:${COTTAGE_MOUNTTABLE_PORT}" --name="cottage" &> "${COTTAGE_MTLOG}" &
     fail_on_exit $! "cottage mounttable" "${COTTAGE_MTLOG}"
   ) &
-  shell::wait_for "${COTTAGE_MTLOG}" "${MTLOG_MESSAGE}"
+  shell::timed_wait_for "${SRV_TIMEOUT}" "${COTTAGE_MTLOG}" "${MTLOG_MESSAGE}" || common::fail "${TIMEDOUT_MSG} cottage mounttable"
 
   # Run proxies.
   local -r PROXYLOG="${TMPDIR}/proxy.log"
@@ -186,7 +187,7 @@ common::run() {
     ./proxyd --v=1 --http=":0" -address="${PROXY_ADDR}" &> "${PROXYLOG}" &
     fail_on_exit $! "proxy" "${PROXYLOG}"
   ) &
-  shell::wait_for "${PROXYLOG}" "Proxy listening on"
+  shell::timed_wait_for "${SRV_TIMEOUT}" "${PROXYLOG}" "Proxy listening on" || common::fail "${TIMEDOUT_MSG} proxy"
 
   local -r WSPRLOG="${TMPDIR}/wspr.log"
   cat /dev/null > "${WSPRLOG}"
@@ -194,7 +195,7 @@ common::run() {
     ./wsprd --v=1 --veyron.proxy="${PROXY_ADDR}" --port="${WSPR_PORT}" --identd="${IDENTITY_SERVER}" &> "${WSPRLOG}" &
     fail_on_exit $! "wspr" "${WSPRLOG}"
   ) &
-  shell::wait_for "${WSPRLOG}" "Listening at port ${WSPR_PORT}"
+  shell::timed_wait_for "${SRV_TIMEOUT}" "${WSPRLOG}" "Listening at port ${WSPR_PORT}" || common::fail "${TIMEDOUT_MSG} wspr"
 
   # Run some veyron services for demo and integration testing.
   local -r SAMPLEDLOG="${TMPDIR}/sampled.log"
