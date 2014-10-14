@@ -1,7 +1,8 @@
+var mercury = require('mercury');
 var insertCss = require('insert-css');
 var vis = require('vis');
 var css = require('./index.css');
-var browseService = require('../../services/browse-service');
+var namespaceService = require('../../services/namespace/service');
 var log = require('../../lib/log')('components:visualize');
 
 module.exports = create;
@@ -61,7 +62,7 @@ TreeWidget.prototype.initNetwork = function(elem) {
     smoothCurves: false,
     stabilize: false,
     hierarchicalLayout: {
-        direction: 'UD' // Up to down
+      direction: 'UD' // Up to down
     },
     nodes: {
       radiusMin: 16,
@@ -106,22 +107,35 @@ TreeWidget.prototype.loadSubNodes = function(node) {
   var level = node.level + 1;
 
   var self = this;
-  browseService.glob(namespace, '*').then(function(results) {
-    var newNodes = results.map(function(item) {
-      return {
-        id: item.name,
-        label: item.mountedName,
-        level: level
-      };
+  namespaceService.getChildren(namespace).then(function(resultObservable) {
+    mercury.watch(resultObservable, function(results) {
+
+      // TODO(aghassemi) support removed and updated nodes when we switch to
+      // watchGlob
+      var existingIds = self.nodes.getIds();
+      var nodesToAdd = results.filter(function(item) {
+        var isNew = existingIds.indexOf(item.objectName) === -1;
+        return isNew;
+      });
+
+      var newNodes = nodesToAdd.map(function(item) {
+        return {
+          id: item.objectName,
+          label: item.mountedName,
+          level: level
+        };
+      });
+      var newEdges = nodesToAdd.map(function(item) {
+        return {
+          from: namespace,
+          to: item.objectName
+        };
+      });
+      self.nodes.add(newNodes);
+      self.edges.add(newEdges);
     });
-    var newEdges = results.map(function(item) {
-      return {
-        from: namespace,
-        to: item.name
-      };
-    });
-    self.nodes.add(newNodes);
-    self.edges.add(newEdges);
+  }).catch(function(err) {
+    log.error('glob failed', err);
   });
 };
 

@@ -13,25 +13,25 @@ var mockItem = {
   mountedName: 'mockItem',
   name: 'foo/bar/mockItem'
 };
-var browseServiceMock = {
+var namespaceServiceMock = {
   isGlobbable: function(name) {
     return Promise.resolve(true);
   },
   glob: function(name, globQuery) {
     return Promise.resolve([mockItem]);
   },
-  signature: function(name) {
+  getSignature: function(name) {
     return Promise.resolve('signature');
   }
 };
-var browseServiceMockWithFailure = {
+var namespaceServiceMockWithFailure = {
   isGlobbable: function(name) {
     return Promise.resolve(true);
   },
   glob: function(name, globQuery) {
     return Promise.reject();
   },
-  signature: function(name) {
+  getSignature: function(name) {
     return Promise.reject();
   }
 };
@@ -40,13 +40,13 @@ var browseServiceMockWithFailure = {
 var displayItemDetails =
 proxyquire(
   '../../../../../src/components/browse/item-details/display-item-details',
-  { '../../../services/browse-service': browseServiceMock }
+  { '../../../services/namespace/service': namespaceServiceMock }
 );
 
 var displayItemDetailsWithFailure =
 proxyquire(
   '../../../../../src/components/browse/item-details/display-item-details',
-  { '../../../services/browse-service': browseServiceMockWithFailure}
+  { '../../../services/namespace/service': namespaceServiceMockWithFailure}
 );
 
 test('Updates state.signature', function(t) {

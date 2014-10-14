@@ -1,5 +1,5 @@
 var setMercuryArray = require('../../../lib/mercury/setMercuryArray');
-var browseService = require('../../../services/browse-service');
+var namespaceService = require('../../../services/namespace/service');
 var smartService = require('../../../services/smart-service');
 var log = require('../../../lib/log')(
   'components:browse:item-details:display-item-details'
@@ -31,7 +31,7 @@ function displayItemDetails(state, events, data) {
   state.itemName.set(name);
   setMercuryArray(state.methodOutputs, []);
 
-  browseService.signature(name).then(function(signatureResult) {
+  namespaceService.getSignature(name).then(function(signatureResult) {
     state.signature.set(signatureResult);
 
     // Go through each signature method, preparing the state needed for its form

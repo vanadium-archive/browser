@@ -4,6 +4,11 @@ var qsUtil = require('querystring');
 var exists = require('../lib/exists');
 var store = require('../lib/local-storage');
 var smartService = require('../services/smart-service');
+/*
+ * TODO(aghassemi) We need namespaceService.getNamespaceItem(name) method then
+ * we can use item.isGlobbable instead and remove the dependency on the old
+ * browser service
+ */
 var browseService = require('../services/browse-service');
 var setMercuryArray = require('../lib/mercury/setMercuryArray');
 

@@ -7,7 +7,7 @@ var browseRoute = require('../../routes/browse');
 var browseNamespace = require('./browse-namespace');
 var getNamespaceSuggestions = require('./get-namespace-suggestions');
 var itemDetailsComponent = require('./item-details/index');
-var browseService = require('../../services/browse-service');
+var namespaceService = require('../../services/namespace/service');
 var smartService = require('../../services/smart-service');
 var css = require('./index.css');
 
@@ -296,7 +296,7 @@ function renderShortcuts(browseState, browseEvents, navigationEvents) {
     var item = {
       isGlobbable: shortcut.isGlobbable,
       objectName: shortcut.itemName,
-      mountedName: browseService.basename(shortcut.itemName)
+      mountedName: namespaceService.util.basename(shortcut.itemName)
     };
     return renderItem(browseState, browseEvents, navigationEvents, item);
   });
@@ -379,7 +379,7 @@ function renderItem(browseState, browseEvents, navigationEvents, item) {
  */
 function renderBreadcrumbs(browseState, navigationEvents) {
 
-  var isRooted = browseService.isRooted(browseState.namespace);
+  var isRooted = namespaceService.util.isRooted(browseState.namespace);
   var namespaceParts = browseState.namespace.split('/').filter(
     function(n) {
       return n.trim() !== '';
@@ -401,7 +401,7 @@ function renderBreadcrumbs(browseState, navigationEvents) {
   for (var i = 0; i < namespaceParts.length; i++) {
     var namePart = namespaceParts[i].trim();
     var fullName = (isRooted ? '/' : '') +
-      browseService.join(namespaceParts.slice(0, i + 1));
+      namespaceService.util.join(namespaceParts.slice(0, i + 1));
 
     var listItem = h('li.breadcrumb-item', [
       h('a', {

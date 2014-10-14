@@ -2,6 +2,11 @@ var mercury = require('mercury');
 var AttributeHook = require('../../../lib/mercury/attribute-hook');
 var insertCss = require('insert-css');
 var displayItemDetails = require('./display-item-details');
+/*
+ * TODO(aghassemi) We need namespaceService.getNamespaceItem(name) method then
+ * we can replace state.signature with it and remove the dependency on the old
+ * browser service
+*/
 var browseService = require('../../../services/browse-service');
 var smartService = require('../../../services/smart-service');
 var h = mercury.h;
