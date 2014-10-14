@@ -115,7 +115,6 @@ test('getChildren of rooted /localhost:8881/house/kitchen', function(t) {
     });
   }).catch(t.end);
 
-  // 9 assertions
   function assertLightSwitch(item) {
     assertMountedName(t, item, 'lights');
     assertObjectName(t, item, '/localhost:8881/house/kitchen/lights');
@@ -126,7 +125,6 @@ test('getChildren of rooted /localhost:8881/house/kitchen', function(t) {
     assertUnknownServiceTypeInfo(t, item);
   }
 
-  // 9 assertions
   function assertSmokeDetector(item) {
     assertMountedName(t, item, 'smoke-detector');
     assertObjectName(t, item, '/localhost:8881/house/kitchen/smoke-detector');
@@ -143,9 +141,10 @@ test('getChildren of non-existing mounttable', function(t) {
   namespaceService.getChildren('/DoesNotExist:666/What/Ever').
   then(function shouldNotGetResult(result){
     t.fail('Should have returned an error instead of result');
+    t.end();
   }).
   catch(function assertThereIsError(err) {
-    t.ok(err, 'globing non-existing mounttable correctly returns error');
+    t.ok(err, 'globbing non-existing mounttable correctly returns error');
     t.end();
   });
 });
@@ -199,7 +198,70 @@ test('getSignature uses caching', function(t) {
 // Glob with some keyword
 // Ensuring array is updated when nodes get mounted and unmounted (when we use
 // watchGlob)
-// makeRPC TODO(alexfandrianto)
+
+// Make RPC: good inputs => no error
+var okRPCs = {
+  'no input':     ['house/alarm', 'status', []],
+  'bool input':   ['house/living-room/lights', 'flipSwitch', [true]],
+  'int input':    ['cottage/smoke-detector', 'sensitivity', [2]],
+  'float input':  ['house/alarm', 'delayArm', [2.5]],
+  'string input': ['cottage/pool/speaker', 'playSong', ['Happy Birthday']],
+  'slice input':  ['house/master-bedroom/speaker', 'addSongs', [['A', 'B']]],
+  '2+ inputs':    ['cottage/pool/heater', 'start', [70, 5]],
+};
+
+_.forOwn(okRPCs, function run(params, inputType) {
+  test(
+    'makeRPC accepts good input - ' + inputType,
+    testMakeRPCNoError.bind(null, params)
+  );
+});
+
+// Make RPC: bad inputs => error
+var badRPCs = {
+  'no service':    ['mansion/smoke-detector', 'status', []],
+  'no method':     ['cottage/pool/speaker', 'status', []],
+  'no input':      ['cottage/lights','flipSwitch', null],
+  'bad type':      ['cottage/lights','flipSwitch', ['notBool']],
+  'lacks input':   ['cottage/pool/heater','start', [80]],
+  'invalid input': ['house/living-room/blast-speaker','playSong', ['notThere']]
+};
+
+_.forOwn(badRPCs, function run(params, inputType) {
+  test(
+    'makeRPC errors on bad input - ' + inputType,
+    testMakeRPCHasError.bind(null, params)
+  );
+});
+
+// Make RPC: outputs have the expected # of outputs
+test('makeRPC returns output properly', function(t) {
+  namespaceService.makeRPC('cottage/alarm', 'panic', []).then(
+    function got0Outputs(res) { // 0 outputs: has [] as a result.
+      t.ok(res instanceof Array && res.length === 0, '0 outputs => []');
+
+      return namespaceService.makeRPC('house/alarm', 'status', []);
+    }
+  ).then( // 1 output: (Non-array/slice output) is not an Array.
+    function got1Output(res) {
+      t.notOk(res instanceof Array, '1 output => not an Array');
+
+      return namespaceService.makeRPC('cottage/smoke-detector', 'test', []);
+    }
+  ).then( // 1 output: Delayed return. Also not an array.
+    function got1OutputDelayed(res) {
+      t.notOk(res instanceof Array, '1 output => not an Array');
+
+      return namespaceService.makeRPC('cottage/pool/heater', 'status', []);
+    }
+  ).then( // 2 outputs: Is an Array of the correct length.
+    function got2Outputs(res) {
+      var ok = res instanceof Array && res.length === 2;
+      t.ok(ok, '2 outputs => length 2 Array');
+      t.end();
+    }
+  ).catch(t.end);
+});
 
 /*
  * Test helpers
@@ -279,4 +341,30 @@ function assertMounttableServiceTypeInfo(t, item) {
 
   t.ok(typeInfo.icon,
     item.mountedName + ': mounttable type info has an icon');
+}
+
+/*
+ * Runs a test to ensure the makeRPC call terminates without error.
+ */
+function testMakeRPCNoError(args, t) {
+  namespaceService.makeRPC.apply(null, args).then(function(result) {
+    t.pass('completed without error');
+    t.end();
+  }).catch(function(err) {
+    t.fail('should not have returned an error');
+    t.end();
+  });
+}
+
+/*
+ * Runs a test to ensure the makeRPC call terminates with an error.
+ */
+function testMakeRPCHasError(args, t) {
+  namespaceService.makeRPC.apply(null, args).then(function(result) {
+    t.fail('should not have completed without error');
+    t.end();
+  }).catch(function(err) {
+    t.pass('correctly returned an error');
+    t.end();
+  });
 }
