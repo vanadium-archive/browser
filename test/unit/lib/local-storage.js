@@ -1,10 +1,28 @@
 var test = require('prova');
 var store = require('../../../src/lib/local-storage');
 
-test('local-storage get', function(t) {
-  // A key not present in the store is null.
-  t.deepEqual(store.getValue('not in store yet'), null);
+test('local-storage !hasValue', function(t) {
+  // A key not present in the store has no value.
+  t.notOk(store.hasValue('not in store'), 'not set => no value');
+  t.end();
+});
 
+test('local-storage hasValue', function(t) {
+  // Run hasValue between other operations and verify hasValue's output.
+  store.setValue('recoveringKey', 'willLoseValue');
+  t.ok(store.hasValue('recoveringKey'), 'set => has value');
+
+  store.removeValue('recoveringKey');
+  t.notOk(store.hasValue('recoveringKey'), 'set => remove => no value');
+
+  store.setValue('recoveringKey', 'nowHasValue');
+  t.ok(store.hasValue('recoveringKey'), 'set => remove => set => has value');
+  t.end();
+});
+
+test('local-storage get', function(t) {
+  // A key not present in the store has null value.
+  t.deepEqual(store.getValue('not in store'), null);
   t.end();
 });
 
@@ -29,7 +47,6 @@ test('local-storage set=>get', function(t) {
   var lostMethod = { a: 'survives'};
   store.setValue('key4', hasMethod);
   t.deepEqual(store.getValue('key4'), lostMethod);
-
   t.end();
 });
 
@@ -47,7 +64,6 @@ test('local-storage setA=>setB=>get', function(t) {
   store.setValue(key2, object);
   store.setValue(key2, value);
   t.deepEqual(store.getValue(key2), value);
-
   t.end();
 });
 
@@ -68,5 +84,29 @@ test('local-storage remove=>set=>get', function(t) {
   store.removeValue(key);
   store.setValue(key, value);
   t.deepEqual(store.getValue(key), value);
+  t.end();
+});
+
+test('local-storage getKeysWithPrefix', function(t) {
+  // Prepare various keys, some of which prefix the other.
+  store.setValue('abc', 4);
+  store.setValue('abcd', 'a');
+  store.setValue('ab',  []);
+  store.setValue('rea', false);
+
+  var keys;
+
+  // abc has 2 matches
+  keys = store.getKeysWithPrefix('abc');
+  t.deepEqual(keys.sort(), ['abc', 'abcd']);
+
+  // a has 3 matches
+  keys = store.getKeysWithPrefix('a');
+  t.deepEqual(keys.sort(), ['ab', 'abc', 'abcd']);
+
+  // x has 0 matches
+  keys = store.getKeysWithPrefix('x');
+  t.deepEqual(keys.sort(), []);
+
   t.end();
 });

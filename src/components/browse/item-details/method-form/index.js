@@ -6,8 +6,10 @@ var setMercuryArray = require('../../../../lib/mercury/setMercuryArray');
 var AttributeHook = require('../../../../lib/mercury/attribute-hook');
 var PropertyValueEvent =
   require('../../../../lib/mercury/property-value-event');
+var store = require('../../../../lib/local-storage');
 var log = require('../../../../lib/log')(
   'components:browse:item-details:method-form');
+var hashPropertyNames = require('../../../../lib/hashPropertyNames');
 var smartService = require('../../../../services/smart-service');
 var makeRPC = require('./make-rpc.js');
 
@@ -18,7 +20,7 @@ module.exports.render = render;
  * Create the state and events necessary to render a working method form.
  */
 function create(itemName, signature, methodName) {
-  var state = mercury.struct({
+  var state = mercury.varhash({
     /*
      * Item name to target RPCs against.
      * @type {string}
@@ -76,8 +78,7 @@ function create(itemName, signature, methodName) {
   // Initialize state with reset/refresh functions.
   initializeInputArguments(state);
   refreshInputSuggestions(state);
-  // TODO(alexfandrianto): Collect starred invocations from local storage.
-  // loadStarredInvocations(state);
+  loadStarredInvocations(state);
   refreshRecommendations(state);
 
   var events = mercury.input([
@@ -127,6 +128,36 @@ function refreshInputSuggestions(state) {
 }
 
 /*
+ * Use the store to load starred invocations into the state.
+ */
+function loadStarredInvocations(state) {
+  var invocations = store.getValue(constructStarredInvocationKey(state)) || [];
+  state.put('starred', mercury.array(invocations));
+}
+
+/*
+ * The store is updated with the invocation's given starred status.
+ */
+function saveStarredInvocation(state) {
+  store.setValue(constructStarredInvocationKey(state), state.starred());
+}
+
+/*
+ * Given an observed state, produce the storage key.
+ * The keys are of the form STARS|signature|method.
+ * The corresponding value is an array of invocations.
+ */
+var starsPrefix = 'STARS';
+function constructStarredInvocationKey(state) {
+  var parts = [
+    starsPrefix,
+    hashPropertyNames(state.signature()),
+    state.methodName()
+  ];
+  return parts.join('|');
+}
+
+/*
  * Refresh the recommended values in the state.
  */
 function refreshRecommendations(state) {
@@ -173,16 +204,22 @@ function wireUpEvents(state, events) {
     state.expanded.set(!state.expanded());
   });
   events.starAction(function(data) {
-    // TODO(alexfandrianto): Handle the star action.
+    // Load the user's stars (in case there were other changes).
+    loadStarredInvocations(state);
+
+    // If there is no argsStr given, compute it now.
+    var argsStr = data.argsStr || JSON.stringify(state.args());
+
     // Depending on the star boolean, add/remove a star for the given arguments.
-    var index = state.starred().indexOf(data.argsStr);
+    var index = state.starred().indexOf(argsStr);
     if (data.star && index === -1) { // needs to be added
-      state.starred.push(data.argsStr);
+      state.starred.push(argsStr);
     } else if (!data.star && index !== -1) { // needs to be removed
       state.starred.splice(index, 1);
     }
 
-    // TODO(alexfandrianto): Save to local storage?
+    // Save the user's star decision.
+    saveStarredInvocation(state);
   });
 }
 
@@ -212,13 +249,11 @@ function render(state, events) {
     argForm.push(renderMethodInput(state, i));
   }
 
-  // TODO(alexfandrianto): We need to draw a Star/Pin/Favorite button.
-  // This event will interact with local storage.
-
-  // Setup the RUN button.
+  // Setup the STAR and RUN buttons.
+  var starButton = renderStarUserInputButton(state, events);
   var runButton = renderRPCRunButton(state, events);
 
-  var footer = h('div.method-input-expanded', [argForm, runButton]);
+  var footer = h('div.method-input-expanded', [argForm, starButton, runButton]);
   return h('div.method-input', [methodNameHeader, recs, footer]);
 }
 
@@ -316,9 +351,7 @@ function renderInvocation(state, events, argsStr) {
     'href': '#',
     'title': 'Run ' + state.methodName,
     'ev-click': getRunEvent(state, events, args)
-  }, h('core-icon.icon.run', {
-    'icon': new AttributeHook('av:play-circle-outline')
-  }));
+  }, renderPlayIcon());
 
   if (noArgs) {
     return h('div.item.card', [label, runButton]);
@@ -332,11 +365,7 @@ function renderInvocation(state, events, argsStr) {
       argsStr: argsStr,
       star: !starred
     })
-  }, h('core-icon.icon.star', {
-    'icon': new AttributeHook(
-      starred ? 'star' : 'star-outline'
-    )
-  }));
+  }, renderStarIcon(starred));
 
   return h('div.item.card.invocation', [starButton, label, runButton]);
 }
@@ -376,7 +405,25 @@ function renderMethodInput(state, index) {
 }
 
 /*
- * Draws the RUN button with the RPC run event.
+ * Draws the STAR button with the star event, which saves the user's input.
+ */
+function renderStarUserInputButton(state, events) {
+  var starButton = h(
+    'paper-button.method-input-star',
+    {
+      'href': '#',
+      'ev-click': mercury.event(events.starAction, {
+        star: true
+      }),
+      'label': 'STAR'
+    },
+    renderStarIcon(false)
+  );
+  return starButton;
+}
+
+/*
+ * Draws the RUN button with the RPC run event with the user's input as args.
  */
 function renderRPCRunButton(state, events) {
   var runButton = h(
@@ -384,9 +431,9 @@ function renderRPCRunButton(state, events) {
     {
       'href': '#',
       'ev-click': getRunEvent(state, events, state.args),
-      'label': 'RUN',
-      'icon': new AttributeHook('av:play-circle-outline')
-    }
+      'label': 'RUN'
+    },
+    renderPlayIcon()
   );
   return runButton;
 }
@@ -400,5 +447,29 @@ function getRunEvent(state, events, args) {
     name: state.itemName,
     methodName: state.methodName,
     args: args
+  });
+}
+
+/*
+ * Render a star icon.
+ */
+function renderStarIcon(starred) {
+  return h('core-icon.icon.star', {
+    'icon': new AttributeHook(
+      starred ? 'star' : 'star-outline'
+    ),
+    'alt': new AttributeHook(
+      starred ? 'starred' : 'not starred'
+    ),
+  });
+}
+
+/*
+ * Render a play icon.
+ */
+function renderPlayIcon() {
+  return h('core-icon.icon.run', {
+    'icon': new AttributeHook('av:play-circle-outline'),
+    'alt': new AttributeHook('run')
   });
 }

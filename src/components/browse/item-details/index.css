@@ -69,7 +69,8 @@
   margin: 0.5em;
 }
 
-.method-input-run, .method-input-remove, .method-input-cancel {
+.method-input-run, .method-input-star, .method-input-remove,
+.method-input-cancel {
   background-color: var(--color-dark);
   color: var(--color-bright);
   display: inline-block;

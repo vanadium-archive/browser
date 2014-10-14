@@ -7,6 +7,7 @@ var addAttributes = require('../lib/addAttributes');
 var log = require('../lib/log')('services:smart-service');
 var perceptron = require('../lib/learning/perceptron');
 var rank = require('../lib/learning/rank');
+var hashPropertyNames = require('../lib/hashPropertyNames');
 var _ = require('lodash');
 
 var LEARNER_SHORTCUT = 1;
@@ -180,7 +181,7 @@ function autoRPCLearnerFeatureExtractor(input) {
   features[input.methodName] = 1;
 
   // Same-named methods that share service signatures are likely similar.
-  features[input.methodName + '|' + stringifySignature(input.signature)] = 1;
+  features[input.methodName + '|' + hashPropertyNames(input.signature)] = 1;
 
   // Services in the same namespace subtree may be queried similarly.
   var pathFeatures = pathFeatureExtractor(input.name);
@@ -250,7 +251,7 @@ function methodInputLearner(type, params) {
  */
 function methodInputLearnerComputeKey(input) {
   var keyArr = [
-    stringifySignature(input.signature),
+    hashPropertyNames(input.signature),
     input.methodName,
     input.argName
   ];
@@ -290,7 +291,7 @@ function methodInvocationLearner(type, params) {
  */
 function methodInvocationLearnerComputeKey(input) {
   var keyArr = [
-    stringifySignature(input.signature),
+    hashPropertyNames(input.signature),
     input.methodName
   ];
   return keyArr.join('|');
@@ -365,16 +366,6 @@ function topKLearnerPredict(input) {
   return bestK === null ? [] : bestK.map(function(goodItem) {
     return goodItem.item;
   });
-}
-
-/*
- * Given an arbitrary method signature, compute a reasonable and consistent
- * stringification for it.
- */
-function stringifySignature(signature) {
-  var names = Object.getOwnPropertyNames(signature);
-  names.sort();
-  return JSON.stringify(names);
 }
 
 /*
