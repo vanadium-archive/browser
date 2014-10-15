@@ -8,7 +8,6 @@ var displayItemDetails = require('./display-item-details');
  * browser service
 */
 var browseService = require('../../../services/browse-service');
-var smartService = require('../../../services/smart-service');
 var h = mercury.h;
 var css = require('./index.css');
 var methodForm = require('./method-form/index.js');
@@ -41,15 +40,6 @@ function create() {
     selectedTabIndex: mercury.value(0),
 
     /*
-     * The details information for each service object.
-     * Can include recommended details information.
-     * @type {map[string]map[string]string|mercury|float}
-     * details information: string or mercury element
-     * recommended details information: float
-     */
-    details: mercury.varhash(),
-
-    /*
      * List of RPC method outputs in call-order.
      * @type {Array<map[string]value>}
      */
@@ -66,8 +56,6 @@ function create() {
   var events = mercury.input([
     'displayItemDetails',
     'tabSelected',
-    'methodRemoved',
-    'methodCancelled',
     'methodForm'
   ]);
 
@@ -131,34 +119,6 @@ function renderDetailsTab(state, events) {
     renderFieldItem('Name', (state.itemName || '<root>')),
     renderFieldItem('Type', typeInfo.name, typeInfo.description)
   ];
-
-  // In addition to the Name and Type, render additional service details.
-  var details = state.details[state.itemName];
-  for (var method in details) {
-    if (details.hasOwnProperty(method)) {
-      // TODO(alexfandrianto): We may wish to replace this with something less
-      // arbitrary. Currently, strings are treated as stringified RPC output.
-      // And mercury elements can also be rendered this way.
-      // Numbers are treated as the prediction values of recommended items.
-      if (typeof details[method] !== 'number') {
-        // These details are already known.
-        displayItems.push(
-          renderFieldItem(
-            method,
-            details[method]
-          )
-        );
-      } else {
-        // These details need to be queried.
-        displayItems.push(
-          renderFieldItem(
-            method,
-            renderSuggestRPC(state, events, method, details[method])
-          )
-        );
-      }
-    }
-  }
 
   return [
     h('div', displayItems)
@@ -228,57 +188,6 @@ function renderMethodOutput(state) {
   return h('div.method-output', outputTable);
 }
 
-/*
- * Renders the suggestion buttons for an RPC.
- */
-function renderSuggestRPC(state, events, methodName, prediction) {
-  var buttons = [];
-  // The run button is rendered to initiate the RPC.
-  buttons.push(renderRPCRunButton(state, events, methodName, false, []));
-
-  // A remove button is rendered to remove the recommendation.
-  buttons.push(renderRPCRemoveSuggestButton(state, events, methodName));
-
-  return h('div', buttons);
-}
-
-/*
- * Renders a Run button to make RPCs.
- * TODO(alexfandrianto): Is going to go away soon!
- */
-function renderRPCRunButton(state, events, methodName, hasParams, args) {
-  var runButton = h(
-    'paper-button.method-input-run',
-    {
-      'href': '#',
-      'label': 'RUN',
-      'icon': new AttributeHook('av:play-circle-outline')
-    }
-  );
-  return runButton;
-}
-
-/*
- * Renders a button to remove suggested RPCs.
- */
-function renderRPCRemoveSuggestButton(state, events, methodName) {
-  var ev = mercury.event(events.methodRemoved, {
-    name: state.itemName,
-    methodName: methodName,
-    signature: state.signature,
-    reward: -1
-  });
-  return h(
-    'paper-button.method-input-remove',
-    {
-      'href': '#',
-      'ev-click': ev,
-      'label': 'REMOVE',
-      'icon': new AttributeHook('close')
-    }
-  );
-}
-
 /*TODO(aghassemi) make a web component for this*/
 function renderFieldItem(label, content, tooltip) {
   var hlabel = h('h4', label);
@@ -301,23 +210,5 @@ function wireUpEvents(state, events) {
   events.displayItemDetails(displayItemDetails.bind(null, state, events));
   events.tabSelected(function(data) {
     state.selectedTabIndex.set(data.index);
-  });
-  events.methodRemoved(function(data) {
-    var detail = state.details[data.name];
-    delete detail[data.methodName];
-
-    // Log the removed RPC to the smart service.
-    smartService.record('learner-autorpc', data);
-    state.details.put(data.name, detail);
-    smartService.save('learner-autorpc');
-  });
-  events.methodCancelled(function(data) {
-    var detail = state.details[data.name];
-    detail[data.methodName] = 0;
-
-    // Log the removed RPC to the smart service.
-    smartService.record('learner-autorpc', data);
-    state.details.put(data.name, detail);
-    smartService.save('learner-autorpc');
   });
 }

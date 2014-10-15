@@ -37,11 +37,6 @@ function methodEnd(state, method, data) {
 
   // Draw the results.
   formatResult(state, method, data.runID, data.result, numInArgs === 0);
-
-  // Learn which parameterless RPCs are good to recommend.
-  if (numInArgs === 0) {
-    learnAutoRPC(state, method);
-  }
 }
 
 /*
@@ -125,24 +120,4 @@ function learnMethodInvocation(state, method, args) {
 
   // Save after learning.
   smartService.save('learner-method-invocation');
-}
-
-/*
- * Learn to recommend this method to the user.
- */
-function learnAutoRPC(state, method) {
-  // Log the successful RPC to the smart service.
-  var input = {
-    methodName: method,
-    signature: state.signature(),
-    name: state.itemName(),
-    reward: 1
-  };
-  smartService.record('learner-autorpc', input);
-
-  // For debug, display what our prediction would be.
-  log.debug('PredictA:', smartService.predict('learner-autorpc', input));
-
-  // Save after making a successful parameterless RPC.
-  smartService.save('learner-autorpc');
 }
