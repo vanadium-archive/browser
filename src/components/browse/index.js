@@ -64,7 +64,10 @@ function create() {
     /*
      * List of direct descendants of the namespace input prefix.
      * Used to make suggestions when interacting with the namespace input.
-     * @type {Array<string>}
+     * TODO(alexfandrianto): Currently uses obj.mountedName to access the name
+     * of the descendant instead of storing the name directly. Works around
+     * namespaceService's glob, which updates its returned result over time.
+     * @type {Array<Object>}
      */
     namespaceSuggestions: mercury.array([]),
 
@@ -151,7 +154,7 @@ function renderHeader(browseState, browseEvents, navigationEvents) {
   var children = browseState.namespaceSuggestions.map(
     function renderChildItem(child) {
       return h('paper-item', {
-        'label': new AttributeHook(child)
+        'label': new AttributeHook(child.mountedName)
       });
     }
   );

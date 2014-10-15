@@ -28,10 +28,7 @@ function getNamespaceSuggestions(browseState, namespace) {
 
   // Glob the children using this prefix.
   namespaceService.getChildren(prefix).then(function received(items) {
-    var itemNames = items.map(function(item) {
-      return item.mountedName;
-    });
-    browseState.put('namespaceSuggestions', itemNames);
+    browseState.put('namespaceSuggestions', items);
   }).catch(function(err) {
     log.warn('Could not glob', prefix, err);
   });
