@@ -1,6 +1,6 @@
 var test = require('prova');
 var addAttributes = require('../../../src/lib/addAttributes');
-var store = require('../../../src/lib/local-storage');
+var store = require('../../../src/lib/store');
 var proxyquire = require('proxyquireify')(require);
 
 // Mock of the smart service implementation file. Uses a single dumbLearner.

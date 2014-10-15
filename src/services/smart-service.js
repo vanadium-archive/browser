@@ -7,7 +7,7 @@
  */
 
 var addAttributes = require('../lib/addAttributes');
-var store = require('../lib/local-storage');
+var store = require('../lib/store');
 var log = require('../lib/log')('services:smart-service');
 var constants = require('./smart-service-implementation');
 
@@ -50,7 +50,7 @@ function reset(id) {
 }
 
 /*
- * Given an id, save the learner to local-storage.
+ * Given an id, save the learner to the store.
  */
 function save(id) {
   if (learners[id] === undefined) {
@@ -101,7 +101,7 @@ function register(id, type, params) {
 }
 
 /*
- * Helper function to load a new learner from local-storage.
+ * Helper function to load a new learner from the store.
  */
 function load(id) {
   log.debug('load', id);

@@ -6,7 +6,7 @@ var setMercuryArray = require('../../../../lib/mercury/setMercuryArray');
 var AttributeHook = require('../../../../lib/mercury/attribute-hook');
 var PropertyValueEvent =
   require('../../../../lib/mercury/property-value-event');
-var store = require('../../../../lib/local-storage');
+var store = require('../../../../lib/store');
 var log = require('../../../../lib/log')(
   'components:browse:item-details:method-form');
 var hashPropertyNames = require('../../../../lib/hashPropertyNames');

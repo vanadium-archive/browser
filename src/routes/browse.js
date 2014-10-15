@@ -2,7 +2,7 @@ var mercury = require('mercury');
 var urlUtil = require('url');
 var qsUtil = require('querystring');
 var exists = require('../lib/exists');
-var store = require('../lib/local-storage');
+var store = require('../lib/store');
 var smartService = require('../services/smart-service');
 /*
  * TODO(aghassemi) We need namespaceService.getNamespaceItem(name) method then

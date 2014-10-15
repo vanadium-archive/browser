@@ -1,7 +1,7 @@
 /*
- * local-storage allows key-value store for string keys and any value.
+ * The store allows key-value store for string keys and any value.
  */
-var log = require('./log')('lib:local-storage');
+var log = require('./log')('lib:store');
 
 module.exports = {
   hasValue: hasValue,

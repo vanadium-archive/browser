@@ -1,13 +1,13 @@
 var test = require('prova');
-var store = require('../../../src/lib/local-storage');
+var store = require('../../../src/lib/store');
 
-test('local-storage !hasValue', function(t) {
+test('store !hasValue', function(t) {
   // A key not present in the store has no value.
   t.notOk(store.hasValue('not in store'), 'not set => no value');
   t.end();
 });
 
-test('local-storage hasValue', function(t) {
+test('store hasValue', function(t) {
   // Run hasValue between other operations and verify hasValue's output.
   store.setValue('recoveringKey', 'willLoseValue');
   t.ok(store.hasValue('recoveringKey'), 'set => has value');
@@ -20,13 +20,13 @@ test('local-storage hasValue', function(t) {
   t.end();
 });
 
-test('local-storage get', function(t) {
+test('store get', function(t) {
   // A key not present in the store has null value.
   t.deepEqual(store.getValue('not in store'), null);
   t.end();
 });
 
-test('local-storage set=>get', function(t) {
+test('store set=>get', function(t) {
   // Simple string is successfully recovered.
   var value = 'potato soup';
   store.setValue('key1', value);
@@ -50,7 +50,7 @@ test('local-storage set=>get', function(t) {
   t.end();
 });
 
-test('local-storage setA=>setB=>get', function(t) {
+test('store setA=>setB=>get', function(t) {
   // The last value set wins...
   var key1 = 'key1';
   var key2 = 'key2';
@@ -67,7 +67,7 @@ test('local-storage setA=>setB=>get', function(t) {
   t.end();
 });
 
-test('local-storage set=>remove=>get', function(t) {
+test('store set=>remove=>get', function(t) {
   // A removed key will have no value in the store.
   var key = 'will be removed';
   var value = 'not null';
@@ -77,7 +77,7 @@ test('local-storage set=>remove=>get', function(t) {
   t.end();
 });
 
-test('local-storage remove=>set=>get', function(t) {
+test('store remove=>set=>get', function(t) {
   // A removed key is not permanent; it can be set to again.
   var key = 'will be removed and set again';
   var value = 'not null';
@@ -87,7 +87,7 @@ test('local-storage remove=>set=>get', function(t) {
   t.end();
 });
 
-test('local-storage getKeysWithPrefix', function(t) {
+test('store getKeysWithPrefix', function(t) {
   // Prepare various keys, some of which prefix the other.
   store.setValue('abc', 4);
   store.setValue('abcd', 'a');

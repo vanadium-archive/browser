@@ -1,5 +1,5 @@
 var browseRoute = require('./browse');
-var store = require('../lib/local-storage');
+var store = require('../lib/store');
 
 module.exports = function(routes) {
   routes.addRoute('/', handleIndexRoute);
