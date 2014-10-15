@@ -40,23 +40,21 @@ test('getChildren of default namespace root', function(t) {
   }).catch(t.end);
 
   function assertCottage(item) {
-    assertMountedName(t, item, 'cottage');
-    assertObjectName(t, item, 'cottage');
-    assertIsServer(t, item);
-    assertIsGlobbable(t, item);
-    assertHasSignature(t, item);
-    assertIsAccessible(t, item);
-    assertMounttableServiceTypeInfo(t, item);
+    assertServer(t, item, {
+      name: 'cottage',
+      objectName: 'cottage',
+      isGlobbable: true,
+      type: 'mounttable'
+    });
   }
 
   function assertHouse(item) {
-    assertMountedName(t, item, 'house');
-    assertObjectName(t, item, 'house');
-    assertIsServer(t, item);
-    assertIsGlobbable(t, item);
-    assertHasSignature(t, item);
-    assertIsAccessible(t, item);
-    assertMounttableServiceTypeInfo(t, item);
+    assertServer(t, item, {
+      name: 'house',
+      objectName: 'house',
+      isGlobbable: true,
+      type: 'mounttable'
+    });
   }
 });
 
@@ -79,20 +77,19 @@ test('getChildren of cottage/lawn', function(t) {
   }).catch(t.end);
 
   function assertSprinkler(item) {
-    assertMountedName(t, item, 'master-sprinkler');
-    assertObjectName(t, item, 'cottage/lawn/master-sprinkler');
-    assertIsServer(t, item);
-    assertIsNotGlobbable(t, item);
-    assertHasSignature(t, item);
-    assertIsAccessible(t, item);
-    assertUnknownServiceTypeInfo(t, item);
+    assertServer(t, item, {
+      name: 'master-sprinkler',
+      objectName: 'cottage/lawn/master-sprinkler',
+      isGlobbable: false,
+      type: 'unknown'
+    });
   }
 
   function assertBack(item) {
-    assertMountedName(t, item, 'back');
-    assertObjectName(t, item, 'cottage/lawn/back');
-    assertIsNotServer(t, item);
-    assertIsGlobbable(t, item);
+    assertIntermediaryName(t, item, {
+      name: 'back',
+      objectName: 'cottage/lawn/back'
+    });
   }
 });
 
@@ -101,12 +98,12 @@ test('getChildren of rooted /localhost:8881/house/kitchen', function(t) {
   // 8881 is the expected root mounttable port to be running for the tests
   namespaceService.getChildren('/localhost:8881/house/kitchen').
   then(function assertResult(result) {
-  // Wait until we receive the 2 items, lights and smoke-detector
+    // Wait until we receive the 2 items, lights and smoke-detector
     assertIsImmutable(t, result);
     var numReturnedChildren;
     result(function(children) {
       numReturnedChildren = children.length;
-    if (numReturnedChildren === 2) {
+      if (numReturnedChildren === 2) {
         children = _.sortBy(children, 'mountedName');
         assertLightSwitch(children[0]);
         assertSmokeDetector(children[1]);
@@ -116,30 +113,28 @@ test('getChildren of rooted /localhost:8881/house/kitchen', function(t) {
   }).catch(t.end);
 
   function assertLightSwitch(item) {
-    assertMountedName(t, item, 'lights');
-    assertObjectName(t, item, '/localhost:8881/house/kitchen/lights');
-    assertIsServer(t, item);
-    assertIsNotGlobbable(t, item);
-    assertHasSignature(t, item);
-    assertIsAccessible(t, item);
-    assertUnknownServiceTypeInfo(t, item);
+    assertServer(t, item, {
+      name: 'lights',
+      objectName: '/localhost:8881/house/kitchen/lights',
+      isGlobbable: false,
+      type: 'unknown'
+    });
   }
 
   function assertSmokeDetector(item) {
-    assertMountedName(t, item, 'smoke-detector');
-    assertObjectName(t, item, '/localhost:8881/house/kitchen/smoke-detector');
-    assertIsServer(t, item);
-    assertIsNotGlobbable(t, item);
-    assertHasSignature(t, item);
-    assertIsAccessible(t, item);
-    assertUnknownServiceTypeInfo(t, item);
+    assertServer(t, item, {
+      name: 'smoke-detector',
+      objectName: '/localhost:8881/house/kitchen/smoke-detector',
+      isGlobbable: false,
+      type: 'unknown'
+    });
   }
 });
 
 test('getChildren of non-existing mounttable', function(t) {
   // Should get an error
   namespaceService.getChildren('/DoesNotExist:666/What/Ever').
-  then(function shouldNotGetResult(result){
+  then(function shouldNotGetResult(result) {
     t.fail('Should have returned an error instead of result');
     t.end();
   }).
@@ -147,6 +142,50 @@ test('getChildren of non-existing mounttable', function(t) {
     t.ok(err, 'globbing non-existing mounttable correctly returns error');
     t.end();
   });
+});
+
+// TODO(aghassemi) enable when getNamespaceItem is properly implemented
+test.skip('getNamespaceItem of leaf server', function(t) {
+  namespaceService.getNamespaceItem('cottage/lawn/master-sprinkler').
+  then(function assertItem(itemObs) {
+    assertIsImmutable(t, itemObs);
+    var item = itemObs();
+    assertServer(t, item, {
+      name: 'master-sprinkler',
+      objectName: 'cottage/lawn/master-sprinkler',
+      isGlobbable: false,
+      type: 'unknown'
+    });
+    t.end();
+  }).catch(t.end);
+});
+
+test.skip('getNamespaceItem of intermediary name', function(t) {
+  namespaceService.getNamespaceItem('cottage/lawn').
+  then(function assertItem(itemObs) {
+    assertIsImmutable(t, itemObs);
+    var item = itemObs();
+    assertIntermediaryName(t, item, {
+      name: 'back',
+      objectName: 'cottage/lawn/back'
+    });
+    t.end();
+  }).catch(t.end);
+});
+
+test.skip('getNamespaceItem of mounttable leaf server', function(t) {
+  namespaceService.getNamespaceItem('cottage').
+  then(function assertItem(itemObs) {
+    assertIsImmutable(t, itemObs);
+    var item = itemObs();
+    assertServer(t, item, {
+      name: 'cottage',
+      objectName: 'cottage',
+      isGlobbable: true,
+      type: 'mounttable'
+    });
+    t.end();
+  }).catch(t.end);
 });
 
 test('glob uses caching', function(t) {
@@ -159,7 +198,7 @@ test('glob uses caching', function(t) {
 
     // Call second time, there should have been a cache hit
     return namespaceService.glob('house', '*');
-  }).then( function assertCacheHit() {
+  }).then(function assertCacheHit() {
     t.ok(mockLRUCache.wasCacheHit('house/*'),
       'second glob call is a cache hit');
 
@@ -266,6 +305,33 @@ test('makeRPC returns output properly', function(t) {
 /*
  * Test helpers
  */
+function assertServer(t, item, vals) {
+  assertMountedName(t, item, vals.name);
+  assertObjectName(t, item, vals.objectName);
+  assertIsServer(t, item);
+  if (vals.isGlobbable === true) {
+    assertIsGlobbable(t, item);
+  } else if(vals.isGlobbable === false) {
+    assertIsNotGlobbable(t, item);
+  }
+  assertHasSignature(t, item);
+  assertIsAccessible(t, item);
+
+  if (vals.type === 'unknown') {
+    assertUnknownServiceTypeInfo(t, item);
+  } else if (vals.type === 'mounttable') {
+    assertMounttableServiceTypeInfo(t, item);
+  } else {
+    t.fail('Unknown type: ' + vals.type);
+  }
+}
+
+function assertIntermediaryName(t, item, vals) {
+  assertMountedName(t, item, vals.name);
+  assertObjectName(t, item, vals.objectName);
+  assertIsNotServer(t, item);
+  assertIsGlobbable(t, item);
+}
 
 function assertMountedName(t, item, val) {
   t.ok(item.mountedName, item.mountedName + ': has a mounted name');
@@ -274,33 +340,33 @@ function assertMountedName(t, item, val) {
 
 function assertObjectName(t, item, val) {
   t.ok(item.objectName, item.mountedName + ': has an object name');
-  t.equal(item.objectName, val, item.mountedName  + ': object name matches');
+  t.equal(item.objectName, val, item.mountedName + ': object name matches');
 }
 
 function assertIsServer(t, item) {
-  t.equal(item.isServer, true, item.mountedName  +': is a server');
-  t.ok(item.serverInfo, item.mountedName  +': has server info');
+  t.equal(item.isServer, true, item.mountedName + ': is a server');
+  t.ok(item.serverInfo, item.mountedName + ': has server info');
 }
 
 function assertIsNotServer(t, item) {
-  t.equal(item.isServer, false, item.mountedName  +': is not a server');
-  t.notOk(item.serverInfo, item.mountedName  +': does not have server info');
+  t.equal(item.isServer, false, item.mountedName + ': is not a server');
+  t.notOk(item.serverInfo, item.mountedName + ': does not have server info');
 }
 
 function assertIsGlobbable(t, item) {
-  t.equal(item.isGlobbable, true, item.mountedName  +': is globbable');
+  t.equal(item.isGlobbable, true, item.mountedName + ': is globbable');
 }
 
 function assertIsNotGlobbable(t, item) {
-  t.equal(item.isGlobbable, false, item.mountedName  +': is not globbable');
+  t.equal(item.isGlobbable, false, item.mountedName + ': is not globbable');
 }
 
 function assertHasSignature(t, item) {
-  t.ok(item.serverInfo.signature, item.mountedName  +': has a signature');
+  t.ok(item.serverInfo.signature, item.mountedName + ': has a signature');
 }
 
 function assertIsAccessible(t, item) {
-  t.ok(item.serverInfo.isAccessible, item.mountedName  +': is accessible');
+  t.ok(item.serverInfo.isAccessible, item.mountedName + ': is accessible');
 }
 
 function assertIsImmutable(t, observable) {
@@ -342,7 +408,6 @@ function assertMounttableServiceTypeInfo(t, item) {
   t.ok(typeInfo.icon,
     item.mountedName + ': mounttable type info has an icon');
 }
-
 /*
  * Runs a test to ensure the makeRPC call terminates without error.
  */

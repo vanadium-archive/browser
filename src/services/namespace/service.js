@@ -9,6 +9,7 @@ var log = require('../../lib/log')('services:namespace:service');
 
 module.exports = {
   getChildren: getChildren,
+  getNamespaceItem: getNamespaceItem,
   getSignature: getSignature,
   glob: glob,
   makeRPC: makeRPC,
@@ -19,8 +20,9 @@ module.exports = {
  * Lazy getter and initializer for Veyron runtime
  */
 var _runtimePromiseInstance;
+
 function getRuntime() {
-  if(!_runtimePromiseInstance) {
+  if (!_runtimePromiseInstance) {
     _runtimePromiseInstance = veyron.init(veyronConfig);
   }
   return _runtimePromiseInstance;
@@ -54,48 +56,89 @@ function glob(name, globQuery) {
   var runtime;
   var globItemsObservArr = mercury.array([]);
   var globItemsObservArrPromise =
-  getRuntime().then(function getNamespace(rt) {
-    runtime = rt;
-    return runtime.newNamespace();
-  }).then(function resolveName(namespace) {
-    return namespace.resolveMaximally(name);
-  }).then(function getGlobbableService(terminalNames) {
-    // TODO(aghassemi): We should try all the names instead of the first.
-    // Perhaps the library should allow me to pass a list of names.
-    return runtime.bindTo(terminalNames[0]);
-  }).then(function invokeGlob(globbableService) {
-    // TODO(aghassemi) use watchGlob if available, otherwise fallback to glob
-    return globbableService.glob(globQuery).stream;
-  }).then(function updateResult(globStream) {
-    globStream.on('data', function createNamespaceItem(result) {
-      // Create an item as glob results come in and add the item to result
-      getNamespaceItem(result.name, name, result.servers)
-        .then(function(item) {
-          globItemsObservArr.push(item);
-        }).catch(function(err) {
-          log.error('Failed to create item for "' + result.name + '"', err);
-        });
-    });
+    getRuntime().then(function getNamespace(rt) {
+      runtime = rt;
+      return runtime.newNamespace();
+    }).then(function resolveName(namespace) {
+      return namespace.resolveToMountTable(name);
+    }).then(function getGlobbableService(terminalNames) {
+      // TODO(aghassemi): We should try all the names instead of the first.
+      // Perhaps the library should allow me to pass a list of names.
+      return runtime.bindTo(terminalNames[0]);
+    }).then(function invokeGlob(globbableService) {
+      // TODO(aghassemi) use watchGlob if available, otherwise fallback to glob
+      return globbableService.glob(globQuery).stream;
+    }).then(function updateResult(globStream) {
+      globStream.on('data', function createItem(result) {
+        // Create an item as glob results come in and add the item to result
+        createNamespaceItem(result.name, name, result.servers)
+          .then(function(item) {
+            globItemsObservArr.push(item);
+          }).catch(function(err) {
+            log.error('Failed to create item for "' + result.name + '"', err);
+          });
+      });
 
-    globStream.on('error', function invalidateCacheAndLog(err) {
+      globStream.on('error', function invalidateCacheAndLog(err) {
+        globCache.del(cacheKey);
+        // TODO(aghassemi) UI might want to know about this error so it can
+        // tell the user things won't be updated automatically anymore and maybe
+        // instruct them to reload.
+        log.error('Glob stream error for', name, err);
+      });
+
+    }).then(function cacheAndReturnResult() {
+      var immutableResult = freeze(globItemsObservArr);
+      globCache.set(cacheKey, immutableResult);
+      return immutableResult;
+    }).catch(function invalidateCacheAndRethrow(err) {
       globCache.del(cacheKey);
-      // TODO(aghassemi) UI might want to know about this error so it can
-      // tell the user things won't be updated automatically anymore and maybe
-      // instruct them to reload.
-      log.error('Glob stream error for', name, err);
+      return Promise.reject(err);
     });
-
-  }).then(function cacheAndReturnResult() {
-    var immutableResult = freeze(globItemsObservArr);
-    globCache.set(cacheKey, immutableResult);
-    return immutableResult;
-  }).catch( function invalidateCacheAndRethrow(err) {
-    globCache.del(cacheKey);
-    return Promise.reject(err);
-  });
 
   // Return our Promise of observable array. It will get filled as data comes in
   return globItemsObservArrPromise;
+}
+
+/*
+ * Time that if globbing for name does not return any results, we timeout.
+ */
+var MAX_GET_ITEM_TIMEOUT = 5000;
+/*
+ * Given a name, provide information about a the name as defined in @see item.js
+ * @param {string} objectName Object name to get namespace item for.
+ * @return {Promise.<mercury.value>} Promise of an observable value of an item
+ * as defined in @see item.js
+ */
+function getNamespaceItem(objectName) {
+
+  // Globbing the name with . would provide information about the name itself.
+  // TODO(aghassemi) this does not work until new changes to namespace lib in
+  // veyron.js, hence skipping tests.
+  return glob(name, '.').then(function(resultsObs) {
+    // wait until the glob has the one and only result before resolving
+    return new Promise(function(resolve, reject) {
+      var alreadyResolved = false;
+      mercury.watch(resultsObs, function(results) {
+        // wait until there is one item
+        if (!alreadyResolved && results.length > 0) {
+          var item = new mercury.value(results[0]);
+          var immutableItem = freeze(item);
+          alreadyResolved = true;
+          resolve(immutableItem);
+        }
+      });
+
+      setTimeout(function timer() {
+        if (!alreadyResolved) {
+          var err = new Error('Timeout: getNamespaceItem failed to get ' +
+            'any results back in ' + MAX_GET_ITEM_TIMEOUT + 'ms');
+          alreadyResolved = true;
+          reject(err);
+        }
+      }, MAX_GET_ITEM_TIMEOUT);
+    });
+  });
 }
 
 /*
@@ -178,7 +221,7 @@ function makeRPC(name, methodName, args) {
  * @param {Array<string>} List of server addresses this name points to, if any.
  * @return {merucry.struct}
  */
-function getNamespaceItem(mountedName, parentName, servers) {
+function createNamespaceItem(mountedName, parentName, servers) {
   var name = mountedName;
   if (parentName !== '') {
     name = namespaceUtil.join([parentName, name]);
@@ -215,12 +258,12 @@ function getServerInfo(objectName) {
     signature = sig;
     isAccessible = true;
     return getServerTypeInfo(sig);
-  },function failedToGetSignature(err) {
+  }, function failedToGetSignature(err) {
     signature = {};
     //TODO(aghassemi): We should at least be able to tell if inaccessible
     //because not authorized vs other reasons.
     isAccessible = false;
-    return createUnkownServiceTypeInfo();
+    return createUnknownServiceTypeInfo();
   }).then(function(serverTypeInfo) {
     return itemFactory.createServerInfo({
       typeInfo: serverTypeInfo,
@@ -257,11 +300,11 @@ function getServerTypeInfo(signature) {
       icon: 'social:circles-extended'
     });
   } else {
-    return createUnkownServiceTypeInfo();
+    return createUnknownServiceTypeInfo();
   }
 }
 
-function createUnkownServiceTypeInfo() {
+function createUnknownServiceTypeInfo() {
   return itemFactory.createServerTypeInfo({
     key: 'veyron-unknown',
     typeName: 'Service',
