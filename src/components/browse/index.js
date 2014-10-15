@@ -28,10 +28,6 @@ function create() {
     }
   );
   smartService.loadOrRegister(
-    'learner-autorpc',
-    smartService.constants.LEARNER_AUTORPC
-  );
-  smartService.loadOrRegister(
     'learner-method-input',
     smartService.constants.LEARNER_METHOD_INPUT, {
       minThreshold: 0.2,

@@ -50,41 +50,6 @@ function displayItemDetails(state, events, data) {
         form.events.methodEnd(
           methodEnd.bind(null, state, m)
         );
-
-        // TODO(alexfandrianto): It's likely this logic will be moved to
-        // renderMethod since these recommendations are no longer very useful.
-
-        // Prepare data needed to predict if this method should be recommended.
-        var param = signatureResult[m];
-        var input = {
-          name: name,
-          methodName: m,
-          signature: signatureResult,
-          hasParams: param.inArgs.length !== 0
-        };
-
-        var details = state.details.get(data.name);
-
-        // Ignore methods that take input parameters, already recommended
-        // methods, and methods with no output (only error as an out argument).
-        if (input.hasParams || (details && details[m] !== undefined) ||
-            param.numOutArgs === 1) {
-          continue;
-        }
-
-        // If the prediction power is strong enough, recommend the method.
-        var prediction = smartService.predict('learner-autorpc', input);
-        if (prediction > 0.5) {
-          log.debug('Recommend', m, 'with', prediction);
-
-          // Set the state detail with the prediction value (a float).
-          var detail = state.details.get(data.name);
-          if (detail === undefined) {
-            detail = {};
-          }
-          detail[input.methodName] = prediction;
-          state.details.put(input.name, detail);
-        }
       }
     }
   }, function(err) {
