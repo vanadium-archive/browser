@@ -41,15 +41,6 @@
   color: var(--color-text-secondary);
 }
 
-.signature {
-  margin: 0.5em;
-}
-
-.signature pre {
-  white-space: normal;
-  word-break: break-all;
-}
-
 .method-input {
   display: inline-block;
   vertical-align: top;
@@ -77,12 +68,6 @@
   margin: 0.5em;
   padding-top: 0.3em;
   padding-bottom: 0.3em;
-}
-
-.method-output {
-  overflow: auto;
-  max-height: 15em;
-  margin: 0.5em;
 }
 
 .method-output table, .method-output th {

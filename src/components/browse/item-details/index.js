@@ -34,7 +34,11 @@ function create() {
     signature: mercury.value(null),
 
     /*
-     * Which tab to display; 0 is Details, 1 is Methods
+     * Which tab to display; 0 is for service details
+     * TODO(alexfandrianto): Once we have more info to display, add more tabs.
+     * We are currently combining service details, methods, and outputs.
+     * TODO(alexfandrianto): Use an enum instead of a comment to clarify the
+     * mapping between tab name and tab index.
      * @type {integer}
      */
     selectedTabIndex: mercury.value(0),
@@ -74,15 +78,8 @@ function create() {
 function render(state, events) {
   insertCss(css);
 
-  // Only render the selected tab to avoid needless re-rendering.
-  var detailsTab, methodsTab;
-  if (state.selectedTabIndex === 0) {
-    detailsTab = renderDetailsTab(state, events);
-    methodsTab = '';
-  } else {
-    detailsTab = '';
-    methodsTab = renderMethodsTab(state, events);
-  }
+  var detailsContent = renderDetailsContent(state, events);
+  var methodsContent = renderMethodsContent(state, events);
 
   return [h('paper-tabs.tabs', {
       'selected': new AttributeHook(state.selectedTabIndex),
@@ -92,28 +89,21 @@ function render(state, events) {
         'ev-click': mercury.event(events.tabSelected, {
           index: 0
         })
-      }, 'Details'),
-      h('paper-tab.tab', {
-        'ev-click': mercury.event(events.tabSelected, {
-          index: 1
-        })
-      }, 'Methods')
+      }, 'Service Details')
     ]),
     h('core-selector', {
       'selected': new AttributeHook(state.selectedTabIndex)
     }, [
-      h('div.tab-content', detailsTab),
-      h('div.tab-content', methodsTab)
+      h('div.tab-content', [detailsContent, methodsContent]),
     ])
   ];
 }
 
 /*
- * The details tab renders details about the current service object.
- * This includes the output of parameterless RPCs made on that object.
- * It also includes recommendations for parameterless RPCs.
+ * Renders details about the current service object.
+ * Note: Currently renders in the same tab as renderMethodsContent.
  */
-function renderDetailsTab(state, events) {
+function renderDetailsContent(state, events) {
   var typeInfo = browseService.getTypeInfo(state.signature);
   var displayItems = [
     renderFieldItem('Name', (state.itemName || '<root>')),
@@ -126,12 +116,13 @@ function renderDetailsTab(state, events) {
 }
 
 /*
- * The methods tab renders the signature, input form, and output area.
+ * Renders the method signature forms and the RPC output area.
+ * Note: Currently renders in the same tab as renderDetailsContent.
  */
-function renderMethodsTab(state, events) {
+function renderMethodsContent(state, events) {
   return h('div', [
-    renderMethodSignatures(state, events),
-    renderMethodOutput(state)
+    renderFieldItem('Methods', renderMethodSignatures(state, events)),
+    renderFieldItem('Output', renderMethodOutput(state))
   ]);
 }
 
@@ -142,7 +133,7 @@ function renderMethodsTab(state, events) {
 function renderMethodSignatures(state, events) {
   var sig = state.signature;
   if (!sig) {
-    return h('div.empty', 'No method signature');
+    return h('div', 'No method signature');
   }
 
   var methods = [];
@@ -152,7 +143,7 @@ function renderMethodSignatures(state, events) {
     methods.push(methodForm.render(state.methodForm[m], events.methodForm[m]));
   });
 
-  return h('div.signature', methods); // Note: allows 0 method signatures
+  return h('div', methods); // Note: allows 0 method signatures
 }
 
 /*
