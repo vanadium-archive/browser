@@ -48,17 +48,6 @@ function formatResult(state, method, runID, result, addToDetails) {
 
   // Then overwrite the old value.
   replaceResult(state, runID, formattedResult);
-
-  // If we received a result for a 0-parameter RPC, add to the details page.
-  if (addToDetails) {
-    var name = state.itemName();
-    var detail = state.details.get(name);
-    if (detail === undefined) {
-      detail = {};
-    }
-    detail[method] = formattedResult;
-    state.details.put(name, detail);
-  }
 }
 
 /*
