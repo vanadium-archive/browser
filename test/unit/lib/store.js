@@ -1,112 +1,164 @@
 var test = require('prova');
 var store = require('../../../src/lib/store');
+var _ = require('lodash');
 
 test('store !hasValue', function(t) {
   // A key not present in the store has no value.
-  t.notOk(store.hasValue('not in store'), 'not set => no value');
-  t.end();
+  store.hasValue('not in store').then(function(has) {
+    t.notOk(has, 'not set => no value');
+    t.end();
+  }).catch(t.end);
 });
 
 test('store hasValue', function(t) {
+  var key = 'recoveringKey';
   // Run hasValue between other operations and verify hasValue's output.
-  store.setValue('recoveringKey', 'willLoseValue');
-  t.ok(store.hasValue('recoveringKey'), 'set => has value');
-
-  store.removeValue('recoveringKey');
-  t.notOk(store.hasValue('recoveringKey'), 'set => remove => no value');
-
-  store.setValue('recoveringKey', 'nowHasValue');
-  t.ok(store.hasValue('recoveringKey'), 'set => remove => set => has value');
-  t.end();
+  store.setValue('recoveringKey', 'willLoseValue').then(function(value) {
+    return store.hasValue(key);
+  }).then(function(has) {
+    t.ok(has, 'set => has value');
+    return store.removeValue(key);
+  }).then(function() {
+    return store.hasValue(key);
+  }).then(function(has) {
+    t.notOk(has, 'set => remove => no value');
+    return store.setValue(key, 'nowHasValue');
+  }).then(function(value) {
+    return store.hasValue(key);
+  }).then(function(has) {
+    t.ok(has, 'set => remove => set => has value');
+    t.end();
+  }).catch(t.end);
 });
 
 test('store get', function(t) {
   // A key not present in the store has null value.
-  t.deepEqual(store.getValue('not in store'), null);
-  t.end();
+  store.getValue('not in store').then(function(value) {
+    t.equal(value, null, 'not in store => null value');
+    t.end();
+  }).catch(t.end);
 });
 
-test('store set=>get', function(t) {
-  // Simple string is successfully recovered.
-  var value = 'potato soup';
-  store.setValue('key1', value);
-  t.deepEqual(store.getValue('key1'), value);
+var setGetTestCases = {
+  'simple string is recovered': {
+    key: 'key1',
+    givenValue: 'potato soup',
+    expectedValue: 'potato soup'
+  },
+  'simple object is recovered': {
+    key: 'key2',
+    givenValue: { attr: 'red' },
+    expectedValue: { attr: 'red' }
+  },
+  'functions are not stored': {
+    key: 'key3',
+    givenValue: function() { return 3; },
+    expectedValue: null
+  },
+  'object methods are not stored': {
+    key: 'key4',
+    givenValue: {
+      ok: 1,
+      lost: function() { return 1; }
+    },
+    expectedValue: {
+      ok: 1
+    }
+  },
+  'functions in arrays are nulled': {
+    key: 'key5',
+    givenValue: ['a', 'b', function() { return 'removed'; }, 'd'],
+    expectedValue: ['a', 'b', null, 'd']
+  }
+};
 
-  // Simple object is successfully recovered.
-  var object = { attribute: 'yellow' };
-  store.setValue('key2', object);
-  t.deepEqual(store.getValue('key2'), object);
-
-  // But note that functions cannot be unparsed!
-  var f = function() { return 'cannot be saved'; };
-  store.setValue('key3', f);
-  t.deepEqual(store.getValue('key3'), null);
-
-  // Object methods are likewise not included.
-  var hasMethod = { a: 'survives', f: function() { return 'disappears'; }};
-  var lostMethod = { a: 'survives'};
-  store.setValue('key4', hasMethod);
-  t.deepEqual(store.getValue('key4'), lostMethod);
-  t.end();
+_.forOwn(setGetTestCases, function run(data, msg) {
+  test(
+    'store set=>get - ' + msg,
+    testSetGetExpectations.bind(null, data)
+  );
 });
+
+function testSetGetExpectations(data, t) {
+  store.setValue(data.key, data.givenValue).then(function(value) {
+    return store.getValue(data.key);
+  }).then(function(value) {
+    t.deepEqual(value, data.expectedValue);
+    t.end();
+  }).catch(t.end);
+}
 
 test('store setA=>setB=>get', function(t) {
-  // The last value set wins...
   var key1 = 'key1';
   var key2 = 'key2';
-  var value = 'artificial flavors';
-  var object = { attribute: 'organic' };
-  store.setValue(key1, value);
-  store.setValue(key1, object);
-  t.deepEqual(store.getValue(key1), object);
+  var value1 = 'artificial flavors';
+  var value2 = { attribute: 'organic' };
 
-  // ...regardless of the values stored.
-  store.setValue(key2, object);
-  store.setValue(key2, value);
-  t.deepEqual(store.getValue(key2), value);
-  t.end();
+  // The last value set wins regardless of the actual values stored.
+  store.setValue(key1, value1).then(function(value) { // Store 1 first then 2
+    return store.setValue(key1, value2);
+  }).then(function(value) {
+    return store.getValue(key1);
+  }).then(function(value) {
+    t.deepEqual(value, value2, 'last value set wins'); // Expect 2
+    return store.setValue(key2, value2);               // Store 2 first then 1
+  }).then(function(value) {
+    return store.setValue(key2, value1);
+  }).then(function(value) {
+    return store.getValue(key2);
+  }).then(function(value) {
+    t.deepEqual(value, value1, 'last value set wins'); // Expect 1
+    t.end();
+  }).catch(t.end);
 });
 
 test('store set=>remove=>get', function(t) {
   // A removed key will have no value in the store.
   var key = 'will be removed';
   var value = 'not null';
-  store.setValue(key, value);
-  store.removeValue(key);
-  t.deepEqual(store.getValue(key), null);
-  t.end();
+  store.setValue(key, value).then(function(value) {
+    return store.removeValue(key);
+  }).then(function() {
+    return store.getValue(key);
+  }).then(function(value) {
+    t.equal(value, null, 'a removed key has no value');
+    t.end();
+  }).catch(t.end);
 });
 
 test('store remove=>set=>get', function(t) {
   // A removed key is not permanent; it can be set to again.
   var key = 'will be removed and set again';
-  var value = 'not null';
-  store.removeValue(key);
-  store.setValue(key, value);
-  t.deepEqual(store.getValue(key), value);
-  t.end();
+  var val = 'not null';
+  store.removeValue(key).then(function() {
+    return store.setValue(key, val);
+  }).then(function(value) {
+    return store.getValue(key);
+  }).then(function(value) {
+    t.deepEqual(value, val, 'a removed key can still set a value');
+    t.end();
+  }).catch(t.end);
 });
 
 test('store getKeysWithPrefix', function(t) {
-  // Prepare various keys, some of which prefix the other.
-  store.setValue('abc', 4);
-  store.setValue('abcd', 'a');
-  store.setValue('ab',  []);
-  store.setValue('rea', false);
-
-  var keys;
-
-  // abc has 2 matches
-  keys = store.getKeysWithPrefix('abc');
-  t.deepEqual(keys.sort(), ['abc', 'abcd']);
-
-  // a has 3 matches
-  keys = store.getKeysWithPrefix('a');
-  t.deepEqual(keys.sort(), ['ab', 'abc', 'abcd']);
-
-  // x has 0 matches
-  keys = store.getKeysWithPrefix('x');
-  t.deepEqual(keys.sort(), []);
-
-  t.end();
+  // Set abc, abcd, ab, and rea in the store.
+  // Then verify prefix matches for abc, a, and x.
+  store.setValue('abc', 4).then(function(value) { // Preload data at abc
+    return store.setValue('abcd', 'a');           // Preload data at abcd
+  }).then(function(value) {
+    return store.setValue('ab', []);              // Preload data at ab
+  }).then(function(value) {
+    return store.setValue('rea', false);          // Preload data at rea
+  }).then(function(value) {
+    return store.getKeysWithPrefix('abc'); // Verify prefix matches for abc
+  }).then(function(keys) {
+    t.deepEqual(keys.sort(), ['abc', 'abcd'], 'abc => abc and abcd');
+    return store.getKeysWithPrefix('a');   // Verify prefix matches for a
+  }).then(function(keys) {
+    t.deepEqual(keys.sort(), ['ab', 'abc', 'abcd'], 'a => ab, abc, and abcd');
+    return store.getKeysWithPrefix('x');   // Verify prefix matches for x
+  }).then(function(keys) {
+    t.deepEqual(keys.sort(), [], 'x => empty array');
+    t.end();
+  }).catch(t.end);
 });

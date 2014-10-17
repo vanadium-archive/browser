@@ -39,7 +39,7 @@ var smartService = proxyquire(
 });
 
 function makeLearner(id) {
-  smartService.loadOrRegister(
+  return smartService.loadOrRegister(
     id,
     smartService.constants.LEARNER_DUMB,
     { learningRate: 0.1, regularize: false }
@@ -49,22 +49,28 @@ function makeLearner(id) {
 test('record and predict', function(t) {
   var id1 = 'first';
   var id2 = 'second';
-  makeLearner(id1);
-  makeLearner(id2);
+  makeLearner(id1).then(function() {
+    return makeLearner(id2);
+  }).then(function() {
+    // The # of predictions increases as we call predict.
+    t.deepEqual(smartService.predict(id1, 'some input'), [0, 1],
+      'learner 1 => predict called 1 time');
+    t.deepEqual(smartService.predict(id1, 'some input'), [0, 2],
+      'learner 1 => predict called 2 times');
+    t.deepEqual(smartService.predict(id2, 'some input'), [0, 1],
+      'learner 2 => predict called 1 time');
 
-  // The # of predictions increases as we call predict.
-  t.deepEqual(smartService.predict(id1, 'some input'), [0, 1]);
-  t.deepEqual(smartService.predict(id1, 'some input'), [0, 2]);
-  t.deepEqual(smartService.predict(id2, 'some input'), [0, 1]);
+    // If we record, then the relevant learner is also called.
+    smartService.record(id1, 'some input');
+    smartService.record(id2, 'some input');
+    smartService.record(id2, 'some input');
+    t.deepEqual(smartService.predict(id1, 'some input'), [1, 3],
+      'learner 1 => record x1, predict x2');
+    t.deepEqual(smartService.predict(id2, 'some input'), [2, 2],
+      'learner 2 => record x2, predict x2');
 
-  // If we record, then the relevant learner is also called.
-  smartService.record(id1, 'some input');
-  smartService.record(id2, 'some input');
-  smartService.record(id2, 'some input');
-  t.deepEqual(smartService.predict(id1, 'some input'), [1, 3]);
-  t.deepEqual(smartService.predict(id2, 'some input'), [2, 2]);
-
-  t.end();
+    t.end();
+  }).catch(t.end);
 });
 
 test('save, load, and reset', function(t) {
@@ -72,47 +78,57 @@ test('save, load, and reset', function(t) {
   var id2 = 'fourth';
 
   // The store does not have these values initially.
-  t.deepEqual([store.getValue(id1), store.getValue(id2)], [null, null]);
+  store.getValue(id1).then(function(value) {
+    t.equal(value, null, 'learner 1 does not start in the store');
 
-  // Make 1 learner. Saving enters the value into the store.
-  makeLearner(id1);
-  smartService.save(id1);
-  t.notEqual(store.getValue(id1), null); // stored value isn't null
+    return store.getValue(id2);
+  }).then(function(value) {
+    t.equal(value, null, 'learner 2 does not start in the store');
 
-  // Copy the learner and save it into the store.
-  store.setValue(id2, store.getValue(id1));
+    // Make learner 1 through registration.
+    return makeLearner(id1);
+  }).then(function() {
+    return smartService.save(id1);
+  }).then(function() {
+    return store.getValue(id1);
+  }).then(function(value) {
+    t.notEqual(value, null, 'saving learner 1 puts it in the store');
 
-  // Load the other service. It's not in the store.
-  smartService.loadOrRegister(id2); // will have loaded it.
-  t.notEqual(store.getValue(id2), null);
+    // Copy this value into the store at learner 2's location.
+    return store.setValue(id2, value);
+  }).then(function(value) {
+    // Then load this copy, learner 2.
+    return smartService.loadOrRegister(id2);
+  }).then(function() {
+    // We can call predict and update on id2 (a loaded learner).
+    t.doesNotThrow(
+      function() { smartService.record(id2, 'some input'); },
+      'loaded learners can update'
+    );
+    t.doesNotThrow(
+      function() { smartService.predict(id2, 'some other input'); },
+      'loaded learners can predict'
+    );
 
-  // Even though id2 was loaded, we can still call predict and update on it.
-  t.doesNotThrow(
-    function() { smartService.record(id2, 'some input'); },
-    'loaded learners can still update'
-  );
-  t.doesNotThrow(
-    function() { smartService.predict(id2, 'some other input'); },
-    'loaded learners can still predict'
-  );
+    // Additionally, the dumb learner's counts match.
+    t.deepEqual(smartService.predict(id2, 'random input'), [1, 2],
+      'learner 1 => record x1, predict x2');
 
-  // Additionally, the dumb learner's counts match.
-  t.deepEqual(smartService.predict(id2, 'random input'), [1, 2]);
+    return smartService.reset(id1); // Reset id1 but not id2.
+  }).then(function() {
+    return store.getValue(id1);
+  }).then(function(value) {
+    t.equal(value, null, 'learner 1 is not in the store after reset');
 
-  // Saving id2 into the store makes it appear.
-  smartService.save(id2);
-  t.notEqual(store.getValue(id2), null); // stored value isn't null
+    return store.getValue(id2);
+  }).then(function(value) {
+    t.notEqual(value, null, 'learner 2 remains in the store (not reset)');
 
-  // Resetting removes from the store.
-  smartService.reset(id1);
-  t.equal(store.getValue(id1), null);
-
-  // The learner that was not reset is still in the store
-  t.notEqual(store.getValue(id2), null); // stored value isn't null
-
-  // Until we clean it up.
-  smartService.reset(id2);
-  t.equal(store.getValue(id2), null);
-
-  t.end();
+    return smartService.reset(id2); // Now reset id2 and its value becomes null.
+  }).then(function() {
+    return store.getValue(id2);
+  }).then(function(value) {
+    t.equal(value, null, 'learner 2 is not in the store after reset');
+    t.end();
+  }).catch(t.end);
 });

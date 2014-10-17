@@ -2,6 +2,7 @@ var mercury = require('mercury');
 var urlUtil = require('url');
 var qsUtil = require('querystring');
 var exists = require('../lib/exists');
+var log = require('../lib/log');
 var store = require('../lib/store');
 var smartService = require('../services/smart-service');
 /*
@@ -52,22 +53,26 @@ function handleBrowseRoute(state, events, params) {
   }
 
   // Put the URL in the store, so we know where to reload next time.
-  store.setValue('index', namespace);
+  store.setValue('index', namespace).catch(function(err) {
+    log.warn('Unable to save last name visited', err);
+  });
 
   // Update our shortcuts with these predictions.
   var predictions = smartService.predict('learner-shortcut', '');
-  var shortcuts = predictions.map(function(prediction) {
-    var shortcut = mercury.struct({
-      itemName: mercury.value(prediction.item),
-      isGlobbable: mercury.value(false)
+  if (predictions !== undefined) {
+    var shortcuts = predictions.map(function(prediction) {
+      var shortcut = mercury.struct({
+        itemName: mercury.value(prediction.item),
+        isGlobbable: mercury.value(false)
+      });
+      // If it turns out that the shortcut is globbable, it will be updated.
+      browseService.isGlobbable(shortcut.itemName()).then(function(globbable) {
+        shortcut.isGlobbable.set(globbable);
+      });
+      return shortcut;
     });
-    // If it turns out that the shortcut is globbable, it will be updated.
-    browseService.isGlobbable(shortcut.itemName()).then(function(isGlobbable) {
-      shortcut.isGlobbable.set(isGlobbable);
-    });
-    return shortcut;
-  });
-  setMercuryArray(state.browse.shortcuts, shortcuts);
+    setMercuryArray(state.browse.shortcuts, shortcuts);
+  }
 
   // Trigger browse components browseNamespace event
   events.browse.browseNamespace({

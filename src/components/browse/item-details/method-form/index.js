@@ -78,7 +78,10 @@ function create(itemName, signature, methodName) {
   // Initialize state with reset/refresh functions.
   initializeInputArguments(state);
   refreshInputSuggestions(state);
-  loadStarredInvocations(state);
+  loadStarredInvocations(state).catch(function(err) {
+    // TODO(alexfandrianto): We can toast this.
+    log.error('Could not load stars for', methodName, err);
+  });
   refreshRecommendations(state);
 
   var events = mercury.input([
@@ -86,7 +89,7 @@ function create(itemName, signature, methodName) {
     'methodEnd',    // for parent element to be notified of RPC end and result
     'runAction',    // run the RPC with given arguments
     'expandAction', // show/hide method arguments
-    'starAction'    // TODO(alexfandrianto): star/unstar a method invocation
+    'starAction'    // star/unstar a method invocation
   ]);
 
   wireUpEvents(state, events);
@@ -128,18 +131,31 @@ function refreshInputSuggestions(state) {
 }
 
 /*
- * Use the store to load starred invocations into the state.
+ * Returns a promise that loads starred invocations into the state.
  */
 function loadStarredInvocations(state) {
-  var invocations = store.getValue(constructStarredInvocationKey(state)) || [];
-  state.put('starred', mercury.array(invocations));
+  return store.getValue(constructStarredInvocationKey(state)).then(
+    function(result) {
+      var invocations = result || [];
+      state.put('starred', mercury.array(invocations));
+    }
+  ).catch(function(err) {
+    log.error('Unable to load starred invocations from store', err);
+    return Promise.reject(err);
+  });
 }
 
 /*
- * The store is updated with the invocation's given starred status.
+ * Returns a promise that update the store with the invocations from the state.
  */
-function saveStarredInvocation(state) {
-  store.setValue(constructStarredInvocationKey(state), state.starred());
+function saveStarredInvocations(state) {
+  return store.setValue(
+    constructStarredInvocationKey(state),
+    state.starred()
+  ).catch(function(err) {
+    log.error('Unable to save starred invocations', err);
+    return Promise.reject(err);
+  });
 }
 
 /*
@@ -205,21 +221,24 @@ function wireUpEvents(state, events) {
   });
   events.starAction(function(data) {
     // Load the user's stars (in case there were other changes).
-    loadStarredInvocations(state);
+    loadStarredInvocations(state).then(function() {
+      // If there is no argsStr given, compute it now.
+      var argsStr = data.argsStr || JSON.stringify(state.args());
 
-    // If there is no argsStr given, compute it now.
-    var argsStr = data.argsStr || JSON.stringify(state.args());
+      // Depending on the star boolean, add/remove a star for the given args.
+      var index = state.starred().indexOf(argsStr);
+      if (data.star && index === -1) { // needs to be added
+        state.starred.push(argsStr);
+      } else if (!data.star && index !== -1) { // needs to be removed
+        state.starred.splice(index, 1);
+      }
 
-    // Depending on the star boolean, add/remove a star for the given arguments.
-    var index = state.starred().indexOf(argsStr);
-    if (data.star && index === -1) { // needs to be added
-      state.starred.push(argsStr);
-    } else if (!data.star && index !== -1) { // needs to be removed
-      state.starred.splice(index, 1);
-    }
-
-    // Save the user's star decision.
-    saveStarredInvocation(state);
+      // Save the user's star decision.
+      return saveStarredInvocations(state);
+    }).catch(function(err) {
+      // TODO(alexfandrianto): We can toast this.
+      log.error('Error while starring invocation', err);
+    });
   });
 }
 
@@ -227,8 +246,6 @@ function wireUpEvents(state, events) {
  * The main rendering function for the method form.
  * Shows the method signature and a run button.
  * If arguments are necessary, then they can be shown when the form is expanded.
- *
- * TODO(alexfandrianto): Pinned and recommended invocations will be added.
  */
 function render(state, events) {
   // Display the method name/sig header with expand/collapse/run button.

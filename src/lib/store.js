@@ -1,7 +1,9 @@
 /*
  * The store allows key-value store for string keys and any value.
  */
-var log = require('./log')('lib:store');
+var localForage = require('localforage');
+var stripFunctions = require('./stripFunctions');
+var _ = require('lodash');
 
 module.exports = {
   hasValue: hasValue,
@@ -12,53 +14,45 @@ module.exports = {
 };
 
 /*
- * Given a string identifier, return if the key has a value is in localStorage.
+ * Given a string identifier, return a promise indicating if the key exists.
  */
 function hasValue(key) {
-  return localStorage.getItem(key) !== null;
+  return localForage.getItem(key).then(function(value) {
+    return value !== null;
+  });
 }
 
 /*
- * Given a string identifier and any value, JSON encode the value and
- * place it into localStorage.
+ * Given a string identifier and any value, strip functions out of the value
+ * and put it into the store. Returns a promise.
  */
 function setValue(key, value) {
-    localStorage.setItem(key, JSON.stringify(value));
+  return localForage.setItem(key, stripFunctions(value));
 }
 
 /*
- * Given a string identifier, return the JSON decoded value from localStorage.
- * Returns null if the value was not present or could not be parsed.
+ * Given a string identifier, return a promise with the return value.
  */
 function getValue(key) {
-    var value = localStorage.getItem(key); // value is string or null
-    try {
-        return JSON.parse(value);
-    } catch (exception) {
-        log.error('JSON parse failed for key:', key, 'and value:', value);
-    }
-    return null;
+  return localForage.getItem(key);
 }
 
 /*
- * Given a string identifier, remove the associated value from localStorage.
+ * Given a string identifier, return a promise that removes the value.
  */
 function removeValue(key) {
-    localStorage.removeItem(key);
+  return localForage.removeItem(key);
 }
 
 /*
- * Given a string prefix, return the corresponding local storage keys.
- * TODO(alexfandrianto): Very inefficient for local storage. Avoid using.
+ * Given a string prefix, return a promise with the corresponding keys.
+ * TODO(alexfandrianto): May be inefficient depending on backend. Avoid using.
  * Upgrade to glob once the store is ready.
  */
 function getKeysWithPrefix(key) {
-  var keys = [];
-  for (var i = 0; i < localStorage.length; i++) {
-    var candidate = localStorage.key(i);
-    if (candidate.indexOf(key) === 0) {
-      keys.push(candidate);
-    }
-  }
-  return keys;
+  return localForage.keys().then(function(keys) {
+    return _.filter(keys, function(candidate) {
+      return candidate.indexOf(key) === 0;
+    });
+  });
 }
