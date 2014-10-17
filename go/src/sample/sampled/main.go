@@ -6,7 +6,9 @@ import (
 
 	"sample"
 	"sample/mocks"
+
 	"veyron.io/veyron/veyron/lib/signals"
+	_ "veyron.io/veyron/veyron/profiles"
 	"veyron.io/veyron/veyron2/ipc"
 	"veyron.io/veyron/veyron2/rt"
 )
