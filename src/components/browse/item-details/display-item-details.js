@@ -1,4 +1,3 @@
-var setMercuryArray = require('../../../lib/mercury/setMercuryArray');
 var namespaceService = require('../../../services/namespace/service');
 var smartService = require('../../../services/smart-service');
 var log = require('../../../lib/log')(
@@ -27,9 +26,8 @@ function displayItemDetails(state, events, data) {
   // Save every time we look at a service's details.
   smartService.save('learner-shortcut');
 
-  // Set the new name and reset the outputs.
+  // Set the new name.
   state.itemName.set(name);
-  setMercuryArray(state.methodOutputs, []);
 
   namespaceService.getSignature(name).then(function(signatureResult) {
     state.signature.set(signatureResult);

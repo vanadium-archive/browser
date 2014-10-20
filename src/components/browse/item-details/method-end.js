@@ -55,9 +55,11 @@ function formatResult(state, method, runID, result, addToDetails) {
  * If the replacement cannot be found, then no substitution occurs.
  */
 function replaceResult(state, runID, newResult) {
-  var match = state.methodOutputs.filter(function matchesRunID(output) {
-    return output.get('runID').equals(runID);
-  }).get(0);
+  var match = state.methodOutputs.get(state.itemName()).filter(
+    function matchesRunID(output) {
+      return output.get('runID').equals(runID);
+    }
+  ).get(0);
   if (match !== undefined) {
     match.put('result', newResult);
   }

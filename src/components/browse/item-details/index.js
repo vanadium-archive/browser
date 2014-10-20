@@ -44,10 +44,11 @@ function create() {
     selectedTabIndex: mercury.value(0),
 
     /*
-     * List of RPC method outputs in call-order.
-     * @type {Array<map[string]value>}
+     * An associative array from item names to method outputs.
+     * The outputs are in RPC call-order and store render information.
+     * @type {map[string]Array<Object>}
      */
-    methodOutputs: mercury.array([]),
+    methodOutputs: mercury.varhash(),
 
     /*
      * The method form has information for each service object. It maps method
@@ -151,7 +152,8 @@ function renderMethodSignatures(state, events) {
  * Prints each output received in reverse order; most recent is on top.
  */
 function renderMethodOutput(state) {
-  if (state.methodOutputs.length === 0) {
+  var outputs = state.methodOutputs[state.itemName];
+  if (outputs === undefined) {
     return h('div.method-output', 'No method output');
   }
   var outputRows = [h('tr', [
@@ -159,8 +161,8 @@ function renderMethodOutput(state) {
     h('th', 'Method'),
     h('th', 'Output')
   ])];
-  for (var i = state.methodOutputs.length - 1; i >= 0; i--) {
-    var output = state.methodOutputs[i];
+  for (var i = outputs.length - 1; i >= 0; i--) {
+    var output = outputs[i];
     if (output.shouldShow) {
       outputRows.push(
         h('tr', [
