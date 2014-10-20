@@ -28,7 +28,7 @@ function browseNamespace(browseState, browseEvents, data) {
   emptyOutItems();
 
   var namespace = browseState.namespace();
-  namespaceService.glob(namespace, browseState.globQuery()).
+  namespaceService.search(namespace, browseState.globQuery()).
   then(function globResultsReceived(items) {
     browseState.put('items', items);
   }).catch(function(err) {

@@ -11,8 +11,8 @@ module.exports = {
   getChildren: getChildren,
   getNamespaceItem: getNamespaceItem,
   getSignature: getSignature,
-  glob: glob,
   makeRPC: makeRPC,
+  search: search,
   util: namespaceUtil
 };
 
@@ -41,37 +41,29 @@ var globCache = new LRU({
  * of items as defined in @see item.js
  * As new items become available the observable array will change to reflect
  * the changes.
- * @param {string} name Object name to glob
- * @param {string} globQuery Glob query to run
+ * @param {string} pattern Glob pattern
  * @return {Promise.<mercury.array>} Promise of an observable array
  * of namespace items
  */
-function glob(name, globQuery) {
-  var cacheKey = namespaceUtil.join(name, globQuery);
+function glob(pattern) {
+  var cacheKey = 'glob|' + pattern;
   var cacheHit = globCache.get(cacheKey);
   if (cacheHit) {
     return Promise.resolve(cacheHit);
   }
 
-  var runtime;
   var globItemsObservArr = mercury.array([]);
   var globItemsObservArrPromise =
-    getRuntime().then(function getNamespace(rt) {
-      runtime = rt;
-      return runtime.newNamespace();
-    }).then(function resolveName(namespace) {
-      return namespace.resolveToMountTable(name);
-    }).then(function getGlobbableService(terminalNames) {
-      // TODO(aghassemi): We should try all the names instead of the first.
-      // Perhaps the library should allow me to pass a list of names.
-      return runtime.bindTo(terminalNames[0]);
-    }).then(function invokeGlob(globbableService) {
+    getRuntime().then(function callGlobOnNamespace(rt) {
       // TODO(aghassemi) use watchGlob if available, otherwise fallback to glob
-      return globbableService.glob(globQuery).stream;
+      var namespace = rt.newNamespace2();
+      return namespace.glob(pattern).stream;
     }).then(function updateResult(globStream) {
+      // TODO(aghassemi) namespace glob can return duplicate results, what do to
+      // with them?
       globStream.on('data', function createItem(result) {
         // Create an item as glob results come in and add the item to result
-        createNamespaceItem(result.name, name, result.servers)
+        createNamespaceItem(result.name, result.servers)
           .then(function(item) {
             globItemsObservArr.push(item);
           }).catch(function(err) {
@@ -112,10 +104,8 @@ var MAX_GET_ITEM_TIMEOUT = 5000;
  */
 function getNamespaceItem(objectName) {
 
-  // Globbing the name with . would provide information about the name itself.
-  // TODO(aghassemi) this does not work until new changes to namespace lib in
-  // veyron.js, hence skipping tests.
-  return glob(name, '.').then(function(resultsObs) {
+  // Globbing the name itself would provide information about the name.
+  return glob(objectName).then(function(resultsObs) {
     // wait until the glob has the one and only result before resolving
     return new Promise(function(resolve, reject) {
       var alreadyResolved = false;
@@ -143,12 +133,34 @@ function getNamespaceItem(objectName) {
 
 /*
  * Given a name returns a promise of an observable array of immediate children
- * @param {string} name Object name to glob
+ * @param {string} parentName Object name to glob
  * @return {Promise.<mercury.array>} Promise of an observable array
  */
-function getChildren(name) {
-  name = name || '';
-  return glob(name, '*');
+function getChildren(parentName) {
+  parentName = parentName || '';
+  var pattern = '*';
+  if(parentName) {
+    pattern = namespaceUtil.join(parentName, pattern);
+  }
+  return glob(pattern);
+}
+
+/*
+ * Given a name and a glob search query returns a promise of an observable array
+ * of items as defined in @see item.js
+ * As new items become available the observable array will change to reflect
+ * the changes.
+ * @param {name} parentName Object name to search in.
+ * @param {string} pattern Glob search pattern.
+ * @return {Promise.<mercury.array>} Promise of an observable array
+ * of namespace items
+ */
+function search(parentName, pattern) {
+  parentName = parentName || '';
+  if(parentName) {
+    pattern = namespaceUtil.join(parentName, pattern);
+  }
+  return glob(pattern);
 }
 
 /*
@@ -166,7 +178,8 @@ var signatureCache = new LRU({
  * @return {object} signature for the object represented by the given name
  */
 function getSignature(objectName) {
-  var cacheHit = signatureCache.get(objectName);
+  var cacheKey = 'getSignature|' + objectName;
+  var cacheHit = signatureCache.get(cacheKey);
   if (cacheHit) {
     return Promise.resolve(cacheHit);
   }
@@ -175,7 +188,7 @@ function getSignature(objectName) {
   }).then(function invokeSignatureMethod(service) {
     return service.signature();
   }).then(function cacheAndReturnSignature(sig) {
-    signatureCache.set(objectName, sig);
+    signatureCache.set(cacheKey, sig);
     return sig;
   });
 }
@@ -216,16 +229,14 @@ function makeRPC(name, methodName, args) {
  * an item in the namespace.
  * @param {string} name The full hierarchical object name of the item e.g.
  * "bar/baz/foo"
- * @param {string} mountedName The nonhierarchical name of the item used when it
- * was mounted to a mounttable. e.g. "Foo"
+ * @param {string} name The object name
  * @param {Array<string>} List of server addresses this name points to, if any.
  * @return {merucry.struct}
  */
-function createNamespaceItem(mountedName, parentName, servers) {
-  var name = mountedName;
-  if (parentName !== '') {
-    name = namespaceUtil.join([parentName, name]);
-  }
+function createNamespaceItem(name, servers) {
+
+  // mounted name relative to parent
+  var mountedName = namespaceUtil.basename(name);
 
   // Find out if the object referenced by name is globbable and get
   // server related information about it.

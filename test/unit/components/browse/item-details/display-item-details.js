@@ -17,7 +17,7 @@ var namespaceServiceMock = {
   isGlobbable: function(name) {
     return Promise.resolve(true);
   },
-  glob: function(name, globQuery) {
+  search: function(name, globQuery) {
     return Promise.resolve([mockItem]);
   },
   getSignature: function(name) {
@@ -28,7 +28,7 @@ var namespaceServiceMockWithFailure = {
   isGlobbable: function(name) {
     return Promise.resolve(true);
   },
-  glob: function(name, globQuery) {
+  search: function(name, globQuery) {
     return Promise.reject();
   },
   getSignature: function(name) {
