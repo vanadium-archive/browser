@@ -6,7 +6,7 @@ var log = require('../../../../lib/log')(
 module.exports = makeRPC;
 
 /*
- * Use the browseService to perform an RPC request, resolving with the result
+ * Use the namespaceService to perform an RPC request, resolving with the result
  * or rejecting with the error.
  * data needs to have name, methodName, and args.
  */

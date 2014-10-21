@@ -55,7 +55,7 @@ function glob(pattern) {
   var globItemsObservArr = mercury.array([]);
   var globItemsObservArrPromise =
     getRuntime().then(function callGlobOnNamespace(rt) {
-      // TODO(aghassemi) use watchGlob if available, otherwise fallback to glob
+      // TODO(aghassemi) use watchGlob when available
       var namespace = rt.newNamespace2();
       return namespace.glob(pattern).stream;
     }).then(function updateResult(globStream) {

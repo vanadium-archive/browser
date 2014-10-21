@@ -10,7 +10,7 @@ var methodEnd = require('./method-end.js');
 module.exports = displayItemDetails;
 
 /*
- * Ask the browseService for a service signature.
+ * Ask the namespaceService for a service signature.
  * Use the signature and smartService to pick which RPCs to do automatically.
  */
 function displayItemDetails(state, events, data) {

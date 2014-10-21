@@ -66,8 +66,8 @@ function create() {
 
     /*
      * List of shortcuts to display
-     * @type {Array<object>}
-     * Each object is a shortcut with attributes name and isGlobbable
+     * @see services/namespace/item
+     * @type {Array<namespaceitem>}
      */
     shortcuts: mercury.array([]),
 
@@ -306,12 +306,7 @@ function renderSearch(browseState, navigationEvents) {
  */
 function renderShortcuts(browseState, browseEvents, navigationEvents) {
   return browseState.shortcuts.map(function(shortcut) {
-    var item = {
-      isGlobbable: shortcut.isGlobbable,
-      objectName: shortcut.itemName,
-      mountedName: namespaceService.util.basename(shortcut.itemName)
-    };
-    return renderItem(browseState, browseEvents, navigationEvents, item);
+    return renderItem(browseState, browseEvents, navigationEvents, shortcut);
   });
 }
 

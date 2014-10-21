@@ -1,6 +1,8 @@
+var mercury = require('mercury');
 var exists = require('../../lib/exists');
 var log = require('../../lib/log')('components:browse:browse-namespace');
 var namespaceService = require('../../services/namespace/service');
+var smartService = require('../../services/smart-service');
 
 module.exports = browseNamespace;
 
@@ -28,6 +30,8 @@ function browseNamespace(browseState, browseEvents, data) {
   emptyOutItems();
 
   var namespace = browseState.namespace();
+
+  // Search the namespace
   namespaceService.search(namespace, browseState.globQuery()).
   then(function globResultsReceived(items) {
     browseState.put('items', items);
@@ -36,12 +40,27 @@ function browseNamespace(browseState, browseEvents, data) {
     log.error(err);
   });
 
+
+  // Update our shortcuts with these predictions.
+  smartService.predict('learner-shortcut', '').then(function(predictions) {
+    predictions.map(function(prediction) {
+      namespaceService.getNamespaceItem(prediction.item).then(function(item) {
+        browseState.shortcuts.push(item);
+      }).catch(function(err) {
+        log.error('Failed to get shortcut:', prediction, err);
+      });
+    });
+  }).catch(function(err) {
+    log.error('Could not load shortcuts', err);
+  });
+
   // trigger display items event
   browseEvents.selectedItemDetails.displayItemDetails({
     name: data.namespace
   });
 
   function emptyOutItems() {
-    browseState.put('items', []);
+    browseState.put('items', mercury.array([]));
+    browseState.put('shortcuts', mercury.array([]));
   }
 }
