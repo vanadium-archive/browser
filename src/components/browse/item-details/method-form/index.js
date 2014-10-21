@@ -77,12 +77,16 @@ function create(itemName, signature, methodName) {
 
   // Initialize state with reset/refresh functions.
   initializeInputArguments(state);
-  refreshInputSuggestions(state);
+  refreshInputSuggestions(state).catch(function(err) {
+    log.error('Could not get input suggestions for', methodName, err);
+  });
   loadStarredInvocations(state).catch(function(err) {
     // TODO(alexfandrianto): We can toast this.
     log.error('Could not load stars for', methodName, err);
   });
-  refreshRecommendations(state);
+  refreshRecommendations(state).catch(function(err) {
+    log.error('Could not get recommended invocations for', methodName, err);
+  });
 
   var events = mercury.input([
     'methodStart',  // for parent element to be notified of RPC start
@@ -112,7 +116,7 @@ function initializeInputArguments(state) {
 }
 
 /*
- * Refresh the suggestions to the input arguments.
+ * Returns a promise that refreshes the suggestions to the input arguments.
  */
 function refreshInputSuggestions(state) {
   var param = state.signature()[state.methodName()];
@@ -120,12 +124,15 @@ function refreshInputSuggestions(state) {
     signature: state.signature(),
     methodName: state.methodName(),
   };
-  setMercuryArray(state.inputSuggestions,
-    _.map(param.inArgs, function(inArg) {
-      // For each argname, predict which inputs should be suggested.
-      return smartService.predict('learner-method-input',
+  return Promise.all(
+    // For each argname, predict which inputs should be suggested.
+    param.inArgs.map(function(inArg, i) {
+      return smartService.predict(
+        'learner-method-input',
         _.assign({argName: inArg}, input)
-      );
+      ).then(function(inputSuggestion) {
+        state.inputSuggestions.put(i, inputSuggestion);
+      });
     })
   );
 }
@@ -174,15 +181,17 @@ function constructStarredInvocationKey(state) {
 }
 
 /*
- * Refresh the recommended values in the state.
+ * Returns a promise that refreshes the recommended values in the state.
  */
 function refreshRecommendations(state) {
   var input = {
     signature: state.signature(),
     methodName: state.methodName(),
   };
-  setMercuryArray(state.recommended,
-    smartService.predict('learner-method-invocation', input)
+  return smartService.predict('learner-method-invocation', input).then(
+    function(recommendations) {
+      setMercuryArray(state.recommended, recommendations);
+    }
   );
 }
 

@@ -21,10 +21,9 @@ function displayItemDetails(state, events, data) {
     return;
   }
   // Log the URL to the smart service as a potential shortcut.
-  smartService.record('learner-shortcut', {name: name});
-
-  // Save every time we look at a service's details.
-  smartService.save('learner-shortcut');
+  smartService.update('learner-shortcut', {name: name}).catch(function(err) {
+    log.error('Error while updating shortcut learner', err);
+  });
 
   // Set the new name.
   state.itemName.set(name);

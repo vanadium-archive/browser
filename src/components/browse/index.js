@@ -3,6 +3,7 @@ var insertCss = require('insert-css');
 var AttributeHook = require('../../lib/mercury/attribute-hook');
 var PropertyValueEvent = require('../../lib/mercury/property-value-event');
 var exists = require('../../lib/exists');
+var log = require('../../lib/log')('components:browse');
 var browseRoute = require('../../routes/browse');
 var browseNamespace = require('./browse-namespace');
 var getNamespaceSuggestions = require('./get-namespace-suggestions');
@@ -21,26 +22,7 @@ module.exports.renderHeader = renderHeader;
  * Browse component provides user interfaces for browsing the Veyron namespace
  */
 function create() {
-  smartService.loadOrRegister(
-    'learner-shortcut',
-    smartService.constants.LEARNER_SHORTCUT, {
-      k: 3
-    }
-  );
-  smartService.loadOrRegister(
-    'learner-method-input',
-    smartService.constants.LEARNER_METHOD_INPUT, {
-      minThreshold: 0.2,
-      maxValues: 5
-    }
-  );
-  smartService.loadOrRegister(
-    'learner-method-invocation',
-    smartService.constants.LEARNER_METHOD_INVOCATION, {
-      minThreshold: 0.25,
-      maxValues: 2
-    }
-  );
+  loadLearners();
 
   var selectedItemDetails = itemDetailsComponent();
 
@@ -125,6 +107,38 @@ function create() {
     state: state,
     events: events
   };
+}
+
+/*
+ * Loads the learners into the smart service upon creation of this component.
+ */
+function loadLearners() {
+  smartService.loadOrCreate(
+    'learner-shortcut',
+    smartService.constants.LEARNER_SHORTCUT, {
+      k: 3
+    }
+  ).catch(function(err) {
+    log.error(err);
+  });
+  smartService.loadOrCreate(
+    'learner-method-input',
+    smartService.constants.LEARNER_METHOD_INPUT, {
+      minThreshold: 0.2,
+      maxValues: 5
+    }
+  ).catch(function(err) {
+    log.error(err);
+  });
+  smartService.loadOrCreate(
+    'learner-method-invocation',
+    smartService.constants.LEARNER_METHOD_INVOCATION, {
+      minThreshold: 0.25,
+      maxValues: 2
+    }
+  ).catch(function(err) {
+    log.error(err);
+  });
 }
 
 /*

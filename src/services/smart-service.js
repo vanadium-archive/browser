@@ -1,9 +1,7 @@
 /*
- * smart-service provides an interface for machine learning.
+ * smart-service provides an asynchronous interface for machine learning.
  * Hooks to this service should make updates and ask for predictions.
  * A few basic learners are implemented as wrappers around the learning library.
- * TODO(alexfandrianto): All functions fail silently (with logging) at
- * the moment. Decide whether we want to throw errors or not.
  */
 
 var addAttributes = require('../lib/addAttributes');
@@ -13,44 +11,67 @@ var constants = require('./smart-service-implementation');
 
 // Export methods and constants
 module.exports = {
-  loadOrRegister: loadOrRegister,
+  loadOrCreate: loadOrCreate,
   reset: reset,
   save: save,
-  record: record,
+  update: update,
   predict: predict,
   constants: constants
 };
 
+// This caches the learners loaded into memory.
 var learners = {};
 
 /*
- * Given an id, type, and parameters, determine whether to load the learner or
- * to register a new one. The learner is added to the learners variable.
- * Fails when the id is taken, or the type is invalid.
+ * Given an id, type, and parameters, return a promise that attempts to load the
+ * learner from the store, and failing that, creates a new one.
  *
- * Returns a promise that performs this operation.
+ * Registers and resolves the learner upon success.
+ * Rejects when the id is taken, or the type is invalid.
  */
-function loadOrRegister(id, type, params) {
-  log.debug('load or register', id, type, params);
-  return load(id).then(function() {
-    if (learners[id] === undefined) {
-      register(id, type, params);
-    }
+function loadOrCreate(id, type, params) {
+  log.debug('load or create', id, type, params);
+
+  if (learners[id] !== undefined) {
+    return Promise.reject('Cannot reuse learner id ' + id);
+  }
+
+  // Store the learner right away. Calls to get should use this promise.
+  learners[id] = load(id).then(function loadSuccess(learner) {
+    log.debug('loaded learner', id);
+    return Promise.resolve(learner);
+  }, function loadFailure() {
+    return create(id, type, params).then(function(learner) {
+      log.debug('created learner', id);
+      return Promise.resolve(learner);
+    });
   }).catch(function(err) {
-    log.error('Unable to load or register', err);
+    log.error('Unable to load or create', id, err);
     return Promise.reject(err);
   });
+
+  return learners[id];
 }
 
 /*
- * Given an id, return a promise to delete from the store and in-memory buffer.
+ * Return a promise containing the learner at the given id. The promise rejects
+ * if that learner has not been registered yet.
+ */
+function get(id) {
+  if (learners[id] === undefined) {
+    return Promise.reject('Unused learner id ' + id);
+  }
+  return learners[id];
+}
+
+/*
+ * Return a promise to delete from the store and in-memory buffer.
  */
 function reset(id) {
   log.debug('reset', id);
   return store.removeValue(id).then(function() {
     if (learners[id] === undefined) {
-      log.error('Cannot reset unused learner id', id);
-      return;
+      return Promise.reject('Cannot reset unused learner id ' + id);
     }
     delete learners[id];
   }).catch(function(err) {
@@ -64,74 +85,67 @@ function reset(id) {
  */
 function save(id) {
   if (learners[id] === undefined) {
-    log.error('Cannot save unused learner id', id);
-    return;
+    return Promise.reject('Cannot save unused learner id ' + id);
   }
-  return store.setValue(id, learners[id]).catch(function(err) {
+  return learners[id].then(function(learner) {
+    return store.setValue(id, learner);
+  }).catch(function(err) {
     log.error('Unable to save learner', err);
     return Promise.reject(err);
   });
 }
 
 /*
- * Given an id and input, update the referenced learner.
+ * Given an id and input, return a promise to update the corresponding learner
+ * with that input and save to the store.
  */
-function record(id, input) {
-  if (learners[id] === undefined) {
-    log.error('Cannot record to unused learner id', id);
-    return;
-  }
-  learners[id].update(input);
+function update(id, input) {
+  return get(id).then(function(learner) {
+    learner.update(input);
+
+    return save(id);
+  });
 }
 
 /*
- * Given an id and input, return the referenced learner's prediction.
+ * Given an id and input, return a promise that uses the corresponding learner
+ * to make a prediction on the input.
  */
 function predict(id, input) {
-  if (learners[id] === undefined) {
-    log.error('Cannot predict with unused learner id', id);
-    return;
-  }
-  return learners[id].predict(input);
+  return get(id).then(function(learner) {
+    return learner.predict(input);
+  });
 }
 
 /*
- * Helper function to register a new learner.
+ * Helper function; returns a promise to create a new learner.
  */
-function register(id, type, params) {
-  log.debug('register', id, type, params);
-  if (learners[id] !== undefined) {
-    log.error('Cannot reuse learner id', id);
-    return;
-  }
+function create(id, type, params) {
+  log.debug('create', id, type, params);
   if (constants.LEARNER_MAP[type] === undefined) {
-    log.error('Could not resolve learner type', type);
-    return;
+    return Promise.reject('Could not resolve learner type ' + type);
+  } else {
+    var LearnerConstructor = constants.LEARNER_MAP[type];
+    var learner = new LearnerConstructor(type, params);
+    return Promise.resolve(learner);
   }
-  var Constructor = constants.LEARNER_MAP[type];
-  var learner = new Constructor(type, params);
-  learners[id] = learner;
 }
 
 /*
  * Helper function; returns a promise that loads a new learner from the store.
+ * Rejects if the value is null.
  */
 function load(id) {
   log.debug('load', id);
-  if (learners[id] !== undefined) {
-    log.error('Cannot reuse learner id', id);
-    return;
-  }
   return store.getValue(id).then(function(learner) {
     if (learner === null) {
-      log.debug('Learner was not present in the store.');
-      return;
-    }
-    log.debug('Loaded Learner:', learner);
-    addAttributes(learner, constants.LEARNER_METHODS[learner.type]);
+      return Promise.reject('Learner ' + id + ' was not present in the store.');
+    } else {
+      log.debug('Loaded Learner:', learner);
 
-    learners[id] = learner;
-  }).catch(function(err) {
-    log.error('Unable to load learner', err);
+      // Attach the learner's functions, then resolve.
+      addAttributes(learner, constants.LEARNER_METHODS[learner.type]);
+      return Promise.resolve(learner);
+    }
   });
 }

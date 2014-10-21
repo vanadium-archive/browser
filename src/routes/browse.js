@@ -58,8 +58,7 @@ function handleBrowseRoute(state, events, params) {
   });
 
   // Update our shortcuts with these predictions.
-  var predictions = smartService.predict('learner-shortcut', '');
-  if (predictions !== undefined) {
+  smartService.predict('learner-shortcut', '').then(function(predictions) {
     var shortcuts = predictions.map(function(prediction) {
       var shortcut = mercury.struct({
         itemName: mercury.value(prediction.item),
@@ -72,7 +71,10 @@ function handleBrowseRoute(state, events, params) {
       return shortcut;
     });
     setMercuryArray(state.browse.shortcuts, shortcuts);
-  }
+  }).catch(function(err) {
+    log.error('Could not load shortcuts', err);
+  });
+
 
   // Trigger browse components browseNamespace event
   events.browse.browseNamespace({

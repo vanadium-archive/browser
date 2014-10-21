@@ -69,7 +69,7 @@ function replaceResult(state, runID, newResult) {
  * Learn from the method inputs to be able to suggest them in the future.
  */
 function learnMethodInput(state, method, args) {
-  for (var i = 0; i < args.length; i++) {
+  args.forEach(function(value, i) {
     var argName = state.signature()[method].inArgs[i];
     var input = {
       argName: argName,
@@ -79,15 +79,10 @@ function learnMethodInput(state, method, args) {
     };
     log.debug('Update Input:', input);
 
-    smartService.record('learner-method-input', input);
-
-    // For debug, display what our prediction would be.
-    log.debug('PredictMI:',
-      smartService.predict('learner-method-input', input));
-
-    // Save after learning.
-    smartService.save('learner-method-input');
-  }
+    smartService.update('learner-method-input', input).catch(function(err) {
+      log.error('Error while updating method input learner', err);
+    });
+  });
 }
 
 /*
@@ -101,14 +96,7 @@ function learnMethodInvocation(state, method, args) {
   };
   log.debug('Update Invocation:', input);
 
-  smartService.record('learner-method-invocation', input);
-
-  // For debug, display what our prediction would be.
-  log.debug(
-    'PredictMIv:',
-    smartService.predict('learner-method-invocation', input)
-  );
-
-  // Save after learning.
-  smartService.save('learner-method-invocation');
+  smartService.update('learner-method-invocation', input).catch(function(err) {
+    log.error('Error while updating method invocation learner', err);
+  });
 }
