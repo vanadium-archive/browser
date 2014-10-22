@@ -1,16 +1,19 @@
 var veyron = require('veyron');
 var mercury = require('mercury');
 var LRU = require('lru-cache');
+var jsonStableStringify = require('json-stable-stringify');
 var namespaceUtil = veyron.namespaceUtil;
 var veyronConfig = require('../../veyron-config');
 var itemFactory = require('./item');
 var freeze = require('../../lib/mercury/freeze');
 var log = require('../../lib/log')('services:namespace:service');
+var _ = require('lodash');
 
 module.exports = {
   getChildren: getChildren,
   getNamespaceItem: getNamespaceItem,
   getSignature: getSignature,
+  hashSignature: hashSignature,
   makeRPC: makeRPC,
   search: search,
   util: namespaceUtil
@@ -191,6 +194,21 @@ function getSignature(objectName) {
     signatureCache.set(cacheKey, sig);
     return sig;
   });
+}
+
+/*
+ * Given a service signature, compute a reasonable hash that uniquely identifies
+ * a service without containing unnecessary information.
+ * TODO(alexfandrianto): This heuristic comes close, but it does not properly
+ * distinguish services from each other.
+ * Once available, add type info, streaming info, interface name, etc.
+ */
+function hashSignature(signature) {
+  var cp = {};
+  _.forOwn(signature, function(method, methodName) {
+    cp[methodName] = method.inArgs.length;
+  });
+  return jsonStableStringify(cp);
 }
 
 /*

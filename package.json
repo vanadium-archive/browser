@@ -24,6 +24,7 @@
     "debug": "^1.0.4",
     "guid": "^0.0.12",
     "insert-css": "^0.2.0",
+    "json-stable-stringify": "^1.0.0",
     "localforage": "^1.0.2",
     "mercury": "^6.0.1",
     "routes": "^1.2.0",

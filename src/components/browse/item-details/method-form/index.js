@@ -9,8 +9,9 @@ var PropertyValueEvent =
 var store = require('../../../../lib/store');
 var log = require('../../../../lib/log')(
   'components:browse:item-details:method-form');
-var hashPropertyNames = require('../../../../lib/hashPropertyNames');
 var smartService = require('../../../../services/smart-service');
+var hashSignature =
+  require('../../../../services/namespace/service').hashSignature;
 var makeRPC = require('./make-rpc.js');
 
 module.exports = create;
@@ -174,7 +175,7 @@ var starsPrefix = 'STARS';
 function constructStarredInvocationKey(state) {
   var parts = [
     starsPrefix,
-    hashPropertyNames(state.signature()),
+    hashSignature(state.signature()),
     state.methodName()
   ];
   return parts.join('|');
