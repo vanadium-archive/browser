@@ -54,9 +54,16 @@ function browseNamespace(browseState, browseEvents, data) {
     log.error('Could not load shortcuts', err);
   });
 
-  // trigger display items event
+  // Trigger display items event
   browseEvents.selectedItemDetails.displayItemDetails({
     name: data.namespace
+  });
+
+  // TODO(alexfandrianto): Example toast. Consider removing.
+  browseEvents.toast({
+    text: 'Browsing ' + data.namespace,
+    action: browseNamespace.bind(null, browseState, browseEvents, data),
+    actionText: 'REFRESH'
   });
 
   function emptyOutItems() {

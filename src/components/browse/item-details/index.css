@@ -97,16 +97,16 @@
   background-color: var(--color-white-transparent);
 }
 
-.run {
-  color: green;
+core-icon.run {
+  color: var(--color-ok);
 }
 
-.star {
+core-icon.star {
   color: var(--color-bright);
 }
 
-.error {
-  color: crimson;
+core-icon.error {
+  color: var(--color-error);
 }
 
 /* Chrome, Safari, Opera */

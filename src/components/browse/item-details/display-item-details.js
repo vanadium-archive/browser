@@ -40,13 +40,14 @@ function displayItemDetails(state, events, data) {
         state.methodForm.put(m, form.state);
         events.methodForm.put(m, form.events);
 
-        // Hook up the new form's method start and end events.
+        // Hook up the new form's method start, end, and toast events.
         form.events.methodStart(
           methodStart.bind(null, state, m)
         );
         form.events.methodEnd(
           methodEnd.bind(null, state, m)
         );
+        form.events.toast = events.toast;
       }
     }
   }, function(err) {

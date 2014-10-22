@@ -1,3 +1,4 @@
+var guid = require('guid');
 var mercury = require('mercury');
 var onDocumentReady = require('./lib/document-ready');
 var viewport = require('./components/viewport/index');
@@ -88,8 +89,12 @@ onDocumentReady(function startApp() {
 
   function wireEvents() {
     events.browse.error(onError);
+    events.browse.toast(onToast);
   }
 
+  /*
+   * Given an error, navigate to the error page and display that error.
+   */
   function onError(err) {
     var msg = err.toString();
     if (err.message) {
@@ -102,4 +107,12 @@ onDocumentReady(function startApp() {
     });
   }
 
+  /*
+   * Given a toast object, let the viewport render it.
+   * Toasts are given a unique key to ensure Mercury draws 1 toast per event.
+   */
+  function onToast(toast) {
+    toast.key = guid.create();
+    state.viewport.toast.set(toast);
+  }
 });

@@ -82,7 +82,6 @@ function create(itemName, signature, methodName) {
     log.error('Could not get input suggestions for', methodName, err);
   });
   loadStarredInvocations(state).catch(function(err) {
-    // TODO(alexfandrianto): We can toast this.
     log.error('Could not load stars for', methodName, err);
   });
   refreshRecommendations(state).catch(function(err) {
@@ -94,9 +93,9 @@ function create(itemName, signature, methodName) {
     'methodEnd',    // for parent element to be notified of RPC end and result
     'runAction',    // run the RPC with given arguments
     'expandAction', // show/hide method arguments
-    'starAction'    // star/unstar a method invocation
+    'starAction',   // star/unstar a method invocation
+    'toast'
   ]);
-
   wireUpEvents(state, events);
 
   return {
@@ -210,6 +209,11 @@ function wireUpEvents(state, events) {
       runID: randomID
     });
 
+    // Toast that the RPC is being run.
+    events.toast({
+      text: 'Running ' + getMethodSignature(state(), data.args)
+    });
+
     // Make the RPC, tracking when the method is in-progress or complete.
     makeRPC(data).then(function success(result) {
       events.methodEnd({
@@ -247,7 +251,10 @@ function wireUpEvents(state, events) {
       // Save the user's star decision.
       return saveStarredInvocations(state);
     }).catch(function(err) {
-      // TODO(alexfandrianto): We can toast this.
+      events.toast({
+        text: 'Error while starring',
+        type: 'error'
+      });
       log.error('Error while starring invocation', err);
     });
   });

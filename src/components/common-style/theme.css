@@ -59,4 +59,13 @@
    * Borders
    */
   --border: solid 1px var(--color-divider);
+
+  /*
+   * Miscellaneous colors
+   */
+  /* Color used to indicate errors. */
+  --color-error: crimson;
+
+  /* Color used to indicate success or an action the user can initiate */
+  --color-ok: green;
 }

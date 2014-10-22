@@ -97,11 +97,14 @@ function create() {
 
     'selectedItemDetails',
 
-    'error'
+    'error',
+
+    'toast'
   ]);
 
   wireUpEvents(state, events);
   events.selectedItemDetails = selectedItemDetails.events;
+  selectedItemDetails.events.toast = events.toast;
 
   return {
     state: state,

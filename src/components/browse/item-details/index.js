@@ -61,7 +61,8 @@ function create() {
   var events = mercury.input([
     'displayItemDetails',
     'tabSelected',
-    'methodForm'
+    'methodForm',
+    'toast'
   ]);
 
   wireUpEvents(state, events);

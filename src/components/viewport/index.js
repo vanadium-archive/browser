@@ -26,7 +26,13 @@ function create() {
      * Title text to display in the toolbar
      * @type {string}
      */
-    title: mercury.value('')
+    title: mercury.value(''),
+
+    /*
+     * Toast message to display
+     * @type {Object}
+     */
+    toast: mercury.value(null)
   });
 
   var events = mercury.input([
@@ -42,6 +48,14 @@ function create() {
   };
 }
 
+/*
+ * Draw the full page of the application, which consists of a sidebar and main
+ * panel. The sidebar is usually hidden but acts as a selector for the content
+ * shown in the main panel. This content is rendered in the full browser window.
+ *
+ * See @app.js for the state definition. See @sidebar/index.js and
+ * @main-content/index.js for their rendering functions.
+ */
 function render(state, events) {
   insertCss(css);
   var panelAttributes = {
@@ -64,17 +78,24 @@ function render(state, events) {
       'main': new AttributeHook(true)
     }, [
       renderMainToolbar(state, events),
-      mainContent.render(state, events)
+      mainContent.render(state, events),
+      renderToast(state)
     ])
   ]);
 }
 
+/*
+ * The title of the sidebar.
+ */
 function renderSideToolbar(state, events) {
   return h('core-toolbar.toolbar', [
     h('h1.title', 'Namespace Browser')
   ]);
 }
 
+/*
+ * The title of the main content.
+ */
 function renderMainToolbar(state, events) {
   return h('core-toolbar.toolbar', [
     h('paper-icon-button.drawer-toggle', {
@@ -87,7 +108,36 @@ function renderMainToolbar(state, events) {
   ]);
 }
 
-// Wire up events that we know how to handle
+/*
+ * Draws a short duration toast to inform the user.
+ */
+var toastDuration = 3000; // ms
+function renderToast(state) {
+  if (!state.viewport.toast) {
+    return [];
+  }
+  // The toast type affects the css class
+  var cssClass = state.viewport.toast.type || 'info';
+
+  // If there is an event attached to the toast, draw it here.
+  var children = [];
+  if (state.viewport.toast.actionText) {
+    children.push(h('div', {
+      'ev-click': state.viewport.toast.action
+    }, state.viewport.toast.actionText));
+  }
+
+  return h('paper-toast.' + cssClass, {
+    key: state.viewport.toast.key, // unique per toast => only drawn once
+    text: new AttributeHook(state.viewport.toast.text),
+    opened: new AttributeHook(true),
+    duration: new AttributeHook(toastDuration)
+  }, children);
+}
+
+/*
+ * Wire up events that we know how to handle.
+ */
 function wireUpEvents(state, events) {
   events.openSidebar(function() {
     state.sidebarOpened.set(true);

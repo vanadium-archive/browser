@@ -25,3 +25,26 @@ body {
 .drawer-toggle {
   color: var(--color-white);
 }
+
+paper-toast {
+  min-height: 0;
+}
+
+paper-toast::shadow .toast-text {
+  vertical-align: middle;
+  font-family: var(--font-family);
+  padding: 1em 1em;
+}
+
+paper-toast.info::shadow .toast-text {
+  color: var(--color-white);
+}
+
+paper-toast.error::shadow .toast-text {
+  color: var(--color-error);
+}
+
+paper-toast.ok::shadow .toast-text,
+paper-toast::shadow .toast-text.toast-action {
+  color: var(--color-ok);
+}
