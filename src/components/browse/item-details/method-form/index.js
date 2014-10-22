@@ -168,13 +168,14 @@ function saveStarredInvocations(state) {
 
 /*
  * Given an observed state, produce the storage key.
- * The keys are of the form STARS|signature|method.
+ * The keys are of the form STARS|item|signature|method.
  * The corresponding value is an array of invocations.
  */
 var starsPrefix = 'STARS';
 function constructStarredInvocationKey(state) {
   var parts = [
     starsPrefix,
+    state.itemName(),
     hashSignature(state.signature()),
     state.methodName()
   ];
