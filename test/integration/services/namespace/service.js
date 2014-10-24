@@ -390,9 +390,6 @@ function assertUnknownServiceTypeInfo(t, item) {
 
   t.equal(typeInfo.description, null,
     item.mountedName + ': unknown type info does not have description');
-
-  t.ok(typeInfo.icon,
-    item.mountedName + ': unknown type info has an icon');
 }
 
 /*
@@ -408,9 +405,6 @@ function assertMounttableServiceTypeInfo(t, item) {
 
   t.ok(typeInfo.description,
     item.mountedName + ': mounttable type info has a description');
-
-  t.ok(typeInfo.icon,
-    item.mountedName + ': mounttable type info has an icon');
 }
 /*
  * Runs a test to ensure the makeRPC call terminates without error.

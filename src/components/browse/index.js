@@ -7,6 +7,8 @@ var log = require('../../lib/log')('components:browse');
 var browseRoute = require('../../routes/browse');
 var browseNamespace = require('./browse-namespace');
 var getNamespaceSuggestions = require('./get-namespace-suggestions');
+var getServiceIcon = require('./get-service-icon');
+var handleShortcuts = require('./handle-shortcuts');
 var itemDetailsComponent = require('./item-details/index');
 var namespaceService = require('../../services/namespace/service');
 var smartService = require('../../services/smart-service');
@@ -65,11 +67,18 @@ function create() {
     items: mercury.array([]),
 
     /*
-     * List of shortcuts to display
+     * List of user-specified shortcuts to display
      * @see services/namespace/item
      * @type {Array<namespaceitem>}
      */
-    shortcuts: mercury.array([]),
+    userShortcuts: mercury.array([]),
+
+    /*
+     * List of recommended shortcuts to display
+     * @see services/namespace/item
+     * @type {Array<namespaceitem>}
+     */
+    recShortcuts: mercury.array([]),
 
     /*
      * State of the selected item-details component
@@ -94,6 +103,11 @@ function create() {
      * Indicates a request to obtain the direct descendants of the given name.
      */
     'getNamespaceSuggestions',
+
+    /*
+     * Indicates that the user is setting/removing a shortcut.
+     */
+    'setShortcut',
 
     'selectedItemDetails',
 
@@ -148,17 +162,17 @@ function loadLearners() {
  * Renders the top bar of the namespace browser where the user can specify a
  * namespace root.
  */
-function renderHeader(browseState, browseEvents, navigationEvents) {
+function renderHeader(browseState, browseEvents, navEvents) {
   // Trigger an actual navigation event when value of the inputs change
   var changeEvent = new PropertyValueEvent(function(val) {
     var namespace = browseState.namespace;
     if (exists(val)) {
       namespace = val;
     }
-    navigationEvents.navigate({
+    navEvents.navigate({
       path: browseRoute.createUrl(namespace, browseState.globQuery)
     });
-  }, 'value');
+  }, 'value', true);
 
   var inputEvent = new PropertyValueEvent(function(val) {
     browseEvents.getNamespaceSuggestions(val);
@@ -206,7 +220,7 @@ function renderHeader(browseState, browseEvents, navigationEvents) {
  * The mainView contains the shortcuts and names at this point in the namespace.
  * The sideView displays the detail information of the selected name.
  */
-function render(browseState, browseEvents, navigationEvents) {
+function render(browseState, browseEvents, navEvents) {
   insertCss(css);
 
   var sideView = [
@@ -217,23 +231,30 @@ function render(browseState, browseEvents, navigationEvents) {
   ];
 
   var mainView = [
-    h('div.items-container',
-      renderShortcuts(browseState, browseEvents, navigationEvents)),
-    h('hr.line')
+    h('div.items-container', [
+      h('h2', 'Bookmarks'),
+      renderUserShortcuts(browseState, browseEvents, navEvents)
+    ]),
+    h('div.items-container', [
+      h('h2', 'Top Recommendations'),
+      renderRecommendedShortcuts(browseState, browseEvents, navEvents)
+    ])
   ];
 
   var sideViewWidth = '50%';
   if (browseState.items.length === 0) {
     mainView.push(h('div.empty', 'No descendants to display.'));
   } else {
-    mainView.push(h('div.items-container',
-      renderItems(browseState, browseEvents, navigationEvents)));
+    mainView.push(h('div.items-container', [
+      h('h2', 'Namespace Items'),
+      renderItems(browseState, browseEvents, navEvents)
+    ]));
   }
 
   var view = [
     h('core-toolbar.browse-toolbar', [
-      renderBreadcrumbs(browseState, navigationEvents),
-      renderSearch(browseState, navigationEvents)
+      renderBreadcrumbs(browseState, navEvents),
+      renderSearch(browseState, navEvents)
     ]),
     h('core-drawer-panel', {
       'rightDrawer': new AttributeHook(true),
@@ -267,17 +288,17 @@ function render(browseState, browseEvents, navigationEvents) {
 /*
  * Renders the globquery searchbox, used to filter the globbed names.
  */
-function renderSearch(browseState, navigationEvents) {
+function renderSearch(browseState, navEvents) {
   // Trigger an actual navigation event when value of the inputs change
   var changeEvent = new PropertyValueEvent(function(val) {
     var globQuery = browseState.globQuery;
     if (exists(val)) {
       globQuery = val;
     }
-    navigationEvents.navigate({
+    navEvents.navigate({
       path: browseRoute.createUrl(browseState.namespace, globQuery)
     });
-  }, 'value');
+  }, 'value', true);
 
   return h('div.search-box',
     h('core-tooltip.tooltip', {
@@ -305,34 +326,50 @@ function renderSearch(browseState, navigationEvents) {
 }
 
 /*
- * The shortcuts recommended by the smartService are rendered with renderItem.
+ * The shortcuts chosen by the user are rendered with renderItem.
  */
-function renderShortcuts(browseState, browseEvents, navigationEvents) {
-  return browseState.shortcuts.map(function(shortcut) {
-    return renderItem(browseState, browseEvents, navigationEvents, shortcut);
+function renderUserShortcuts(browseState, browseEvents, navEvents) {
+  return browseState.userShortcuts.map(function(shortcut) {
+    return renderItem(browseState, browseEvents, navEvents, shortcut, true);
+  });
+}
+
+/*
+ * The shortcuts recommended by the smartService are rendered with renderItem.
+ * A shortcut is no longer recommended if it is already a user shortcut.
+ * TODO(alexfandrianto): Should we really filter out these repeats?
+ */
+function renderRecommendedShortcuts(browseState, browseEvents, navEvents) {
+  return browseState.recShortcuts.filter(function(shortcut) {
+    return handleShortcuts.find(browseState, shortcut) === -1;
+  }).map(function(shortcut) {
+    return renderItem(browseState, browseEvents, navEvents, shortcut, false);
   });
 }
 
 /*
  * The items (obtained by globbing) are rendered with renderItem.
  */
-function renderItems(browseState, browseEvents, navigationEvents) {
+function renderItems(browseState, browseEvents, navEvents) {
   return browseState.items.map(function(item) {
-    return renderItem(browseState, browseEvents, navigationEvents, item);
+    var isShortcut = handleShortcuts.find(browseState, item) !== -1;
+    return renderItem(browseState, browseEvents, navEvents, item, isShortcut);
   });
 }
 
 /*
- * Render a browse item card with the additional drill if it is globbable.
+ * Render a browse item card. The card consists of a service icon, a mounted
+ * name, and if globbable, a drill icon.
  */
-function renderItem(browseState, browseEvents, navigationEvents, item) {
+function renderItem(browseState, browseEvents, navEvents, item, isShortcut) {
   var selected = browseState.selectedItemDetails.itemName === item.objectName;
 
+  // Prepare the drill if this item happens to be globbable.
   var expandAction = null;
   if (item.isGlobbable) {
     expandAction = h('a.drill', {
       'href': browseRoute.createUrl(item.objectName, browseState.globQuery),
-      'ev-click': mercury.event(navigationEvents.navigate, {
+      'ev-click': mercury.event(navEvents.navigate, {
         path: browseRoute.createUrl(item.objectName, browseState.globQuery)
       })
     }, h('core-icon.icon', {
@@ -340,28 +377,36 @@ function renderItem(browseState, browseEvents, navigationEvents, item) {
     }));
   }
 
-  var iconNode = null;
+  // Prepare tooltip and service icon information for the item.
   var isAccessible = true;
   var itemTooltip = item.mountedName;
+  var iconCssClass = '.service-type-icon' + (isShortcut ? '.shortcut' : '');
+  var iconAttributes = {
+    'ev-click': mercury.event(browseEvents.setShortcut, {
+      'item': item,
+      'save': !isShortcut,
+    })
+  };
 
+  // Server items are rendered differently from intermediary names.
   if (item.serverInfo) {
-    if (item.serverInfo.typeInfo.icon) {
-      iconNode = h('core-icon.service-type-icon', {
-        'icon': new AttributeHook(item.serverInfo.typeInfo.icon),
-        'title': new AttributeHook(item.serverInfo.typeInfo.typeName),
-      });
-    }
     isAccessible = item.serverInfo.isAccessible;
     if (!isAccessible) {
       itemTooltip += ' - Service seems to be offline or inaccessible';
     }
+    iconAttributes.title = new AttributeHook(item.serverInfo.typeInfo.typeName);
+    iconAttributes.icon = new AttributeHook(
+      getServiceIcon(item.serverInfo.typeInfo.key, isShortcut)
+    );
   } else {
-    iconNode = h('core-icon.service-type-icon', {
-      'icon': new AttributeHook('folder-open'),
-      'title': new AttributeHook('Intermediary Name'),
-    });
+    iconAttributes.title = new AttributeHook('Intermediary Name');
+    iconAttributes.icon = new AttributeHook(getServiceIcon('', isShortcut));
   }
 
+  // Construct the service icon.
+  var iconNode = h('core-icon' + iconCssClass, iconAttributes);
+
+  // Put the item card's pieces together.
   var itemClassNames = 'item.card' +
     (selected ? '.selected' : '') +
     (!isAccessible ? '.inaccessible' : '');
@@ -388,7 +433,7 @@ function renderItem(browseState, browseEvents, navigationEvents, item) {
  * Renders the current name being browsed, split into parts.
  * Each name part is a link to a parent.
  */
-function renderBreadcrumbs(browseState, navigationEvents) {
+function renderBreadcrumbs(browseState, navEvents) {
 
   var isRooted = namespaceService.util.isRooted(browseState.namespace);
   var namespaceParts = browseState.namespace.split('/').filter(
@@ -402,7 +447,7 @@ function renderBreadcrumbs(browseState, navigationEvents) {
       //TODO(aghassemi) refactor link generation code
       h('a', {
         'href': browseRoute.createUrl(),
-        'ev-click': mercury.event(navigationEvents.navigate, {
+        'ev-click': mercury.event(navEvents.navigate, {
           path: browseRoute.createUrl()
         })
       }, 'Home')
@@ -417,7 +462,7 @@ function renderBreadcrumbs(browseState, navigationEvents) {
     var listItem = h('li.breadcrumb-item', [
       h('a', {
         'href': browseRoute.createUrl(fullName),
-        'ev-click': mercury.event(navigationEvents.navigate, {
+        'ev-click': mercury.event(navEvents.navigate, {
           path: browseRoute.createUrl(fullName)
         })
       }, namePart)
@@ -433,4 +478,5 @@ function renderBreadcrumbs(browseState, navigationEvents) {
 function wireUpEvents(state, events) {
   events.browseNamespace(browseNamespace.bind(null, state, events));
   events.getNamespaceSuggestions(getNamespaceSuggestions.bind(null, state));
+  events.setShortcut(handleShortcuts.set.bind(null, state));
 }

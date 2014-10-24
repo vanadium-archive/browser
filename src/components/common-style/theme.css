@@ -39,8 +39,11 @@
   /* Main Primary background color for tabs and larger color blocks. Material Design level 500 of the primary color. Light Blue */
   --color-main: #03a9f4;
 
-  /* Bright accent background color for highlighting and primary action buttons. Material Design level 200 of a bright accent color. Bright Orange */
+  /* Bright accent background color for highlighting and primary action buttons. Material Design level A200 of a bright accent color. Bright Orange */
   --color-bright: #ffab40;
+
+  /* Deep accent background color for deep highlighting. Material Design level A700 of a bright accent color. Deep Bright Orange */
+  --color-bright-deep: #ff6d00;
 
   /* Divider color for separators and borders. Grey */
   --color-divider: rgba(0, 0, 0, 0.12);

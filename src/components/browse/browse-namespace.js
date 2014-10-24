@@ -45,13 +45,13 @@ function browseNamespace(browseState, browseEvents, data) {
   smartService.predict('learner-shortcut', '').then(function(predictions) {
     predictions.map(function(prediction) {
       namespaceService.getNamespaceItem(prediction.item).then(function(item) {
-        browseState.shortcuts.push(item);
+        browseState.recShortcuts.push(item);
       }).catch(function(err) {
-        log.error('Failed to get shortcut:', prediction, err);
+        log.error('Failed to get recommended shortcut:', prediction, err);
       });
     });
   }).catch(function(err) {
-    log.error('Could not load shortcuts', err);
+    log.error('Could not load recommended shortcuts', err);
   });
 
   // Trigger display items event
@@ -68,6 +68,6 @@ function browseNamespace(browseState, browseEvents, data) {
 
   function emptyOutItems() {
     browseState.put('items', mercury.array([]));
-    browseState.put('shortcuts', mercury.array([]));
+    browseState.put('recShortcuts', mercury.array([]));
   }
 }

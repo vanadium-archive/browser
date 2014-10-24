@@ -36,6 +36,13 @@
   margin-top: 0.5em;
   border-bottom: var(--border);
 }
+.items-container h2 {
+  width: 100%;
+  font-size: var(--size-font-large);
+  color: var(--color-text-hint);
+  padding: 0.25em 0em 0em 0.75em;
+  text-decoration: underline;
+}
 .item.card {
   box-sizing: border-box;
   display: flex;
@@ -178,6 +185,21 @@
 .service-type-icon {
   transform: scale(0.7);
   padding-right: 0.75em;
+}
+/* The service icon is colored brightly if active. */
+.service-type-icon:hover,
+.service-type-icon.shortcut {
+  color: var(--color-bright);
+}
+/* If the service item is selected and is also active, make the icon's colors deeper. */
+.item.selected.card .service-type-icon:hover,
+.item.selected.card .service-type-icon.shortcut {
+  color: var(--color-bright-deep);
+}
+/* If hovering over a shortcut, use the parent's color. */
+.service-type-icon.shortcut:hover,
+.item.selected.card .service-type-icon.shortcut:hover {
+  color: inherit;
 }
 
 paper-autocomplete.autocomplete {

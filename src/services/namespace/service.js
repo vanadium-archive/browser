@@ -325,8 +325,7 @@ function getServerTypeInfo(signature) {
       key: 'veyron-mounttable',
       typeName: 'Mount Table',
       description: 'Mount table service allows registration ' +
-        'and resolution of object names.',
-      icon: 'social:circles-extended'
+        'and resolution of object names.'
     });
   } else {
     return createUnknownServiceTypeInfo();
@@ -337,7 +336,6 @@ function createUnknownServiceTypeInfo() {
   return itemFactory.createServerTypeInfo({
     key: 'veyron-unknown',
     typeName: 'Service',
-    description: null,
-    icon: 'cloud-queue'
+    description: null
   });
 }
