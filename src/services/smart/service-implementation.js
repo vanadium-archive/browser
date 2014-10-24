@@ -3,11 +3,11 @@
  * implementations of the smart-service.
  */
 
-var addAttributes = require('../lib/addAttributes');
-var hashSignature = require('./namespace/service').hashSignature;
-var log = require('../lib/log')('services:smart-service');
-var perceptron = require('../lib/learning/perceptron');
-var rank = require('../lib/learning/rank');
+var addAttributes = require('../../lib/addAttributes');
+var hashSignature = require('../namespace/service').hashSignature;
+var log = require('../../lib/log')('services:smart-service');
+var perceptron = require('../../lib/learning/perceptron');
+var rank = require('../../lib/learning/rank');
 var _ = require('lodash');
 
 var LEARNER_SHORTCUT = 1;

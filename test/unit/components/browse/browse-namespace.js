@@ -6,7 +6,7 @@ var browseComponent = proxyquire('../../../../src/components/browse/index', {
 });
 
 /*
- * Create mocks for browse-service used by browseNamespace.
+ * Create mocks for namespaceService used by browseNamespace.
  * One mock that resolves in both glob and signature methods.
  * One mock that rejects in both glob and signature methods.
  */
@@ -43,7 +43,7 @@ function itemDetailsComponentMock() {
   };
 }
 
-// Require the browseNamespace using the proxy so mocked browse-service is used
+// Require the browseNamespace using the proxy so mock is used
 var browseNamespace =
 proxyquire('../../../../src/components/browse/browse-namespace',{
   '../../services/namespace/service': namespaceServiceMock

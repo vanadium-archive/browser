@@ -9,7 +9,7 @@ var PropertyValueEvent =
 var store = require('../../../../lib/store');
 var log = require('../../../../lib/log')(
   'components:browse:item-details:method-form');
-var smartService = require('../../../../services/smart-service');
+var smartService = require('../../../../services/smart/service');
 var hashSignature =
   require('../../../../services/namespace/service').hashSignature;
 var makeRPC = require('./make-rpc.js');

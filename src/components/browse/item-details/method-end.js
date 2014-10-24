@@ -1,4 +1,4 @@
-var smartService = require('../../../services/smart-service');
+var smartService = require('../../../services/smart/service');
 var log = require('../../../lib/log')(
   'components:browse:item-details:method-end');
 var formatDetail = require('./format-detail');
@@ -18,8 +18,10 @@ function methodEnd(state, method, data) {
     return;
   }
 
+  var sig = state.item().serverInfo.signature;
+
   // Otherwise, we'll have to learn from the results and draw them, if possible.
-  var numInArgs = state.signature()[method].inArgs.length;
+  var numInArgs = sig[method].inArgs.length;
 
   // Since the RPC was successful, we can assume the inputs were good.
   if (numInArgs > 0) {
@@ -29,7 +31,7 @@ function methodEnd(state, method, data) {
 
   // Do not process results we expect to be empty.
   // TODO(alexfandrianto): Streaming results are ignored with this logic.
-  var expectedOutArgs = state.signature()[method].numOutArgs;
+  var expectedOutArgs = sig[method].numOutArgs;
   if (expectedOutArgs === 1) { // Error is the only possible out argument.
     replaceResult(state, data.runID, '<ok>');
     return;
@@ -55,7 +57,7 @@ function formatResult(state, method, runID, result, addToDetails) {
  * If the replacement cannot be found, then no substitution occurs.
  */
 function replaceResult(state, runID, newResult) {
-  var match = state.methodOutputs.get(state.itemName()).filter(
+  var match = state.methodOutputs.get(state.item().objectName).filter(
     function matchesRunID(output) {
       return output.get('runID').equals(runID);
     }
@@ -69,12 +71,13 @@ function replaceResult(state, runID, newResult) {
  * Learn from the method inputs to be able to suggest them in the future.
  */
 function learnMethodInput(state, method, args) {
+  var sig = state.item().serverInfo.signature;
   args.forEach(function(value, i) {
-    var argName = state.signature()[method].inArgs[i];
+    var argName = sig[method].inArgs[i];
     var input = {
       argName: argName,
       methodName: method,
-      signature: state.signature(),
+      signature: sig,
       value: args[i]
     };
     log.debug('Update Input:', input);
@@ -89,9 +92,10 @@ function learnMethodInput(state, method, args) {
  * Learn from this invocation to be able to suggest them in the future.
  */
 function learnMethodInvocation(state, method, args) {
+  var sig = state.item().serverInfo.signature;
   var input = {
     methodName: method,
-    signature: state.signature(),
+    signature: sig,
     value: JSON.stringify(args)
   };
   log.debug('Update Invocation:', input);

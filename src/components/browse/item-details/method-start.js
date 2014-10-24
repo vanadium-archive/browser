@@ -19,7 +19,7 @@ function methodStart(state, method, data) {
   setTimeout(function() {
     output.put('shouldShow', true); // prevent flicker for near-instant RPCs.
   }, 25);
-  var itemName = state.itemName();
+  var itemName = state.item().objectName;
   var outputs = state.methodOutputs.get(itemName);
   if (outputs === undefined) {
     state.methodOutputs.put(itemName, mercury.array([output]));

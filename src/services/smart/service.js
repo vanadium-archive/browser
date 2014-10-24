@@ -4,10 +4,10 @@
  * A few basic learners are implemented as wrappers around the learning library.
  */
 
-var addAttributes = require('../lib/addAttributes');
-var store = require('../lib/store');
-var log = require('../lib/log')('services:smart-service');
-var constants = require('./smart-service-implementation');
+var addAttributes = require('../../lib/addAttributes');
+var store = require('../../lib/store');
+var log = require('../../lib/log')('services:smart-service');
+var constants = require('./service-implementation');
 
 // Export methods and constants
 module.exports = {
