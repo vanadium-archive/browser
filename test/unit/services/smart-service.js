@@ -34,8 +34,8 @@ function dumbLearnerPredict(input) {
 }
 
 var smartService = proxyquire(
-  '../../../src/services/smart-service', {
-  './smart-service-implementation': smartServiceImplementationMock
+  '../../../src/services/smart/service', {
+  './service-implementation': smartServiceImplementationMock
 });
 
 function makeLearner(id) {

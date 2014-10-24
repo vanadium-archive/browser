@@ -1,4 +1,5 @@
 var test = require('prova');
+var mercury = require('mercury');
 var itemDetailsComponent =
 require('../../../../../src/components/browse/item-details/index');
 var proxyquire = require('proxyquireify')(require);
@@ -8,30 +9,21 @@ var proxyquire = require('proxyquireify')(require);
  * One mock that resolves in both glob and signature methods.
  * One mock that rejects in both glob and signature methods.
  */
-var mockName = 'veyron/library';
+var mockName = 'foo/bar/mockItem';
 var mockItem = {
   mountedName: 'mockItem',
-  name: 'foo/bar/mockItem'
+  name: mockName,
+  isServer: false
 };
 var namespaceServiceMock = {
-  isGlobbable: function(name) {
-    return Promise.resolve(true);
-  },
-  search: function(name, globQuery) {
-    return Promise.resolve([mockItem]);
-  },
-  getSignature: function(name) {
-    return Promise.resolve('signature');
+  getNamespaceItem: function() {
+    return Promise.resolve(
+      mercury.value(mockItem)
+    );
   }
 };
 var namespaceServiceMockWithFailure = {
-  isGlobbable: function(name) {
-    return Promise.resolve(true);
-  },
-  search: function(name, globQuery) {
-    return Promise.reject();
-  },
-  getSignature: function(name) {
+  getNamespaceItem: function() {
     return Promise.reject();
   }
 };
@@ -49,42 +41,37 @@ proxyquire(
   { '../../../services/namespace/service': namespaceServiceMockWithFailure}
 );
 
-test('Updates state.signature', function(t) {
-  t.plan(2);
+test('Updates state.item', function(t) {
 
   var component = itemDetailsComponent();
   var state = component.state;
   var events = component.events;
 
-  state.signature(function(signature) {
-    t.equal(signature, 'signature');
+  state.item(function(item) {
+    t.deepEqual(item, mockItem);
+    t.end();
   });
 
-  // Additionally, our item details itemName should be updated to match.
-  state.itemName(function(name) {
-    t.equal(name, mockName);
-  });
-
-  // Should update the signature to items returned by glob method call (async)
+  // Should update item to mockItem
   displayItemDetails(state, events, {
     name: mockName
   });
 
 });
 
-test('Updates state.signature to empty on failure', function(t) {
-  t.plan(1);
+test('Updates state.item to null on failure', function(t) {
 
   var component = itemDetailsComponent();
   var state = component.state;
   var events = component.events;
 
   // Give initial value
-  state.signature.set('not-empty');
+  state.item.set(mockItem);
 
-  // Should reset the signature to empty on failed signature method call (async)
-  state.signature(function(signature) {
-    t.equal(signature, '');
+  // Should reset item to null on failed getNamespaceItem method call (async)
+  state.item(function(item) {
+    t.equal(item, null);
+    t.end();
   });
 
   displayItemDetailsWithFailure(state, events, {

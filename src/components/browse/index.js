@@ -11,7 +11,7 @@ var getServiceIcon = require('./get-service-icon');
 var handleShortcuts = require('./handle-shortcuts');
 var itemDetailsComponent = require('./item-details/index');
 var namespaceService = require('../../services/namespace/service');
-var smartService = require('../../services/smart-service');
+var smartService = require('../../services/smart/service');
 var css = require('./index.css');
 
 var h = mercury.h;
@@ -362,7 +362,15 @@ function renderItems(browseState, browseEvents, navEvents) {
  * name, and if globbable, a drill icon.
  */
 function renderItem(browseState, browseEvents, navEvents, item, isShortcut) {
-  var selected = browseState.selectedItemDetails.itemName === item.objectName;
+  var selected = false;
+
+  // TODO(aghassemi) this causes a delay on highlighting since we wait until
+  // getNamespaceItem() resolves. Maybe this needs to keep track of its
+  // own selected name.
+  if (browseState.selectedItemDetails.item &&
+    browseState.selectedItemDetails.item.objectName === item.objectName) {
+    selected = true;
+  }
 
   // Prepare the drill if this item happens to be globbable.
   var expandAction = null;
@@ -388,8 +396,7 @@ function renderItem(browseState, browseEvents, navEvents, item, isShortcut) {
     })
   };
 
-  // Server items are rendered differently from intermediary names.
-  if (item.serverInfo) {
+  if (item.isServer) {
     isAccessible = item.serverInfo.isAccessible;
     if (!isAccessible) {
       itemTooltip += ' - Service seems to be offline or inaccessible';
@@ -415,16 +422,15 @@ function renderItem(browseState, browseEvents, navEvents, item, isShortcut) {
     'title': itemTooltip
   }, [
     h('a.label', {
-        'href': '#',
-        'ev-click': mercury.event(
-          browseEvents.selectedItemDetails.displayItemDetails, {
-            name: item.objectName
-          })
-      }, [
-        iconNode,
-        h('span', item.mountedName)
-      ]
-    ),
+      'href': '#',
+      'ev-click': mercury.event(
+        browseEvents.selectedItemDetails.displayItemDetails, {
+          name: item.objectName
+        })
+    }, [
+      iconNode,
+      h('span', item.mountedName)
+    ]),
     expandAction
   ]);
 }

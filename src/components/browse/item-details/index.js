@@ -2,12 +2,6 @@ var mercury = require('mercury');
 var AttributeHook = require('../../../lib/mercury/attribute-hook');
 var insertCss = require('insert-css');
 var displayItemDetails = require('./display-item-details');
-/*
- * TODO(aghassemi) We need namespaceService.getNamespaceItem(name) method then
- * we can replace state.signature with it and remove the dependency on the old
- * browser service
-*/
-var browseService = require('../../../services/browse-service');
 var h = mercury.h;
 var css = require('./index.css');
 var methodForm = require('./method-form/index.js');
@@ -20,18 +14,14 @@ module.exports.render = render;
  * a browse item such is its type, signature, etc.
  */
 function create() {
-  var state = mercury.struct({
-    /*
-     * Item name to display settings for
-     * @type {string}
-     */
-    itemName: mercury.value(''),
+  var state = mercury.varhash({
 
     /*
-     * Method signature for the name, if pointing to a server
-     * @type {Object}
+     * namespace item to display details for
+     * @see services/namespace/item
+     * @type {namespaceitem}
      */
-    signature: mercury.value(null),
+    item: mercury.value(null),
 
     /*
      * Which tab to display; 0 is for service details
@@ -78,10 +68,18 @@ function create() {
  * Render the item details page, which includes tabs for details and methods.
  */
 function render(state, events) {
+  if (!state.item) {
+    return;
+  }
+
   insertCss(css);
 
   var detailsContent = renderDetailsContent(state, events);
-  var methodsContent = renderMethodsContent(state, events);
+
+  var methodsContent;
+  if (state.item.isServer && state.item.serverInfo.isAccessible) {
+    methodsContent = renderMethodsContent(state, events);
+  }
 
   return [h('paper-tabs.tabs', {
       'selected': new AttributeHook(state.selectedTabIndex),
@@ -106,10 +104,18 @@ function render(state, events) {
  * Note: Currently renders in the same tab as renderMethodsContent.
  */
 function renderDetailsContent(state, events) {
-  var typeInfo = browseService.getTypeInfo(state.signature);
+  var item = state.item;
+  var typeName;
+  var typeDescription;
+  if (item.isServer) {
+    typeName = item.serverInfo.typeInfo.typeName;
+    typeDescription = item.serverInfo.typeInfo.description;
+  } else {
+    typeName = 'Intermediary Name';
+  }
   var displayItems = [
-    renderFieldItem('Name', (state.itemName || '<root>')),
-    renderFieldItem('Type', typeInfo.name, typeInfo.description)
+    renderFieldItem('Name', (item.objectName || '<root>')),
+    renderFieldItem('Type', typeName, typeDescription)
   ];
 
   return [
@@ -133,7 +139,7 @@ function renderMethodsContent(state, events) {
  * making RPCs to the associated service.
  */
 function renderMethodSignatures(state, events) {
-  var sig = state.signature;
+  var sig = state.item.serverInfo.signature;
   if (!sig) {
     return h('div', 'No method signature');
   }
@@ -153,7 +159,7 @@ function renderMethodSignatures(state, events) {
  * Prints each output received in reverse order; most recent is on top.
  */
 function renderMethodOutput(state) {
-  var outputs = state.methodOutputs[state.itemName];
+  var outputs = state.methodOutputs[state.item.objectName];
   if (outputs === undefined) {
     return h('div.method-output', 'No method output');
   }
@@ -167,7 +173,9 @@ function renderMethodOutput(state) {
     if (output.shouldShow) {
       outputRows.push(
         h('tr', [
-          h('td', { 'scope': 'row' }, '' + (i + 1)),
+          h('td', {
+            'scope': 'row'
+          }, '' + (i + 1)),
           h('td', h('pre', output.method)),
           h('td', h('pre', output.result))
         ])

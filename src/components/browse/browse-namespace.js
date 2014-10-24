@@ -2,7 +2,7 @@ var mercury = require('mercury');
 var exists = require('../../lib/exists');
 var log = require('../../lib/log')('components:browse:browse-namespace');
 var namespaceService = require('../../services/namespace/service');
-var smartService = require('../../services/smart-service');
+var smartService = require('../../services/smart/service');
 
 module.exports = browseNamespace;
 
