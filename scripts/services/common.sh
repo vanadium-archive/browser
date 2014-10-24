@@ -120,7 +120,7 @@ fail_on_exit() {
 # run will exit the shell if a process fails to start or panics and it will display
 # an error message along with the log file for the misbehaving service.
 common::run() {
-  build
+  build || common::fail "failed to build the binaries"
   cd "${GOBIN}"
 
   local -r ROOT_MOUNTTABLE_PORT="$1"
