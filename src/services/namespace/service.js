@@ -59,7 +59,7 @@ function glob(pattern) {
   var globItemsObservArrPromise =
     getRuntime().then(function callGlobOnNamespace(rt) {
       // TODO(aghassemi) use watchGlob when available
-      var namespace = rt.newNamespace2();
+      var namespace = rt.newNamespace();
       return namespace.glob(pattern).stream;
     }).then(function updateResult(globStream) {
       // TODO(aghassemi) namespace glob can return duplicate results, what do to
