@@ -387,7 +387,7 @@ function renderItem(browseState, browseEvents, navEvents, item, isShortcut) {
 
   // Prepare tooltip and service icon information for the item.
   var isAccessible = true;
-  var itemTooltip = item.mountedName;
+  var itemTooltip = item.objectName;
   var iconCssClass = '.service-type-icon' + (isShortcut ? '.shortcut' : '');
   var iconAttributes = {
     'ev-click': mercury.event(browseEvents.setShortcut, {
