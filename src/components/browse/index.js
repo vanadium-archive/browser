@@ -484,5 +484,5 @@ function renderBreadcrumbs(browseState, navEvents) {
 function wireUpEvents(state, events) {
   events.browseNamespace(browseNamespace.bind(null, state, events));
   events.getNamespaceSuggestions(getNamespaceSuggestions.bind(null, state));
-  events.setShortcut(handleShortcuts.set.bind(null, state));
+  events.setShortcut(handleShortcuts.set.bind(null, state, events));
 }

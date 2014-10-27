@@ -1,4 +1,5 @@
 var mercury = require('mercury');
+var handleShortcuts = require('./handle-shortcuts');
 var exists = require('../../lib/exists');
 var log = require('../../lib/log')('components:browse:browse-namespace');
 var namespaceService = require('../../services/namespace/service');
@@ -40,10 +41,17 @@ function browseNamespace(browseState, browseEvents, data) {
     log.error(err);
   });
 
+  // Reload the user's shortcuts.
+  handleShortcuts.load(browseState).catch(function(err) {
+    // TODO(alexfandrianto): I'd like to toast here, but our toasting mechanism
+    // would only allow for 1 toast. The toast below would override this one.
+    // Perhaps we should allow an array of toasts to be set?
+    log.error('Could not load user shortcuts', err);
+  });
 
   // Update our shortcuts with these predictions.
   smartService.predict('learner-shortcut', '').then(function(predictions) {
-    predictions.map(function(prediction) {
+    predictions.forEach(function(prediction) {
       namespaceService.getNamespaceItem(prediction.item).then(function(item) {
         browseState.recShortcuts.push(item);
       }).catch(function(err) {
