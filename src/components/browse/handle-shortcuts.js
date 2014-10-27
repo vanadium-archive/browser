@@ -1,5 +1,6 @@
 var mercury = require('mercury');
 var _ = require('lodash');
+var arraySet = require('../../lib/arraySet');
 var log = require('../../lib/log')('components:browse:handle-shortcuts');
 var store = require('../../lib/store');
 var namespaceService = require('../../services/namespace/service');
@@ -52,12 +53,7 @@ function loadShortcutKeys() {
  */
 function saveShortcutKey(key, shouldSet) {
   return loadShortcutKeys().then(function(keys) {
-    var index = keys.indexOf(key);
-    if (shouldSet && index === -1) { // needs to be added
-      keys.push(key);
-    } else if (!shouldSet && index !== -1) { // needs to be removed
-      keys.splice(index, 1);
-    }
+    arraySet.set(keys, key, shouldSet);
     return store.setValue(userShortcutsID, keys);
   });
 }
@@ -71,15 +67,13 @@ function saveShortcutKey(key, shouldSet) {
  * browseState may not perfectly match the data present in the store.
  */
 function setShortcut(browseState, browseEvents, data) {
-  // First, find the index of the shortcut if it's already there.
-  var index = findShortcut(browseState(), data.item);
-
-  // Then, decide whether to add or remove the item.
-  if (data.save && index === -1) { // needs to be added
-    browseState.userShortcuts.push(data.item);
-  } else if (!data.save && index !== -1) { // needs to be removed
-    browseState.userShortcuts.splice(index, 1);
-  }
+  // Update the user shortcuts, as the data specifies.
+  arraySet.set(
+    browseState.userShortcuts,
+    data.item,
+    data.save,
+    findShortcut.bind(null, browseState())
+  );
 
   // Persist the updated user shortcut.
   return saveShortcutKey(data.item.objectName, data.save).catch(function(err) {
