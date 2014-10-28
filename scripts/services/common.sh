@@ -195,7 +195,7 @@ common::run() {
     ./wsprd --v=1 --veyron.proxy="${PROXY_ADDR}" --port="${WSPR_PORT}" --identd="${IDENTITY_SERVER}" &> "${WSPRLOG}" &
     fail_on_exit $! "wspr" "${WSPRLOG}"
   ) &
-  shell::timed_wait_for "${SRV_TIMEOUT}" "${WSPRLOG}" "Listening at port ${WSPR_PORT}" || common::fail "${TIMEDOUT_MSG} wspr"
+  shell::timed_wait_for "${SRV_TIMEOUT}" "${WSPRLOG}" "Listening at" || common::fail "${TIMEDOUT_MSG} wspr"
 
   # Run some veyron services for demo and integration testing.
   local -r SAMPLEDLOG="${TMPDIR}/sampled.log"
