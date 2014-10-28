@@ -2,6 +2,7 @@ var mercury = require('mercury');
 var h = mercury.h;
 var _ = require('lodash');
 var guid = require('guid');
+var arraySet = require('../../../../lib/arraySet');
 var setMercuryArray = require('../../../../lib/mercury/setMercuryArray');
 var AttributeHook = require('../../../../lib/mercury/attribute-hook');
 var PropertyValueEvent =
@@ -241,12 +242,7 @@ function wireUpEvents(state, events) {
       var argsStr = data.argsStr || JSON.stringify(state.args());
 
       // Depending on the star boolean, add/remove a star for the given args.
-      var index = state.starred().indexOf(argsStr);
-      if (data.star && index === -1) { // needs to be added
-        state.starred.push(argsStr);
-      } else if (!data.star && index !== -1) { // needs to be removed
-        state.starred.splice(index, 1);
-      }
+      arraySet.set(state.starred, argsStr, data.star);
 
       // Save the user's star decision.
       return saveStarredInvocations(state);
