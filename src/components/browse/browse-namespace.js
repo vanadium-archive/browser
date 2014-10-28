@@ -1,9 +1,9 @@
 var mercury = require('mercury');
 var handleShortcuts = require('./handle-shortcuts');
+var recommendShortcuts = require('./recommend-shortcuts');
 var exists = require('../../lib/exists');
 var log = require('../../lib/log')('components:browse:browse-namespace');
 var namespaceService = require('../../services/namespace/service');
-var smartService = require('../../services/smart/service');
 
 module.exports = browseNamespace;
 
@@ -28,11 +28,10 @@ function browseNamespace(browseState, browseEvents, data) {
     browseState.globQuery.set(data.globQuery);
   }
 
-  emptyOutItems();
-
   var namespace = browseState.namespace();
 
-  // Search the namespace
+  // Search the namespace and update the browseState's items.
+  browseState.put('items', mercury.array([]));
   namespaceService.search(namespace, browseState.globQuery()).
   then(function globResultsReceived(items) {
     browseState.put('items', items);
@@ -49,18 +48,8 @@ function browseNamespace(browseState, browseEvents, data) {
     log.error('Could not load user shortcuts', err);
   });
 
-  // Update our shortcuts with these predictions.
-  smartService.predict('learner-shortcut', '').then(function(predictions) {
-    predictions.forEach(function(prediction) {
-      namespaceService.getNamespaceItem(prediction.item).then(function(item) {
-        browseState.recShortcuts.push(item);
-      }).catch(function(err) {
-        log.error('Failed to get recommended shortcut:', prediction, err);
-      });
-    });
-  }).catch(function(err) {
-    log.error('Could not load recommended shortcuts', err);
-  });
+  // Update our shortcuts, as they may have changed.
+  recommendShortcuts(browseState);
 
   // Trigger display items event
   browseEvents.selectedItemDetails.displayItemDetails({
@@ -73,9 +62,4 @@ function browseNamespace(browseState, browseEvents, data) {
     action: browseNamespace.bind(null, browseState, browseEvents, data),
     actionText: 'REFRESH'
   });
-
-  function emptyOutItems() {
-    browseState.put('items', mercury.array([]));
-    browseState.put('recShortcuts', mercury.array([]));
-  }
 }

@@ -1,6 +1,7 @@
 var mercury = require('mercury');
 var _ = require('lodash');
 var arraySet = require('../../lib/arraySet');
+var recommendShortcuts = require('./recommend-shortcuts');
 var log = require('../../lib/log')('components:browse:handle-shortcuts');
 var store = require('../../lib/store');
 var namespaceService = require('../../services/namespace/service');
@@ -74,6 +75,9 @@ function setShortcut(browseState, browseEvents, data) {
     data.save,
     findShortcut.bind(null, browseState())
   );
+
+  // The recommended shortcuts may have changed too.
+  recommendShortcuts(browseState);
 
   // Persist the updated user shortcut.
   return saveShortcutKey(data.item.objectName, data.save).catch(function(err) {

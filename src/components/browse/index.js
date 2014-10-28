@@ -341,7 +341,8 @@ function renderUserShortcuts(browseState, browseEvents, navEvents) {
  */
 function renderRecommendedShortcuts(browseState, browseEvents, navEvents) {
   return browseState.recShortcuts.filter(function(shortcut) {
-    return handleShortcuts.find(browseState, shortcut) === -1;
+    return shortcut !== undefined &&
+      handleShortcuts.find(browseState, shortcut) === -1;
   }).map(function(shortcut) {
     return renderItem(browseState, browseEvents, navEvents, shortcut, false);
   });

@@ -71,10 +71,10 @@ function shortcutLearner(type, params) {
 }
 
 /*
- * Given input data, return relevant features for the shortcut learner.
+ * Given an input name, return relevant features for the shortcut learner.
  */
-function shortcutLearnerFeatureExtractor(input) {
-  return pathFeatureExtractor(input);
+function shortcutLearnerFeatureExtractor(name) {
+  return pathFeatureExtractor(name);
 }
 
 /*
@@ -83,44 +83,59 @@ function shortcutLearnerFeatureExtractor(input) {
  */
 function shortcutLearnerUpdate(input) {
   var features = this.featureExtractor(input.name);
-  for (var key in features) {
-  	if (features.hasOwnProperty(key)) {
-	    if (this.directoryCount[key] === undefined) {
-	      this.directoryCount[key] = 0;
-	    }
-	    this.directoryCount[key] += features[key];
+  _.forOwn(features, function(value, key) {
+    if (this.directoryCount[key] === undefined) {
+      this.directoryCount[key] = 0;
     }
-  }
+    this.directoryCount[key] += features[key];
+  }, this);
 }
 
 /*
- * Given an input path, determine which children are most popular.
+ * Given an input, determine which children are most popular.
+ * The input should have "name" (string) and "exclude" (Array<string>).
  */
 function shortcutLearnerPredict(input) {
-  // Make sure to give input a proper string value.
-  if (input === undefined || input === null) {
-    input = '';
-  }
+  // Make sure to set proper defaults for bad input.
+  var defaults = {
+    name: '',
+    exclude: []
+  };
+  input = _.assign({}, defaults, input);
 
   // Also ensure that k, the number of children to return, is defined.
-  var k = this.params.k;
-  if (k === undefined || k === null) {
-    k = 1;
-  }
+  var k = this.params.k || 1;
 
-  log.debug('Predict top', k, 'children under', input,
-    'with', this.directoryCount);
+  log.debug('Predict top', k, 'children under', input.name, 'excluding',
+    input.exclude);
 
-  // First score all the items.
+  // First score the items that are prefixed by the input name.
+  // Separate the scored items from the excluded items.
   var scoredItems = [];
-  for (var key in this.directoryCount) {
-    if (this.directoryCount.hasOwnProperty(key) && key.indexOf(input) === 0) {
-      scoredItems[scoredItems.length] = {
-        item: key,
-        score: this.directoryCount[key]
+  var excludedItems = [];
+  _.forOwn(this.directoryCount, function(score, item) {
+    if (item.indexOf(input.name) === 0) {
+      var scoredItem = {
+        item: item,
+        score: score
       };
+      if (input.exclude.indexOf(item) === -1) {
+        scoredItems.push(scoredItem);
+      } else {
+        excludedItems.push(scoredItem);
+      }
     }
-  }
+  });
+
+  // Next, penalize all scoredItems by the excludedItems.
+  excludedItems.forEach(function(excludedItem) {
+    rank.applyDiversityPenalty(
+      scoredItems,
+      excludedItem,
+      shortcutLearnerFeatureExtractor,
+      excludedItem.score
+    );
+  });
 
   // Then determine the top k items including diversity.
   // TODO(alexfandrianto): This step forces us to take O(kn) runtime. Is there a
