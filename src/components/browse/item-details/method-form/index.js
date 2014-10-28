@@ -19,27 +19,28 @@ module.exports = create;
 module.exports.render = render;
 
 /*
- * Create the state and events necessary to render a working method form.
+ * Create the base state and events necessary to render a method form.
+ * Call the displayMethodForm event to fill this state with more data.
  */
-function create(itemName, signature, methodName) {
+function create() {
   var state = mercury.varhash({
     /*
      * Item name to target RPCs against.
      * @type {string}
      */
-    itemName: mercury.value(itemName),
+    itemName: mercury.value(''),
 
     /*
      * The item's signature.
      * @type {Object}
      */
-    signature: mercury.value(signature),
+    signature: mercury.value(null),
 
     /*
      * Method name for this method form
      * @type {string}
      */
-    methodName: mercury.value(methodName),
+    methodName: mercury.value(''),
 
     /*
      * Argument values that can be used to invoke the methodName RPC.
@@ -77,24 +78,13 @@ function create(itemName, signature, methodName) {
     expanded: mercury.value(false)
   });
 
-  // Initialize state with reset/refresh functions.
-  initializeInputArguments(state);
-  refreshInputSuggestions(state).catch(function(err) {
-    log.error('Could not get input suggestions for', methodName, err);
-  });
-  loadStarredInvocations(state).catch(function(err) {
-    log.error('Could not load stars for', methodName, err);
-  });
-  refreshRecommendations(state).catch(function(err) {
-    log.error('Could not get recommended invocations for', methodName, err);
-  });
-
   var events = mercury.input([
-    'methodStart',  // for parent element to be notified of RPC start
-    'methodEnd',    // for parent element to be notified of RPC end and result
-    'runAction',    // run the RPC with given arguments
-    'expandAction', // show/hide method arguments
-    'starAction',   // star/unstar a method invocation
+    'displayMethodForm',  // the main event used to prepare the form data
+    'methodStart',        // for parent element to be notified of RPC start
+    'methodEnd',          // for parent element to be notified of RPC end result
+    'runAction',          // run the RPC with given arguments
+    'expandAction',       // show/hide method arguments
+    'starAction',         // star/unstar a method invocation
     'toast'
   ]);
   wireUpEvents(state, events);
@@ -103,6 +93,31 @@ function create(itemName, signature, methodName) {
     state: state,
     events: events
   };
+}
+
+/*
+ * Event handler that sets and prepares data into this form component.
+ * data needs to include "itemName", "signature", and "methodName".
+ */
+function displayMethodForm(state, data) {
+  // Set the given data into the state and prepare the method form.
+  state.itemName.set(data.itemName);
+  state.signature.set(data.signature);
+  state.methodName.set(data.methodName);
+  initializeInputArguments(state);
+
+  // Prepare the remaining state asynchronously.
+  // TODO(alexfandrianto): Do we want to toast any errors?
+  refreshInputSuggestions(state).catch(function(err) {
+    log.error('Could not get input suggestions for', data.methodName, err);
+  });
+  loadStarredInvocations(state).catch(function(err) {
+    log.error('Could not load stars for', data.methodName, err);
+  });
+  refreshRecommendations(state).catch(function(err) {
+    log.error('Could not get recommended invocations for',
+      data.methodName, err);
+  });
 }
 
 /*
@@ -202,6 +217,8 @@ function refreshRecommendations(state) {
  * Note: Some events are left for the parent component to hook up.
  */
 function wireUpEvents(state, events) {
+  events.displayMethodForm(displayMethodForm.bind(null, state));
+
   // The run action triggers a start event, RPC call, and end event.
   events.runAction(function(data) {
     // This random value allows us to uniquely identify this RPC.

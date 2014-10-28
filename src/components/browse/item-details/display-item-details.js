@@ -35,7 +35,7 @@ function displayItemDetails(state, events, data) {
       for (var m in signatureResult) {
         if (signatureResult.hasOwnProperty(m)) {
           // Initialize the method form for future rendering.
-          var form = methodForm(name, signatureResult, m);
+          var form = methodForm();
           state.methodForm.put(m, form.state);
           events.methodForm.put(m, form.events);
 
@@ -47,6 +47,13 @@ function displayItemDetails(state, events, data) {
             methodEnd.bind(null, state, m)
           );
           form.events.toast = events.toast;
+
+          // Finally, allow the form to gather the info it needs to display.
+          form.events.displayMethodForm({
+            itemName: name,
+            signature: signatureResult,
+            methodName: m
+          });
         }
       }
     });
