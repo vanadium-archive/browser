@@ -63,7 +63,7 @@ build() {
   veyron go install veyron.io/veyron/veyron/services/proxy/proxyd
   veyron go install veyron.io/veyron/veyron/services/mgmt/binary/binaryd
   veyron go install veyron.io/veyron/veyron/services/mgmt/build/buildd
-  veyron go install veyron.io/veyron/veyron/tools/identity
+  veyron go install veyron.io/veyron/veyron/tools/principal
   veyron go install veyron.io/wspr/veyron/services/wsprd
   veyron go install sample/sampled
 }
@@ -128,22 +128,21 @@ common::run() {
   local -r COTTAGE_MOUNTTABLE_PORT="$3"
   local -r WSPR_PORT="$4"
   local -r PROXY_PORT="$5"
-  local -r IDENTITY_PATH="$6"
+  local -r IDENTITY_DIR="$6"
   local -r SEEK_BLESSSING="$7"
 
   local -r PROXY_ADDR=127.0.0.1:"${PROXY_PORT}"
   local -r IDENTITY_SERVER=/proxy.envyor.com:8101/identity/veyron-test/google
 
-  # Get an identity
-  if [[ "${SEEK_BLESSSING}" = true ]]; then
-    if [[ ! -f "${IDENTITY_PATH}" ]] || [[ ! -s "${IDENTITY_PATH}" ]]; then
-      ./identity seekblessing > "${IDENTITY_PATH}"
-    fi
-  else
-    ./identity generate > "${IDENTITY_PATH}"
-  fi
+  # Get credentials
+  export VEYRON_CREDENTIALS="${IDENTITY_DIR}";
 
-  export VEYRON_IDENTITY="${IDENTITY_PATH}";
+  if [[ ! -e "${IDENTITY_DIR}" ]] || [[ ! "$(ls -A ${IDENTITY_DIR})" ]]; then
+    ./principal create "${IDENTITY_DIR}" "veyron-browser"
+    if [[ "${SEEK_BLESSSING}" = true ]]; then
+      ./principal seekblessings
+    fi
+  fi
 
   # Run each server in a sub shell so we can call common::fail if process fails to start
   # or panics as it is running.
@@ -192,7 +191,7 @@ common::run() {
   local -r WSPRLOG="${TMPDIR}/wspr.log"
   cat /dev/null > "${WSPRLOG}"
   (
-    ./wsprd --v=1 --veyron.proxy="${PROXY_ADDR}" --port="${WSPR_PORT}" --identd="${IDENTITY_SERVER}" &> "${WSPRLOG}" &
+    ./wsprd --v=1 --new_security_model=true --veyron.proxy="${PROXY_ADDR}" --port="${WSPR_PORT}" --identd="${IDENTITY_SERVER}" &> "${WSPRLOG}" &
     fail_on_exit $! "wspr" "${WSPRLOG}"
   ) &
   shell::timed_wait_for "${SRV_TIMEOUT}" "${WSPRLOG}" "Listening at" || common::fail "${TIMEDOUT_MSG} wspr"
