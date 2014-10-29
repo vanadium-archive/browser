@@ -58,6 +58,11 @@ function create() {
  */
 function render(state, events) {
   insertCss(css);
+
+  if(!state.navigation.pageKey) {
+    return mercury.h('div.splash', h('span.screen-reader', 'Loading'));
+  }
+
   var panelAttributes = {
     // Keep the drawer collapsed for any width size
     'responsiveWidth': new AttributeHook('10000px'),
