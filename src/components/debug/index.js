@@ -1,6 +1,6 @@
 var mercury = require('mercury');
-var store = require('./lib/store');
-var log = require('./lib/log')('debug');
+var store = require('../../lib/store');
+var log = require('../../lib/log')('debug');
 
 module.exports = create;
 module.exports.enableContinuousRendering = enableContinuousRendering;
