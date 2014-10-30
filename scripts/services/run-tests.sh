@@ -16,11 +16,10 @@ main() {
   local -r WSPR_PORT=8885
   local -r PROXY_PORT=8886
   local -r VEYRON_IDENTITY_DIR="${TMPDIR}/test_credentials_dir"
-  local -r SEEK_BLESSSING=false
 
   PROVA_WATCH="${PROVA_WATCH-false}"
 
-  common::run "${MOUNTTABLE_PORT}" "${MOUNTTABLE_PORT_HOUSE}" "${MOUNTTABLE_PORT_COTTAGE}" "${WSPR_PORT}" "${PROXY_PORT}" "${VEYRON_IDENTITY_DIR}" "${SEEK_BLESSSING}"
+  common::run "${MOUNTTABLE_PORT}" "${MOUNTTABLE_PORT_HOUSE}" "${MOUNTTABLE_PORT_COTTAGE}" "${WSPR_PORT}" "${PROXY_PORT}" "${VEYRON_IDENTITY_DIR}"
 
   echo -e "\033[34m-Services are running\033[0m"
 
