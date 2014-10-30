@@ -129,6 +129,7 @@ common::run() {
   local -r WSPR_PORT="$4"
   local -r PROXY_PORT="$5"
   local -r IDENTITY_DIR="$6"
+  local -r SEEK_BLESSSING="$7"
 
   local -r PROXY_ADDR=127.0.0.1:"${PROXY_PORT}"
   local -r IDENTITY_SERVER=/proxy.envyor.com:8101/identity/veyron-test/google
@@ -138,6 +139,11 @@ common::run() {
 
   if [[ ! -e "${IDENTITY_DIR}" ]] || [[ ! "$(ls -A ${IDENTITY_DIR})" ]]; then
     ./principal create "${IDENTITY_DIR}" "veyron-browser"
+    if [[ "${SEEK_BLESSSING}" = true ]]; then
+      # TODO(aghassemi) This is temporarily needed since wspr can not talk to
+      # Identity server otherwise which is a known but to be fixed.
+      ./principal seekblessings
+    fi
   fi
 
   # Run each server in a sub shell so we can call common::fail if process fails to start

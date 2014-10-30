@@ -13,8 +13,9 @@ main() {
   local -r PROXY_PORT=5164
   local -r VEYRON_IDENTITY_DIR="${TMPDIR}/app_credentials_dir"
   local -r HTTP_PORT=9000
+  local -r SEEK_BLESSSING=true
 
-  common::run "${MOUNTTABLE_PORT}" "${MOUNTTABLE_PORT_HOUSE}" "${MOUNTTABLE_PORT_COTTAGE}" "${WSPR_PORT}" "${PROXY_PORT}" "${VEYRON_IDENTITY_DIR}"
+  common::run "${MOUNTTABLE_PORT}" "${MOUNTTABLE_PORT_HOUSE}" "${MOUNTTABLE_PORT_COTTAGE}" "${WSPR_PORT}" "${PROXY_PORT}" "${VEYRON_IDENTITY_DIR}" "${SEEK_BLESSSING}"
 
   local -r SERVE="${VEYRON_ROOT}/veyron-browser/node_modules/.bin/serve"
   "${SERVE}" "${VEYRON_ROOT}"/veyron-browser/public/. --port "${HTTP_PORT}" --compress &
