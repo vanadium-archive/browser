@@ -3,17 +3,17 @@ var mercury = require('mercury');
 var onDocumentReady = require('./lib/document-ready');
 var viewport = require('./components/viewport/index');
 var router = require('./router');
+var debug = require('./components/debug/index');
 var browse = require('./components/browse/index');
 var error = require('./components/error/index');
 var errorRoute = require('./routes/error');
-
-window.log = require('./lib/log');
 
 onDocumentReady(function startApp() {
 
   var browseComponent = browse();
   var viewportComponent = viewport();
   var errorComponent = error();
+  var debugComponent = debug();
 
   // Top level state
   var state = mercury.struct({
@@ -41,7 +41,12 @@ onDocumentReady(function startApp() {
     /*
      * State of the error component
      */
-    error: errorComponent.state
+    error: errorComponent.state,
+
+    /*
+     * Internal debugging state
+     */
+    debug: debugComponent.state
   });
 
   // To level events
@@ -81,6 +86,9 @@ onDocumentReady(function startApp() {
   // Start the router which will register the application routes
   router(state, events);
 
+  // Debugging related exports
+  exportDebugging();
+
   // Render the app
   var render = function(state) {
     return viewport.render(state, events);
@@ -114,5 +122,14 @@ onDocumentReady(function startApp() {
   function onToast(toast) {
     toast.key = guid.create();
     state.viewport.toast.set(toast);
+  }
+
+  /*
+   * Export some debugging methods at global level
+   */
+  function exportDebugging() {
+    window.log = require('./lib/log');
+    window.enableContinuousRendering =
+      debug.enableContinuousRendering.bind(null, state.debug);
   }
 });
