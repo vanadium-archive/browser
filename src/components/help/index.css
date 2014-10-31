@@ -1,0 +1,32 @@
+@import "common-style/theme.css";
+@import "common-style/tabs.css";
+
+.markdown {
+  padding: 0.5em;
+}
+
+.markdown h1 {
+  text-align: center;
+}
+
+.markdown h2 {
+  margin-top: 0.75em;
+  margin-bottom: 0.25em;
+}
+
+/* Recover some sane version of link color. */
+.markdown a {
+  color: -webkit-link;
+  text-decoration: underline;
+}
+
+/* Recover some sane version of list bullets. */
+.markdown ul, .markdown ol {
+  padding-left: 2em;
+}
+.markdown ul li {
+  list-style: disc outside none;
+}
+.markdown ol li {
+  list-style: decimal outside none;
+}

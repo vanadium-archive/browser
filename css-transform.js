@@ -4,23 +4,27 @@ var rework = require('rework');
 var reworkVars = require('rework-vars');
 var reworkImport = require('rework-import');
 
-module.exports = transform;
+module.exports = {
+  canTransform: isCss,
+  transform: transform
+};
 
+/*
+ * Transform the given css file by compiling it with rework.
+ */
 function transform(file) {
-  if (path.extname(file) !== '.css') {
-    return through2();
-  }
-
   var contents = [];
 
   return through2(write, flush);
 
+  // Simply collect string fragments of the css file.
   function write(data, encoding, callback) {
     var string = data.toString();
     contents.push(string);
     callback();
   }
 
+  // Reconstruct the css and then compile it.
   function flush(callback) {
     var string = contents.join('');
     var css = compile(string);
@@ -29,7 +33,7 @@ function transform(file) {
   }
 }
 
-/* Compiles the given CSS string using rework */
+/* Compiles the given CSS string using rework. */
 function compile(string) {
   var css = rework(string)
     .use(reworkImport({
@@ -40,4 +44,9 @@ function compile(string) {
       compress: true
     });
   return css;
+}
+
+/* Determines if the filetype is css. */
+function isCss(file) {
+  return path.extname(file) === '.css';
 }

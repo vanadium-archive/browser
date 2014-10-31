@@ -1,0 +1,26 @@
+@import "./theme.css";
+
+.tabs {
+  box-shadow: var(--shadow-bottom);
+}
+
+.tabs::shadow #selectionBar {
+  background-color: var(--color-bright);
+}
+
+.tab {
+  background-color: var(--color-main);
+  color: var(--color-text-primary-invert);
+}
+
+.tab::shadow #ink {
+  color: var(--color-bright);
+}
+
+.tab-content {
+  padding: 0.5em;
+}
+
+:not(.core-selected).tab-content {
+  display: none;
+}

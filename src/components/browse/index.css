@@ -25,6 +25,9 @@
   background-color: var(--color-grey-light);
   box-shadow: none;
 }
+.browse-details-sidebar::shadow #dropShadow {
+  display: none;
+}
 .browse-details-sidebar::shadow #mainContainer {
   background-color: var(--color-grey-light);
   border-left: solid 1px var(--color-divider);

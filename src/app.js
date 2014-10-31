@@ -1,19 +1,21 @@
 var guid = require('guid');
 var mercury = require('mercury');
 var onDocumentReady = require('./lib/document-ready');
-var viewport = require('./components/viewport/index');
 var router = require('./router');
 var debug = require('./components/debug/index');
 var browse = require('./components/browse/index');
 var error = require('./components/error/index');
+var help = require('./components/help/index');
+var viewport = require('./components/viewport/index');
 var errorRoute = require('./routes/error');
 
 onDocumentReady(function startApp() {
 
   var browseComponent = browse();
-  var viewportComponent = viewport();
   var errorComponent = error();
   var debugComponent = debug();
+  var helpComponent = help();
+  var viewportComponent = viewport();
 
   // Top level state
   var state = mercury.struct({
@@ -28,10 +30,16 @@ onDocumentReady(function startApp() {
        */
       pageKey: mercury.value('')
     }),
+
     /*
-     * Veyron Namespace Browsing related states
+     * Veyron Namespace Browsing related state
      */
     browse: browseComponent.state,
+
+    /*
+     * Veyron Namespace Help related state
+     */
+    help: helpComponent.state,
 
     /*
      * State of the viewport component
@@ -62,6 +70,11 @@ onDocumentReady(function startApp() {
     'browse',
 
     /*
+     * Veyron Namespace Help related events
+     */
+    'help',
+
+    /*
      * Events of the viewport component
      */
     'viewport'
@@ -78,6 +91,7 @@ onDocumentReady(function startApp() {
     'navigate'
   ]);
   events.browse = browseComponent.events;
+  events.help = helpComponent.events;
   events.viewport = viewportComponent.events;
 
   // Wire Events
@@ -96,8 +110,14 @@ onDocumentReady(function startApp() {
   mercury.app(document.body, state, render);
 
   function wireEvents() {
+    // TODO(aghassemi): Make these events global.
+    // Hook up external browse events.
     events.browse.error(onError);
     events.browse.toast(onToast);
+
+    // Hook up external help events.
+    events.help.navigate = events.navigation.navigate;
+    events.help.error(onError);
   }
 
   /*

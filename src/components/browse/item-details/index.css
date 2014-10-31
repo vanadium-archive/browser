@@ -1,39 +1,10 @@
 @import "common-style/sizes.css";
 @import "common-style/theme.css";
-
-.tabs {
-  box-shadow: var(--shadow-bottom);
-}
-
-.tabs::shadow #selectionBar {
-  background-color: var(--color-bright);
-}
-
-.tab {
-  background-color: var(--color-main);
-  color: var(--color-text-primary-invert);
-}
-
-.tab::shadow #ink {
-  color: var(--color-bright);
-}
-
-.browse-details-sidebar::shadow #dropShadow {
-  display: none;
-}
-
-.tab-content {
-  padding: 0.5em;
-}
-
-:not(.core-selected).tab-content {
-  display: none;
-}
+@import "common-style/tabs.css";
 
 .field {
   font-size: 0.9em;
   margin-bottom: 0.75em;
-
 }
 
 .field h4 {

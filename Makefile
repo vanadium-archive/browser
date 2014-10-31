@@ -22,7 +22,7 @@ TMPDIR:=$(TMPDIR)/veyron_browser
 
 # All JS and CSS files except build.js and third party.
 BROWSERIFY_FILES = $(shell find src -name "*.js" -o -name "*.css")
-BROWSERIFY_OPTIONS = --transform ./css-transform --debug
+BROWSERIFY_OPTIONS = --transform ./main-transform --debug
 
 # All Go and VDL files.
 GO_FILES = $(shell find go -name "*.go")

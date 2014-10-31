@@ -1,0 +1,19 @@
+var sections = require('./constants').sections;
+
+module.exports = selectTab;
+
+/*
+ * Exported function that sets the given state to the given tabKey.
+ * If there is an error, however, the error event is run.
+ */
+function selectTab(state, events, tabKey) {
+  // If the tab is invalid, go to the error page.
+  if (sections.get(tabKey) === undefined) {
+    // TODO(aghassemi): Add 404 error.
+    // events.error(type.404);
+    events.error(new Error('Invalid help page: ' + tabKey));
+  } else {
+    // Since the tabKey is valid, the selectedTab can be updated.
+    state.selectedTab.set(tabKey);
+  }
+}

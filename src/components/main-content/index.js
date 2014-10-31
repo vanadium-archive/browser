@@ -44,7 +44,7 @@ function renderContent(state, events) {
     case 'browse':
       return Browse.render(state.browse, events.browse, events.navigation);
     case 'help':
-      return Help.render();
+      return Help.render(state.help, events.help);
     case 'error':
       return ErrorPage.render(state.error);
     case 'visualize':
