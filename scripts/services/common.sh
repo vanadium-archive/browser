@@ -193,7 +193,7 @@ common::run() {
   local -r WSPRLOG="${TMPDIR}/wspr.log"
   cat /dev/null > "${WSPRLOG}"
   (
-    ./wsprd --v=1 --new_security_model=true --veyron.proxy="${PROXY_ADDR}" --port="${WSPR_PORT}" --identd="${IDENTITY_SERVER}" &> "${WSPRLOG}" &
+    ./wsprd --v=1 --veyron.proxy="${PROXY_ADDR}" --port="${WSPR_PORT}" --identd="${IDENTITY_SERVER}" &> "${WSPRLOG}" &
     fail_on_exit $! "wspr" "${WSPRLOG}"
   ) &
   shell::timed_wait_for "${SRV_TIMEOUT}" "${WSPRLOG}" "Listening at" || common::fail "${TIMEDOUT_MSG} wspr"
