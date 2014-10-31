@@ -41,9 +41,9 @@ function log(namespace, options) {
   var warnLogger = debug(namespace + WARN_LEVEL_SUFFIX);
   var debugLogger = debug(namespace);
 
-  errorLogger.log = consoleInstance.error.bind(consoleInstance);
-  warnLogger.log = consoleInstance.warn.bind(consoleInstance);
-  debugLogger.log = consoleInstance.log.bind(consoleInstance);
+  errorLogger.log = coerce(consoleInstance.error, consoleInstance);
+  warnLogger.log = coerce(consoleInstance.warn, consoleInstance);
+  debugLogger.log = coerce(consoleInstance.log, consoleInstance);
 
   return {
     error: errorLogger,
@@ -75,4 +75,18 @@ function appendLevelPattern(namespaces, pattern) {
   return split.map(function(namespace) {
     return namespace += pattern;
   }).join(',');
+}
+
+function coerce(consoleFunc, consoleInstance) {
+  return function() {
+    var args = Array.prototype.slice.call(arguments);
+    args = args.map(function(arg) {
+      if (arg instanceof Error) {
+        return arg.stack || arg.message;
+      }
+      return arg;
+    });
+
+    return consoleFunc.apply(consoleInstance, args);
+  };
 }
