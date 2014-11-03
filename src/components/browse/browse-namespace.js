@@ -42,6 +42,10 @@ function browseNamespace(browseState, browseEvents, data) {
 
   // Reload the user's shortcuts.
   handleShortcuts.load(browseState).catch(function(err) {
+    browseEvents.toast({
+      text: 'Could not load shortcuts',
+      type: 'error'
+    });
     // TODO(alexfandrianto): I'd like to toast here, but our toasting mechanism
     // would only allow for 1 toast. The toast below would override this one.
     // Perhaps we should allow an array of toasts to be set?

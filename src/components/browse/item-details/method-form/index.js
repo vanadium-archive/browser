@@ -99,7 +99,7 @@ function create() {
  * Event handler that sets and prepares data into this form component.
  * data needs to include "itemName", "signature", and "methodName".
  */
-function displayMethodForm(state, data) {
+function displayMethodForm(state, events, data) {
   // Set the given data into the state and prepare the method form.
   state.itemName.set(data.itemName);
   state.signature.set(data.signature);
@@ -107,11 +107,14 @@ function displayMethodForm(state, data) {
   initializeInputArguments(state);
 
   // Prepare the remaining state asynchronously.
-  // TODO(alexfandrianto): Do we want to toast any errors?
   refreshInputSuggestions(state).catch(function(err) {
     log.error('Could not get input suggestions for', data.methodName, err);
   });
   loadStarredInvocations(state).catch(function(err) {
+    events.toast({
+      text: 'Could not load stars for ' + data.methodName,
+      type: 'error'
+    });
     log.error('Could not load stars for', data.methodName, err);
   });
   refreshRecommendations(state).catch(function(err) {
@@ -217,7 +220,7 @@ function refreshRecommendations(state) {
  * Note: Some events are left for the parent component to hook up.
  */
 function wireUpEvents(state, events) {
-  events.displayMethodForm(displayMethodForm.bind(null, state));
+  events.displayMethodForm(displayMethodForm.bind(null, state, events));
 
   // The run action triggers a start event, RPC call, and end event.
   events.runAction(function(data) {

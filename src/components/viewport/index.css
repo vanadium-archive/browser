@@ -26,8 +26,22 @@ body {
   color: var(--color-white);
 }
 
+/*
+ * Wrap the paper-toast in a fixed div. This allows us to show multiple toasts.
+ */
+div.toasts {
+  left: 0;
+  bottom: 0;
+  position: fixed;
+}
+
+/*
+ * Override the default toast style so that it can be rendered in div.toasts
+ */
 paper-toast {
   min-height: 0;
+  position: relative;
+  display: block;
 }
 
 paper-toast::shadow .toast-text {

@@ -1,5 +1,6 @@
 var guid = require('guid');
 var mercury = require('mercury');
+var addDelegatedEvents = require('./lib/mercury/addDelegatedEvents');
 var onDocumentReady = require('./lib/document-ready');
 var router = require('./router');
 var debug = require('./components/debug/index');
@@ -109,6 +110,9 @@ onDocumentReady(function startApp() {
   };
   mercury.app(document.body, state, render);
 
+  // Add additional events that mercury's delegator should listenTo.
+  addDelegatedEvents(['core-overlay-open-completed']);
+
   function wireEvents() {
     // TODO(aghassemi): Make these events global.
     // Hook up external browse events.
@@ -141,7 +145,7 @@ onDocumentReady(function startApp() {
    */
   function onToast(toast) {
     toast.key = guid.create();
-    state.viewport.toast.set(toast);
+    state.viewport.toasts.push(toast);
   }
 
   /*
