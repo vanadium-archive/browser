@@ -1,5 +1,10 @@
 @import "common-style/theme.css";
+@import "common-style/sizes.css";
 
 .nav-item.core-selected {
   color: var(--color-bright);
+}
+
+.nav-item {
+  margin: var(--size-space-small);
 }

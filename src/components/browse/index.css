@@ -160,8 +160,8 @@
 
 .namespace-box {
   background: var(--color-white-transparent);
+  font-size: var(--size-font-xsmall);
   height: 2.7em;
-  font-size: 0.7em;
   padding: 0 0.8em;
   margin-left: 3em !important;
   border-radius: 1px;
@@ -182,7 +182,7 @@
 }
 
 .search-box .input {
-  font-size: var(--size-space-small)
+  font-size: var(--size-font-xsmall)
 }
 
 .service-type-icon {
