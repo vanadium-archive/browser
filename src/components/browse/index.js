@@ -83,7 +83,12 @@ function create() {
     /*
      * State of the selected item-details component
      */
-    selectedItemDetails: selectedItemDetails.state
+    selectedItemDetails: selectedItemDetails.state,
+
+    /*
+     * Name of currently selected item
+     */
+    selectedItemName:  mercury.value(''),
 
   });
 
@@ -110,6 +115,8 @@ function create() {
     'setShortcut',
 
     'selectedItemDetails',
+
+    'selectItem',
 
     'error',
 
@@ -365,11 +372,7 @@ function renderItems(browseState, browseEvents, navEvents) {
 function renderItem(browseState, browseEvents, navEvents, item, isShortcut) {
   var selected = false;
 
-  // TODO(aghassemi) this causes a delay on highlighting since we wait until
-  // getNamespaceItem() resolves. Maybe this needs to keep track of its
-  // own selected name.
-  if (browseState.selectedItemDetails.item &&
-    browseState.selectedItemDetails.item.objectName === item.objectName) {
+  if (browseState.selectedItemName === item.objectName) {
     selected = true;
   }
 
@@ -425,7 +428,7 @@ function renderItem(browseState, browseEvents, navEvents, item, isShortcut) {
     h('a.label', {
       'href': '#',
       'ev-click': mercury.event(
-        browseEvents.selectedItemDetails.displayItemDetails, {
+        browseEvents.selectItem, {
           name: item.objectName
         })
     }, [
@@ -486,4 +489,8 @@ function wireUpEvents(state, events) {
   events.browseNamespace(browseNamespace.bind(null, state, events));
   events.getNamespaceSuggestions(getNamespaceSuggestions.bind(null, state));
   events.setShortcut(handleShortcuts.set.bind(null, state, events));
+  events.selectItem(function(data) {
+    state.selectedItemName.set(data.name);
+    events.selectedItemDetails.displayItemDetails(data);
+  });
 }
