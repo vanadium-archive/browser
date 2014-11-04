@@ -62,16 +62,28 @@ function glob(pattern) {
       var namespace = rt.newNamespace();
       return namespace.glob(pattern).stream;
     }).then(function updateResult(globStream) {
-      // TODO(aghassemi) namespace glob can return duplicate results, what do to
-      // with them?
+
       globStream.on('data', function createItem(result) {
         // Create an item as glob results come in and add the item to result
-        createNamespaceItem(result.name, result.servers)
-          .then(function(item) {
+        createNamespaceItem(result.name, result.servers).then(function(item) {
+          // TODO(aghassemi) namespace glob can return duplicate results, this
+          // temporary fix keeps the one that's a server. Is this correct?
+          // If a name can be more than one thing, UI needs change too.
+          var existingItem = globItemsObservArr.filter(function(curItem) {
+            return curItem().objectName === item().objectName;
+          }).get(0);
+          if (existingItem) {
+            // override the old one if new item is a server
+            if (item().isServer) {
+              var index = globItemsObservArr.indexOf(existingItem);
+              globItemsObservArr.put(index, item);
+            }
+          } else {
             globItemsObservArr.push(item);
-          }).catch(function(err) {
-            log.error('Failed to create item for "' + result.name + '"', err);
-          });
+          }
+        }).catch(function(err) {
+          log.error('Failed to create item for "' + result.name + '"', err);
+        });
       });
 
       globStream.on('error', function invalidateCacheAndLog(err) {
@@ -142,7 +154,7 @@ function getNamespaceItem(objectName) {
 function getChildren(parentName) {
   parentName = parentName || '';
   var pattern = '*';
-  if(parentName) {
+  if (parentName) {
     pattern = namespaceUtil.join(parentName, pattern);
   }
   return glob(pattern);
@@ -160,7 +172,7 @@ function getChildren(parentName) {
  */
 function search(parentName, pattern) {
   parentName = parentName || '';
-  if(parentName) {
+  if (parentName) {
     pattern = namespaceUtil.join(parentName, pattern);
   }
   return glob(pattern);

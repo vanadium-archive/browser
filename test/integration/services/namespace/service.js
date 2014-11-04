@@ -28,15 +28,16 @@ test('getChildren of default namespace root', function(t) {
   then(function assertResult(result) {
     // Wait until we receive the 2 top level items: cottage, house
     assertIsImmutable(t, result);
-    var numReturnedChildren;
+    var numMutations = 0;
     result(function(children) {
-      numReturnedChildren = children.length;
-      // TODO(aghassemi) Namespace client glob returns 4 items:
-      // 2 actual mounttables, 2 intermediary nodes. Is this correct behaviour?
-      if (numReturnedChildren === 4) {
+      numMutations++;
+      // TODO(aghassemi) namespace glob can return duplicate results, glob
+      // function replaces duplicate nodes so we wait until 4 mutations
+      // are done (two adds and two replaces of house and cottage)
+      if (numMutations === 4) {
         children = _.sortBy(children, 'mountedName');
-        assertCottage(children[1]);
-        assertHouse(children[3]);
+        assertCottage(children[0]);
+        assertHouse(children[1]);
         t.end();
       }
     });
