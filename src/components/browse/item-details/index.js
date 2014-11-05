@@ -45,7 +45,13 @@ function create() {
      * names to the relevant state used in the renderMethod module.
      * @type {map[string]mercury.struct}
      */
-    methodForm: mercury.varhash()
+    methodForm: mercury.varhash(),
+
+    /*
+     * Whether a loading indicator should be displayed instead of content
+     * @type {mercury.value<boolean>}
+     */
+    showLoadingIndicator: mercury.value(false)
   });
 
   var events = mercury.input([
@@ -68,17 +74,21 @@ function create() {
  * Render the item details page, which includes tabs for details and methods.
  */
 function render(state, events) {
-  if (!state.item) {
-    return;
-  }
-
   insertCss(css);
 
-  var detailsContent = renderDetailsContent(state, events);
+  var tabContent;
 
-  var methodsContent;
-  if (state.item.isServer && state.item.serverInfo.isAccessible) {
-    methodsContent = renderMethodsContent(state, events);
+  if(state.showLoadingIndicator) {
+    tabContent = h('paper-loading');
+  } else if(state.item) {
+    var detailsContent = renderDetailsContent(state, events);
+
+    var methodsContent;
+    if (state.item.isServer && state.item.serverInfo.isAccessible) {
+      methodsContent = renderMethodsContent(state, events);
+    }
+
+    tabContent = [detailsContent, methodsContent];
   }
 
   return [h('paper-tabs.tabs', {
@@ -94,7 +104,7 @@ function render(state, events) {
     h('core-selector', {
       'selected': new AttributeHook(state.selectedTabIndex)
     }, [
-      h('div.tab-content', [detailsContent, methodsContent]),
+      h('div.tab-content', tabContent),
     ])
   ];
 }

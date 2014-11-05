@@ -2,6 +2,7 @@
 @import "common-style/theme.css";
 @import "common-style/sizes.css";
 @import "common-style/a11y.css";
+@import "common-style/defaults.css";
 
 body {
   font-family: var(--font-family);
@@ -61,15 +62,4 @@ paper-toast.error::shadow .toast-text {
 paper-toast.ok::shadow .toast-text,
 paper-toast::shadow .toast-text.toast-action {
   color: var(--color-ok);
-}
-
-.splash {
-  background-image: url('images/spinner.gif');
-  background-repeat: no-repeat;
-  background-position: top left;
-  position: absolute;
-  height: 30px;
-  width: 30px;
-  left: 20px;
-  top: 20px;
 }

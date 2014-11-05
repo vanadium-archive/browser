@@ -1,4 +1,5 @@
 @import "./theme.css";
+@import "./sizes.css";
 
 .tabs {
   box-shadow: var(--shadow-bottom);
@@ -18,9 +19,13 @@
 }
 
 .tab-content {
-  padding: 0.5em;
+  padding: var(--size-space-xsmall);
 }
 
 :not(.core-selected).tab-content {
   display: none;
+}
+
+paper-loading {
+  margin: var(--size-space-xsmall);
 }

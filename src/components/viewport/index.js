@@ -61,7 +61,7 @@ function render(state, events) {
   insertCss(css);
 
   if(!state.navigation.pageKey) {
-    return mercury.h('div.splash', h('span.screen-reader', 'Loading'));
+    return mercury.h('paper-loading');
   }
 
   var panelAttributes = {

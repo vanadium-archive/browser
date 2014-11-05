@@ -1,0 +1,36 @@
+<!--
+
+`paper-loading` displays a loading spinner with optional label beside it.
+If label not specified, an off-screen text that reads 'loading' will be inserted
+for better screen-reader accessibility.
+
+Example:
+    <paper-loading></paper-loading>
+    <paper-loading label="Loading items..."></paper-loading>
+
+-->
+<polymer-element name="paper-loading" attributes="label">
+  <template>
+    <link href="paper-loading.css" rel="stylesheet">
+    <div class="frame">
+      <span class="spinner"></span>
+      <template if="{{label !== null}}">
+        <span class="label">{{ label }}</span>
+      </template>
+      <template if="{{label === null}}">
+        <span class="screen-reader">Loading</span>
+      </template>
+    </div>
+  </template>
+  <script>
+    Polymer({
+      /**
+       * Label to display beside loading spinner
+       *
+       * @attribute: label
+       * @type: string | null
+       */
+      label: null
+    });
+  </script>
+</polymer-element>
