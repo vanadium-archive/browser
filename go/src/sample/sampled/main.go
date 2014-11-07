@@ -15,22 +15,22 @@ import (
 )
 
 func makeServerAlarm() interface{} {
-	return sample.NewServerAlarm(mocks.NewAlarm())
+	return sample.AlarmServer(mocks.NewAlarm())
 }
 func makeServerLightSwitch() interface{} {
-	return sample.NewServerLightSwitch(mocks.NewLightSwitch())
+	return sample.LightSwitchServer(mocks.NewLightSwitch())
 }
 func makeServerPoolHeater() interface{} {
-	return sample.NewServerPoolHeater(mocks.NewPoolHeater())
+	return sample.PoolHeaterServer(mocks.NewPoolHeater())
 }
 func makeServerSmokeDetector() interface{} {
-	return sample.NewServerSmokeDetector(mocks.NewSmokeDetector())
+	return sample.SmokeDetectorServer(mocks.NewSmokeDetector())
 }
 func makeServerSpeaker() interface{} {
-	return sample.NewServerSpeaker(mocks.NewSpeaker())
+	return sample.SpeakerServer(mocks.NewSpeaker())
 }
 func makeServerSprinkler() interface{} {
-	return sample.NewServerSprinkler(mocks.NewSprinkler())
+	return sample.SprinklerServer(mocks.NewSprinkler())
 }
 
 func main() {

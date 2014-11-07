@@ -4,424 +4,410 @@
 package sample
 
 import (
-	// The non-user imports are prefixed with "_gen_" to prevent collisions.
-	_gen_io "io"
-	_gen_veyron2 "veyron.io/veyron/veyron2"
-	_gen_context "veyron.io/veyron/veyron2/context"
-	_gen_ipc "veyron.io/veyron/veyron2/ipc"
-	_gen_naming "veyron.io/veyron/veyron2/naming"
-	_gen_vdlutil "veyron.io/veyron/veyron2/vdl/vdlutil"
-	_gen_wiretype "veyron.io/veyron/veyron2/wiretype"
+	// The non-user imports are prefixed with "__" to prevent collisions.
+	__io "io"
+	__veyron2 "veyron.io/veyron/veyron2"
+	__context "veyron.io/veyron/veyron2/context"
+	__ipc "veyron.io/veyron/veyron2/ipc"
+	__vdlutil "veyron.io/veyron/veyron2/vdl/vdlutil"
+	__wiretype "veyron.io/veyron/veyron2/wiretype"
 )
 
-// TODO(bprosnitz) Remove this line once signatures are updated to use typevals.
-// It corrects a bug where _gen_wiretype is unused in VDL pacakges where only bootstrap types are used on interfaces.
-const _ = _gen_wiretype.TypeIDInvalid
+// TODO(toddw): Remove this line once the new signature support is done.
+// It corrects a bug where __wiretype is unused in VDL pacakges where only
+// bootstrap types are used on interfaces.
+const _ = __wiretype.TypeIDInvalid
 
+// SpeakerClientMethods is the client interface
+// containing Speaker methods.
+//
 // Speaker allows clients to control the music being played.
-// Speaker is the interface the client binds and uses.
-// Speaker_ExcludingUniversal is the interface without internal framework-added methods
-// to enable embedding without method collisions.  Not to be used directly by clients.
-type Speaker_ExcludingUniversal interface {
+type SpeakerClientMethods interface {
 	// Play starts or continues the current song.
-	Play(ctx _gen_context.T, opts ..._gen_ipc.CallOpt) (err error)
+	Play(__context.T, ...__ipc.CallOpt) error
 	// PlaySong plays back the given song title, if possible.
-	PlaySong(ctx _gen_context.T, songName string, opts ..._gen_ipc.CallOpt) (err error)
+	PlaySong(ctx __context.T, songName string, opts ...__ipc.CallOpt) error
 	// PlayStream plays the given stream of music data.
-	PlayStream(ctx _gen_context.T, opts ..._gen_ipc.CallOpt) (reply SpeakerPlayStreamCall, err error)
+	PlayStream(__context.T, ...__ipc.CallOpt) (SpeakerPlayStreamCall, error)
 	// GetSong retrieves the title of the Speaker's current song, if any.
-	GetSong(ctx _gen_context.T, opts ..._gen_ipc.CallOpt) (reply string, err error)
+	GetSong(__context.T, ...__ipc.CallOpt) (string, error)
 	// Pause playback of the Speaker's current song.
-	Pause(ctx _gen_context.T, opts ..._gen_ipc.CallOpt) (err error)
+	Pause(__context.T, ...__ipc.CallOpt) error
 	// Stop playback of the Speaker's current song.
-	Stop(ctx _gen_context.T, opts ..._gen_ipc.CallOpt) (err error)
+	Stop(__context.T, ...__ipc.CallOpt) error
 	// Volume adjusts the Speaker's volume.
-	Volume(ctx _gen_context.T, volumeLevel uint16, opts ..._gen_ipc.CallOpt) (err error)
+	Volume(ctx __context.T, volumeLevel uint16, opts ...__ipc.CallOpt) error
 	// GetVolume retrieves the Speaker's volume.
-	GetVolume(ctx _gen_context.T, opts ..._gen_ipc.CallOpt) (reply uint16, err error)
+	GetVolume(__context.T, ...__ipc.CallOpt) (uint16, error)
 	// AddSongs adds the list of given songs to the song library.
-	AddSongs(ctx _gen_context.T, songs []string, opts ..._gen_ipc.CallOpt) (err error)
+	AddSongs(ctx __context.T, songs []string, opts ...__ipc.CallOpt) error
 	// RemoveSongs removes the list of given songs from the song library.
-	RemoveSongs(ctx _gen_context.T, songs []string, opts ..._gen_ipc.CallOpt) (err error)
-}
-type Speaker interface {
-	_gen_ipc.UniversalServiceMethods
-	Speaker_ExcludingUniversal
+	RemoveSongs(ctx __context.T, songs []string, opts ...__ipc.CallOpt) error
 }
 
-// SpeakerService is the interface the server implements.
-type SpeakerService interface {
-
-	// Play starts or continues the current song.
-	Play(context _gen_ipc.ServerContext) (err error)
-	// PlaySong plays back the given song title, if possible.
-	PlaySong(context _gen_ipc.ServerContext, songName string) (err error)
-	// PlayStream plays the given stream of music data.
-	PlayStream(context _gen_ipc.ServerContext, stream SpeakerServicePlayStreamStream) (err error)
-	// GetSong retrieves the title of the Speaker's current song, if any.
-	GetSong(context _gen_ipc.ServerContext) (reply string, err error)
-	// Pause playback of the Speaker's current song.
-	Pause(context _gen_ipc.ServerContext) (err error)
-	// Stop playback of the Speaker's current song.
-	Stop(context _gen_ipc.ServerContext) (err error)
-	// Volume adjusts the Speaker's volume.
-	Volume(context _gen_ipc.ServerContext, volumeLevel uint16) (err error)
-	// GetVolume retrieves the Speaker's volume.
-	GetVolume(context _gen_ipc.ServerContext) (reply uint16, err error)
-	// AddSongs adds the list of given songs to the song library.
-	AddSongs(context _gen_ipc.ServerContext, songs []string) (err error)
-	// RemoveSongs removes the list of given songs from the song library.
-	RemoveSongs(context _gen_ipc.ServerContext, songs []string) (err error)
+// SpeakerClientStub adds universal methods to SpeakerClientMethods.
+type SpeakerClientStub interface {
+	SpeakerClientMethods
+	__ipc.UniversalServiceMethods
 }
 
-// SpeakerPlayStreamCall is the interface for call object of the method
-// PlayStream in the service interface Speaker.
-type SpeakerPlayStreamCall interface {
+// SpeakerClient returns a client stub for Speaker.
+func SpeakerClient(name string, opts ...__ipc.BindOpt) SpeakerClientStub {
+	var client __ipc.Client
+	for _, opt := range opts {
+		if clientOpt, ok := opt.(__ipc.Client); ok {
+			client = clientOpt
+		}
+	}
+	return implSpeakerClientStub{name, client}
+}
 
-	// SendStream returns the send portion of the stream
+type implSpeakerClientStub struct {
+	name   string
+	client __ipc.Client
+}
+
+func (c implSpeakerClientStub) c(ctx __context.T) __ipc.Client {
+	if c.client != nil {
+		return c.client
+	}
+	return __veyron2.RuntimeFromContext(ctx).Client()
+}
+
+func (c implSpeakerClientStub) Play(ctx __context.T, opts ...__ipc.CallOpt) (err error) {
+	var call __ipc.Call
+	if call, err = c.c(ctx).StartCall(ctx, c.name, "Play", nil, opts...); err != nil {
+		return
+	}
+	if ierr := call.Finish(&err); ierr != nil {
+		err = ierr
+	}
+	return
+}
+
+func (c implSpeakerClientStub) PlaySong(ctx __context.T, i0 string, opts ...__ipc.CallOpt) (err error) {
+	var call __ipc.Call
+	if call, err = c.c(ctx).StartCall(ctx, c.name, "PlaySong", []interface{}{i0}, opts...); err != nil {
+		return
+	}
+	if ierr := call.Finish(&err); ierr != nil {
+		err = ierr
+	}
+	return
+}
+
+func (c implSpeakerClientStub) PlayStream(ctx __context.T, opts ...__ipc.CallOpt) (ocall SpeakerPlayStreamCall, err error) {
+	var call __ipc.Call
+	if call, err = c.c(ctx).StartCall(ctx, c.name, "PlayStream", nil, opts...); err != nil {
+		return
+	}
+	ocall = &implSpeakerPlayStreamCall{call, implSpeakerPlayStreamClientSend{call}}
+	return
+}
+
+func (c implSpeakerClientStub) GetSong(ctx __context.T, opts ...__ipc.CallOpt) (o0 string, err error) {
+	var call __ipc.Call
+	if call, err = c.c(ctx).StartCall(ctx, c.name, "GetSong", nil, opts...); err != nil {
+		return
+	}
+	if ierr := call.Finish(&o0, &err); ierr != nil {
+		err = ierr
+	}
+	return
+}
+
+func (c implSpeakerClientStub) Pause(ctx __context.T, opts ...__ipc.CallOpt) (err error) {
+	var call __ipc.Call
+	if call, err = c.c(ctx).StartCall(ctx, c.name, "Pause", nil, opts...); err != nil {
+		return
+	}
+	if ierr := call.Finish(&err); ierr != nil {
+		err = ierr
+	}
+	return
+}
+
+func (c implSpeakerClientStub) Stop(ctx __context.T, opts ...__ipc.CallOpt) (err error) {
+	var call __ipc.Call
+	if call, err = c.c(ctx).StartCall(ctx, c.name, "Stop", nil, opts...); err != nil {
+		return
+	}
+	if ierr := call.Finish(&err); ierr != nil {
+		err = ierr
+	}
+	return
+}
+
+func (c implSpeakerClientStub) Volume(ctx __context.T, i0 uint16, opts ...__ipc.CallOpt) (err error) {
+	var call __ipc.Call
+	if call, err = c.c(ctx).StartCall(ctx, c.name, "Volume", []interface{}{i0}, opts...); err != nil {
+		return
+	}
+	if ierr := call.Finish(&err); ierr != nil {
+		err = ierr
+	}
+	return
+}
+
+func (c implSpeakerClientStub) GetVolume(ctx __context.T, opts ...__ipc.CallOpt) (o0 uint16, err error) {
+	var call __ipc.Call
+	if call, err = c.c(ctx).StartCall(ctx, c.name, "GetVolume", nil, opts...); err != nil {
+		return
+	}
+	if ierr := call.Finish(&o0, &err); ierr != nil {
+		err = ierr
+	}
+	return
+}
+
+func (c implSpeakerClientStub) AddSongs(ctx __context.T, i0 []string, opts ...__ipc.CallOpt) (err error) {
+	var call __ipc.Call
+	if call, err = c.c(ctx).StartCall(ctx, c.name, "AddSongs", []interface{}{i0}, opts...); err != nil {
+		return
+	}
+	if ierr := call.Finish(&err); ierr != nil {
+		err = ierr
+	}
+	return
+}
+
+func (c implSpeakerClientStub) RemoveSongs(ctx __context.T, i0 []string, opts ...__ipc.CallOpt) (err error) {
+	var call __ipc.Call
+	if call, err = c.c(ctx).StartCall(ctx, c.name, "RemoveSongs", []interface{}{i0}, opts...); err != nil {
+		return
+	}
+	if ierr := call.Finish(&err); ierr != nil {
+		err = ierr
+	}
+	return
+}
+
+func (c implSpeakerClientStub) Signature(ctx __context.T, opts ...__ipc.CallOpt) (o0 __ipc.ServiceSignature, err error) {
+	var call __ipc.Call
+	if call, err = c.c(ctx).StartCall(ctx, c.name, "Signature", nil, opts...); err != nil {
+		return
+	}
+	if ierr := call.Finish(&o0, &err); ierr != nil {
+		err = ierr
+	}
+	return
+}
+
+func (c implSpeakerClientStub) GetMethodTags(ctx __context.T, method string, opts ...__ipc.CallOpt) (o0 []interface{}, err error) {
+	var call __ipc.Call
+	if call, err = c.c(ctx).StartCall(ctx, c.name, "GetMethodTags", []interface{}{method}, opts...); err != nil {
+		return
+	}
+	if ierr := call.Finish(&o0, &err); ierr != nil {
+		err = ierr
+	}
+	return
+}
+
+// SpeakerPlayStreamClientStream is the client stream for Speaker.PlayStream.
+type SpeakerPlayStreamClientStream interface {
+	// SendStream returns the send side of the client stream.
 	SendStream() interface {
-		// Send places the item onto the output stream, blocking if there is no
-		// buffer space available.  Calls to Send after having called Close
-		// or Cancel will fail.  Any blocked Send calls will be unblocked upon
-		// calling Cancel.
+		// Send places the item onto the output stream.  Returns errors encountered
+		// while sending, or if Send is called after Close or Cancel.  Blocks if
+		// there is no buffer space; will unblock when buffer space is available or
+		// after Cancel.
 		Send(item []byte) error
-
-		// Close indicates to the server that no more items will be sent;
-		// server Recv calls will receive io.EOF after all sent items.  This is
-		// an optional call - it's used by streaming clients that need the
-		// server to receive the io.EOF terminator before the client calls
-		// Finish (for example, if the client needs to continue receiving items
-		// from the server after having finished sending).
-		// Calls to Close after having called Cancel will fail.
-		// Like Send, Close blocks when there's no buffer space available.
+		// Close indicates to the server that no more items will be sent; server
+		// Recv calls will receive io.EOF after all sent items.  This is an optional
+		// call - e.g. a client might call Close if it needs to continue receiving
+		// items from the server after it's done sending.  Returns errors
+		// encountered while closing, or if Close is called after Cancel.  Like
+		// Send, blocks if there is no buffer space available.
 		Close() error
 	}
+}
 
-	// Finish performs the equivalent of SendStream().Close, then blocks until the server
-	// is done, and returns the positional return values for call.
-	// If Cancel has been called, Finish will return immediately; the output of
-	// Finish could either be an error signalling cancelation, or the correct
-	// positional return values from the server depending on the timing of the
-	// call.
+// SpeakerPlayStreamCall represents the call returned from Speaker.PlayStream.
+type SpeakerPlayStreamCall interface {
+	SpeakerPlayStreamClientStream
+	// Finish performs the equivalent of SendStream().Close, then blocks until
+	// the server is done, and returns the positional return values for the call.
+	//
+	// Finish returns immediately if Cancel has been called; depending on the
+	// timing the output could either be an error signaling cancelation, or the
+	// valid positional return values from the server.
 	//
 	// Calling Finish is mandatory for releasing stream resources, unless Cancel
-	// has been called or any of the other methods return an error.
-	// Finish should be called at most once.
-	Finish() (err error)
-
-	// Cancel cancels the RPC, notifying the server to stop processing.  It
-	// is safe to call Cancel concurrently with any of the other stream methods.
+	// has been called or any of the other methods return an error.  Finish should
+	// be called at most once.
+	Finish() error
+	// Cancel cancels the RPC, notifying the server to stop processing.  It is
+	// safe to call Cancel concurrently with any of the other stream methods.
 	// Calling Cancel after Finish has returned is a no-op.
 	Cancel()
 }
 
-type implSpeakerPlayStreamStreamSender struct {
-	clientCall _gen_ipc.Call
+type implSpeakerPlayStreamClientSend struct {
+	call __ipc.Call
 }
 
-func (c *implSpeakerPlayStreamStreamSender) Send(item []byte) error {
-	return c.clientCall.Send(item)
+func (c *implSpeakerPlayStreamClientSend) Send(item []byte) error {
+	return c.call.Send(item)
+}
+func (c *implSpeakerPlayStreamClientSend) Close() error {
+	return c.call.CloseSend()
 }
 
-func (c *implSpeakerPlayStreamStreamSender) Close() error {
-	return c.clientCall.CloseSend()
-}
-
-// Implementation of the SpeakerPlayStreamCall interface that is not exported.
 type implSpeakerPlayStreamCall struct {
-	clientCall  _gen_ipc.Call
-	writeStream implSpeakerPlayStreamStreamSender
+	call __ipc.Call
+	send implSpeakerPlayStreamClientSend
 }
 
 func (c *implSpeakerPlayStreamCall) SendStream() interface {
 	Send(item []byte) error
 	Close() error
 } {
-	return &c.writeStream
+	return &c.send
 }
-
 func (c *implSpeakerPlayStreamCall) Finish() (err error) {
-	if ierr := c.clientCall.Finish(&err); ierr != nil {
+	if ierr := c.call.Finish(&err); ierr != nil {
 		err = ierr
 	}
 	return
 }
-
 func (c *implSpeakerPlayStreamCall) Cancel() {
-	c.clientCall.Cancel()
+	c.call.Cancel()
 }
 
-type implSpeakerServicePlayStreamStreamIterator struct {
-	serverCall _gen_ipc.ServerCall
-	val        []byte
-	err        error
-}
-
-func (s *implSpeakerServicePlayStreamStreamIterator) Advance() bool {
-	s.err = s.serverCall.Recv(&s.val)
-	return s.err == nil
-}
-
-func (s *implSpeakerServicePlayStreamStreamIterator) Value() []byte {
-	return s.val
-}
-
-func (s *implSpeakerServicePlayStreamStreamIterator) Err() error {
-	if s.err == _gen_io.EOF {
-		return nil
-	}
-	return s.err
-}
-
-// SpeakerServicePlayStreamStream is the interface for streaming responses of the method
-// PlayStream in the service interface Speaker.
-type SpeakerServicePlayStreamStream interface {
-	// RecvStream returns the recv portion of the stream
-	RecvStream() interface {
-		// Advance stages an element so the client can retrieve it
-		// with Value.  Advance returns true iff there is an
-		// element to retrieve.  The client must call Advance before
-		// calling Value.  Advance may block if an element is not
-		// immediately available.
-		Advance() bool
-
-		// Value returns the element that was staged by Advance.
-		// Value may panic if Advance returned false or was not
-		// called at all.  Value does not block.
-		Value() []byte
-
-		// Err returns a non-nil error iff the stream encountered
-		// any errors.  Err does not block.
-		Err() error
-	}
-}
-
-// Implementation of the SpeakerServicePlayStreamStream interface that is not exported.
-type implSpeakerServicePlayStreamStream struct {
-	reader implSpeakerServicePlayStreamStreamIterator
-}
-
-func (s *implSpeakerServicePlayStreamStream) RecvStream() interface {
-	// Advance stages an element so the client can retrieve it
-	// with Value.  Advance returns true iff there is an
-	// element to retrieve.  The client must call Advance before
-	// calling Value.  The client must call Cancel if it does
-	// not iterate through all elements (i.e. until Advance
-	// returns false).  Advance may block if an element is not
-	// immediately available.
-	Advance() bool
-
-	// Value returns the element that was staged by Advance.
-	// Value may panic if Advance returned false or was not
-	// called at all.  Value does not block.
-	Value() []byte
-
-	// Err returns a non-nil error iff the stream encountered
-	// any errors.  Err does not block.
-	Err() error
-} {
-	return &s.reader
-}
-
-// BindSpeaker returns the client stub implementing the Speaker
-// interface.
+// SpeakerServerMethods is the interface a server writer
+// implements for Speaker.
 //
-// If no _gen_ipc.Client is specified, the default _gen_ipc.Client in the
-// global Runtime is used.
-func BindSpeaker(name string, opts ..._gen_ipc.BindOpt) (Speaker, error) {
-	var client _gen_ipc.Client
-	switch len(opts) {
-	case 0:
-		// Do nothing.
-	case 1:
-		if clientOpt, ok := opts[0].(_gen_ipc.Client); opts[0] == nil || ok {
-			client = clientOpt
-		} else {
-			return nil, _gen_vdlutil.ErrUnrecognizedOption
-		}
-	default:
-		return nil, _gen_vdlutil.ErrTooManyOptionsToBind
-	}
-	stub := &clientStubSpeaker{defaultClient: client, name: name}
-
-	return stub, nil
+// Speaker allows clients to control the music being played.
+type SpeakerServerMethods interface {
+	// Play starts or continues the current song.
+	Play(__ipc.ServerContext) error
+	// PlaySong plays back the given song title, if possible.
+	PlaySong(ctx __ipc.ServerContext, songName string) error
+	// PlayStream plays the given stream of music data.
+	PlayStream(SpeakerPlayStreamContext) error
+	// GetSong retrieves the title of the Speaker's current song, if any.
+	GetSong(__ipc.ServerContext) (string, error)
+	// Pause playback of the Speaker's current song.
+	Pause(__ipc.ServerContext) error
+	// Stop playback of the Speaker's current song.
+	Stop(__ipc.ServerContext) error
+	// Volume adjusts the Speaker's volume.
+	Volume(ctx __ipc.ServerContext, volumeLevel uint16) error
+	// GetVolume retrieves the Speaker's volume.
+	GetVolume(__ipc.ServerContext) (uint16, error)
+	// AddSongs adds the list of given songs to the song library.
+	AddSongs(ctx __ipc.ServerContext, songs []string) error
+	// RemoveSongs removes the list of given songs from the song library.
+	RemoveSongs(ctx __ipc.ServerContext, songs []string) error
 }
 
-// NewServerSpeaker creates a new server stub.
-//
-// It takes a regular server implementing the SpeakerService
-// interface, and returns a new server stub.
-func NewServerSpeaker(server SpeakerService) interface{} {
-	return &ServerStubSpeaker{
-		service: server,
-	}
+// SpeakerServerStubMethods is the server interface containing
+// Speaker methods, as expected by ipc.Server.  The difference between
+// this interface and SpeakerServerMethods is that the first context
+// argument for each method is always ipc.ServerCall here, while it is either
+// ipc.ServerContext or a typed streaming context there.
+type SpeakerServerStubMethods interface {
+	// Play starts or continues the current song.
+	Play(__ipc.ServerCall) error
+	// PlaySong plays back the given song title, if possible.
+	PlaySong(call __ipc.ServerCall, songName string) error
+	// PlayStream plays the given stream of music data.
+	PlayStream(__ipc.ServerCall) error
+	// GetSong retrieves the title of the Speaker's current song, if any.
+	GetSong(__ipc.ServerCall) (string, error)
+	// Pause playback of the Speaker's current song.
+	Pause(__ipc.ServerCall) error
+	// Stop playback of the Speaker's current song.
+	Stop(__ipc.ServerCall) error
+	// Volume adjusts the Speaker's volume.
+	Volume(call __ipc.ServerCall, volumeLevel uint16) error
+	// GetVolume retrieves the Speaker's volume.
+	GetVolume(__ipc.ServerCall) (uint16, error)
+	// AddSongs adds the list of given songs to the song library.
+	AddSongs(call __ipc.ServerCall, songs []string) error
+	// RemoveSongs removes the list of given songs from the song library.
+	RemoveSongs(call __ipc.ServerCall, songs []string) error
 }
 
-// clientStubSpeaker implements Speaker.
-type clientStubSpeaker struct {
-	defaultClient _gen_ipc.Client
-	name          string
+// SpeakerServerStub adds universal methods to SpeakerServerStubMethods.
+type SpeakerServerStub interface {
+	SpeakerServerStubMethods
+	// GetMethodTags will be replaced with DescribeInterfaces.
+	GetMethodTags(call __ipc.ServerCall, method string) ([]interface{}, error)
+	// Signature will be replaced with DescribeInterfaces.
+	Signature(call __ipc.ServerCall) (__ipc.ServiceSignature, error)
 }
 
-func (__gen_c *clientStubSpeaker) client(ctx _gen_context.T) _gen_ipc.Client {
-	if __gen_c.defaultClient != nil {
-		return __gen_c.defaultClient
+// SpeakerServer returns a server stub for Speaker.
+// It converts an implementation of SpeakerServerMethods into
+// an object that may be used by ipc.Server.
+func SpeakerServer(impl SpeakerServerMethods) SpeakerServerStub {
+	stub := implSpeakerServerStub{
+		impl: impl,
 	}
-	return _gen_veyron2.RuntimeFromContext(ctx).Client()
+	// Initialize GlobState; always check the stub itself first, to handle the
+	// case where the user has the Glob method defined in their VDL source.
+	if gs := __ipc.NewGlobState(stub); gs != nil {
+		stub.gs = gs
+	} else if gs := __ipc.NewGlobState(impl); gs != nil {
+		stub.gs = gs
+	}
+	return stub
 }
 
-func (__gen_c *clientStubSpeaker) Play(ctx _gen_context.T, opts ..._gen_ipc.CallOpt) (err error) {
-	var call _gen_ipc.Call
-	if call, err = __gen_c.client(ctx).StartCall(ctx, __gen_c.name, "Play", nil, opts...); err != nil {
-		return
-	}
-	if ierr := call.Finish(&err); ierr != nil {
-		err = ierr
-	}
-	return
+type implSpeakerServerStub struct {
+	impl SpeakerServerMethods
+	gs   *__ipc.GlobState
 }
 
-func (__gen_c *clientStubSpeaker) PlaySong(ctx _gen_context.T, songName string, opts ..._gen_ipc.CallOpt) (err error) {
-	var call _gen_ipc.Call
-	if call, err = __gen_c.client(ctx).StartCall(ctx, __gen_c.name, "PlaySong", []interface{}{songName}, opts...); err != nil {
-		return
-	}
-	if ierr := call.Finish(&err); ierr != nil {
-		err = ierr
-	}
-	return
+func (s implSpeakerServerStub) Play(call __ipc.ServerCall) error {
+	return s.impl.Play(call)
 }
 
-func (__gen_c *clientStubSpeaker) PlayStream(ctx _gen_context.T, opts ..._gen_ipc.CallOpt) (reply SpeakerPlayStreamCall, err error) {
-	var call _gen_ipc.Call
-	if call, err = __gen_c.client(ctx).StartCall(ctx, __gen_c.name, "PlayStream", nil, opts...); err != nil {
-		return
-	}
-	reply = &implSpeakerPlayStreamCall{clientCall: call, writeStream: implSpeakerPlayStreamStreamSender{clientCall: call}}
-	return
+func (s implSpeakerServerStub) PlaySong(call __ipc.ServerCall, i0 string) error {
+	return s.impl.PlaySong(call, i0)
 }
 
-func (__gen_c *clientStubSpeaker) GetSong(ctx _gen_context.T, opts ..._gen_ipc.CallOpt) (reply string, err error) {
-	var call _gen_ipc.Call
-	if call, err = __gen_c.client(ctx).StartCall(ctx, __gen_c.name, "GetSong", nil, opts...); err != nil {
-		return
-	}
-	if ierr := call.Finish(&reply, &err); ierr != nil {
-		err = ierr
-	}
-	return
+func (s implSpeakerServerStub) PlayStream(call __ipc.ServerCall) error {
+	ctx := &implSpeakerPlayStreamContext{call, implSpeakerPlayStreamServerRecv{call: call}}
+	return s.impl.PlayStream(ctx)
 }
 
-func (__gen_c *clientStubSpeaker) Pause(ctx _gen_context.T, opts ..._gen_ipc.CallOpt) (err error) {
-	var call _gen_ipc.Call
-	if call, err = __gen_c.client(ctx).StartCall(ctx, __gen_c.name, "Pause", nil, opts...); err != nil {
-		return
-	}
-	if ierr := call.Finish(&err); ierr != nil {
-		err = ierr
-	}
-	return
+func (s implSpeakerServerStub) GetSong(call __ipc.ServerCall) (string, error) {
+	return s.impl.GetSong(call)
 }
 
-func (__gen_c *clientStubSpeaker) Stop(ctx _gen_context.T, opts ..._gen_ipc.CallOpt) (err error) {
-	var call _gen_ipc.Call
-	if call, err = __gen_c.client(ctx).StartCall(ctx, __gen_c.name, "Stop", nil, opts...); err != nil {
-		return
-	}
-	if ierr := call.Finish(&err); ierr != nil {
-		err = ierr
-	}
-	return
+func (s implSpeakerServerStub) Pause(call __ipc.ServerCall) error {
+	return s.impl.Pause(call)
 }
 
-func (__gen_c *clientStubSpeaker) Volume(ctx _gen_context.T, volumeLevel uint16, opts ..._gen_ipc.CallOpt) (err error) {
-	var call _gen_ipc.Call
-	if call, err = __gen_c.client(ctx).StartCall(ctx, __gen_c.name, "Volume", []interface{}{volumeLevel}, opts...); err != nil {
-		return
-	}
-	if ierr := call.Finish(&err); ierr != nil {
-		err = ierr
-	}
-	return
+func (s implSpeakerServerStub) Stop(call __ipc.ServerCall) error {
+	return s.impl.Stop(call)
 }
 
-func (__gen_c *clientStubSpeaker) GetVolume(ctx _gen_context.T, opts ..._gen_ipc.CallOpt) (reply uint16, err error) {
-	var call _gen_ipc.Call
-	if call, err = __gen_c.client(ctx).StartCall(ctx, __gen_c.name, "GetVolume", nil, opts...); err != nil {
-		return
-	}
-	if ierr := call.Finish(&reply, &err); ierr != nil {
-		err = ierr
-	}
-	return
+func (s implSpeakerServerStub) Volume(call __ipc.ServerCall, i0 uint16) error {
+	return s.impl.Volume(call, i0)
 }
 
-func (__gen_c *clientStubSpeaker) AddSongs(ctx _gen_context.T, songs []string, opts ..._gen_ipc.CallOpt) (err error) {
-	var call _gen_ipc.Call
-	if call, err = __gen_c.client(ctx).StartCall(ctx, __gen_c.name, "AddSongs", []interface{}{songs}, opts...); err != nil {
-		return
-	}
-	if ierr := call.Finish(&err); ierr != nil {
-		err = ierr
-	}
-	return
+func (s implSpeakerServerStub) GetVolume(call __ipc.ServerCall) (uint16, error) {
+	return s.impl.GetVolume(call)
 }
 
-func (__gen_c *clientStubSpeaker) RemoveSongs(ctx _gen_context.T, songs []string, opts ..._gen_ipc.CallOpt) (err error) {
-	var call _gen_ipc.Call
-	if call, err = __gen_c.client(ctx).StartCall(ctx, __gen_c.name, "RemoveSongs", []interface{}{songs}, opts...); err != nil {
-		return
-	}
-	if ierr := call.Finish(&err); ierr != nil {
-		err = ierr
-	}
-	return
+func (s implSpeakerServerStub) AddSongs(call __ipc.ServerCall, i0 []string) error {
+	return s.impl.AddSongs(call, i0)
 }
 
-func (__gen_c *clientStubSpeaker) UnresolveStep(ctx _gen_context.T, opts ..._gen_ipc.CallOpt) (reply []string, err error) {
-	var call _gen_ipc.Call
-	if call, err = __gen_c.client(ctx).StartCall(ctx, __gen_c.name, "UnresolveStep", nil, opts...); err != nil {
-		return
-	}
-	if ierr := call.Finish(&reply, &err); ierr != nil {
-		err = ierr
-	}
-	return
+func (s implSpeakerServerStub) RemoveSongs(call __ipc.ServerCall, i0 []string) error {
+	return s.impl.RemoveSongs(call, i0)
 }
 
-func (__gen_c *clientStubSpeaker) Signature(ctx _gen_context.T, opts ..._gen_ipc.CallOpt) (reply _gen_ipc.ServiceSignature, err error) {
-	var call _gen_ipc.Call
-	if call, err = __gen_c.client(ctx).StartCall(ctx, __gen_c.name, "Signature", nil, opts...); err != nil {
-		return
-	}
-	if ierr := call.Finish(&reply, &err); ierr != nil {
-		err = ierr
-	}
-	return
+func (s implSpeakerServerStub) VGlob() *__ipc.GlobState {
+	return s.gs
 }
 
-func (__gen_c *clientStubSpeaker) GetMethodTags(ctx _gen_context.T, method string, opts ..._gen_ipc.CallOpt) (reply []interface{}, err error) {
-	var call _gen_ipc.Call
-	if call, err = __gen_c.client(ctx).StartCall(ctx, __gen_c.name, "GetMethodTags", []interface{}{method}, opts...); err != nil {
-		return
-	}
-	if ierr := call.Finish(&reply, &err); ierr != nil {
-		err = ierr
-	}
-	return
-}
-
-// ServerStubSpeaker wraps a server that implements
-// SpeakerService and provides an object that satisfies
-// the requirements of veyron2/ipc.ReflectInvoker.
-type ServerStubSpeaker struct {
-	service SpeakerService
-}
-
-func (__gen_s *ServerStubSpeaker) GetMethodTags(call _gen_ipc.ServerCall, method string) ([]interface{}, error) {
-	// TODO(bprosnitz) GetMethodTags() will be replaces with Signature().
-	// Note: This exhibits some weird behavior like returning a nil error if the method isn't found.
-	// This will change when it is replaced with Signature().
+func (s implSpeakerServerStub) GetMethodTags(call __ipc.ServerCall, method string) ([]interface{}, error) {
+	// TODO(toddw): Replace with new DescribeInterfaces implementation.
 	switch method {
 	case "Play":
 		return []interface{}{}, nil
@@ -448,151 +434,138 @@ func (__gen_s *ServerStubSpeaker) GetMethodTags(call _gen_ipc.ServerCall, method
 	}
 }
 
-func (__gen_s *ServerStubSpeaker) Signature(call _gen_ipc.ServerCall) (_gen_ipc.ServiceSignature, error) {
-	result := _gen_ipc.ServiceSignature{Methods: make(map[string]_gen_ipc.MethodSignature)}
-	result.Methods["AddSongs"] = _gen_ipc.MethodSignature{
-		InArgs: []_gen_ipc.MethodArgument{
+func (s implSpeakerServerStub) Signature(call __ipc.ServerCall) (__ipc.ServiceSignature, error) {
+	// TODO(toddw) Replace with new DescribeInterfaces implementation.
+	result := __ipc.ServiceSignature{Methods: make(map[string]__ipc.MethodSignature)}
+	result.Methods["AddSongs"] = __ipc.MethodSignature{
+		InArgs: []__ipc.MethodArgument{
 			{Name: "songs", Type: 61},
 		},
-		OutArgs: []_gen_ipc.MethodArgument{
+		OutArgs: []__ipc.MethodArgument{
 			{Name: "", Type: 65},
 		},
 	}
-	result.Methods["GetSong"] = _gen_ipc.MethodSignature{
-		InArgs: []_gen_ipc.MethodArgument{},
-		OutArgs: []_gen_ipc.MethodArgument{
+	result.Methods["GetSong"] = __ipc.MethodSignature{
+		InArgs: []__ipc.MethodArgument{},
+		OutArgs: []__ipc.MethodArgument{
 			{Name: "", Type: 3},
 			{Name: "", Type: 65},
 		},
 	}
-	result.Methods["GetVolume"] = _gen_ipc.MethodSignature{
-		InArgs: []_gen_ipc.MethodArgument{},
-		OutArgs: []_gen_ipc.MethodArgument{
+	result.Methods["GetVolume"] = __ipc.MethodSignature{
+		InArgs: []__ipc.MethodArgument{},
+		OutArgs: []__ipc.MethodArgument{
 			{Name: "", Type: 51},
 			{Name: "", Type: 65},
 		},
 	}
-	result.Methods["Pause"] = _gen_ipc.MethodSignature{
-		InArgs: []_gen_ipc.MethodArgument{},
-		OutArgs: []_gen_ipc.MethodArgument{
+	result.Methods["Pause"] = __ipc.MethodSignature{
+		InArgs: []__ipc.MethodArgument{},
+		OutArgs: []__ipc.MethodArgument{
 			{Name: "", Type: 65},
 		},
 	}
-	result.Methods["Play"] = _gen_ipc.MethodSignature{
-		InArgs: []_gen_ipc.MethodArgument{},
-		OutArgs: []_gen_ipc.MethodArgument{
+	result.Methods["Play"] = __ipc.MethodSignature{
+		InArgs: []__ipc.MethodArgument{},
+		OutArgs: []__ipc.MethodArgument{
 			{Name: "", Type: 65},
 		},
 	}
-	result.Methods["PlaySong"] = _gen_ipc.MethodSignature{
-		InArgs: []_gen_ipc.MethodArgument{
+	result.Methods["PlaySong"] = __ipc.MethodSignature{
+		InArgs: []__ipc.MethodArgument{
 			{Name: "songName", Type: 3},
 		},
-		OutArgs: []_gen_ipc.MethodArgument{
+		OutArgs: []__ipc.MethodArgument{
 			{Name: "", Type: 65},
 		},
 	}
-	result.Methods["PlayStream"] = _gen_ipc.MethodSignature{
-		InArgs: []_gen_ipc.MethodArgument{},
-		OutArgs: []_gen_ipc.MethodArgument{
+	result.Methods["PlayStream"] = __ipc.MethodSignature{
+		InArgs: []__ipc.MethodArgument{},
+		OutArgs: []__ipc.MethodArgument{
 			{Name: "", Type: 65},
 		},
 		InStream: 67,
 	}
-	result.Methods["RemoveSongs"] = _gen_ipc.MethodSignature{
-		InArgs: []_gen_ipc.MethodArgument{
+	result.Methods["RemoveSongs"] = __ipc.MethodSignature{
+		InArgs: []__ipc.MethodArgument{
 			{Name: "songs", Type: 61},
 		},
-		OutArgs: []_gen_ipc.MethodArgument{
+		OutArgs: []__ipc.MethodArgument{
 			{Name: "", Type: 65},
 		},
 	}
-	result.Methods["Stop"] = _gen_ipc.MethodSignature{
-		InArgs: []_gen_ipc.MethodArgument{},
-		OutArgs: []_gen_ipc.MethodArgument{
+	result.Methods["Stop"] = __ipc.MethodSignature{
+		InArgs: []__ipc.MethodArgument{},
+		OutArgs: []__ipc.MethodArgument{
 			{Name: "", Type: 65},
 		},
 	}
-	result.Methods["Volume"] = _gen_ipc.MethodSignature{
-		InArgs: []_gen_ipc.MethodArgument{
+	result.Methods["Volume"] = __ipc.MethodSignature{
+		InArgs: []__ipc.MethodArgument{
 			{Name: "volumeLevel", Type: 51},
 		},
-		OutArgs: []_gen_ipc.MethodArgument{
+		OutArgs: []__ipc.MethodArgument{
 			{Name: "", Type: 65},
 		},
 	}
 
-	result.TypeDefs = []_gen_vdlutil.Any{
-		_gen_wiretype.NamedPrimitiveType{Type: 0x1, Name: "error", Tags: []string(nil)}, _gen_wiretype.NamedPrimitiveType{Type: 0x32, Name: "byte", Tags: []string(nil)}, _gen_wiretype.SliceType{Elem: 0x42, Name: "", Tags: []string(nil)}}
+	result.TypeDefs = []__vdlutil.Any{
+		__wiretype.NamedPrimitiveType{Type: 0x1, Name: "error", Tags: []string(nil)}, __wiretype.NamedPrimitiveType{Type: 0x32, Name: "byte", Tags: []string(nil)}, __wiretype.SliceType{Elem: 0x42, Name: "", Tags: []string(nil)}}
 
 	return result, nil
 }
 
-func (__gen_s *ServerStubSpeaker) UnresolveStep(call _gen_ipc.ServerCall) (reply []string, err error) {
-	if unresolver, ok := __gen_s.service.(_gen_ipc.Unresolver); ok {
-		return unresolver.UnresolveStep(call)
+// SpeakerPlayStreamServerStream is the server stream for Speaker.PlayStream.
+type SpeakerPlayStreamServerStream interface {
+	// RecvStream returns the receiver side of the server stream.
+	RecvStream() interface {
+		// Advance stages an item so that it may be retrieved via Value.  Returns
+		// true iff there is an item to retrieve.  Advance must be called before
+		// Value is called.  May block if an item is not available.
+		Advance() bool
+		// Value returns the item that was staged by Advance.  May panic if Advance
+		// returned false or was not called.  Never blocks.
+		Value() []byte
+		// Err returns any error encountered by Advance.  Never blocks.
+		Err() error
 	}
-	if call.Server() == nil {
-		return
+}
+
+// SpeakerPlayStreamContext represents the context passed to Speaker.PlayStream.
+type SpeakerPlayStreamContext interface {
+	__ipc.ServerContext
+	SpeakerPlayStreamServerStream
+}
+
+type implSpeakerPlayStreamServerRecv struct {
+	call __ipc.ServerCall
+	val  []byte
+	err  error
+}
+
+func (s *implSpeakerPlayStreamServerRecv) Advance() bool {
+	s.err = s.call.Recv(&s.val)
+	return s.err == nil
+}
+func (s *implSpeakerPlayStreamServerRecv) Value() []byte {
+	return s.val
+}
+func (s *implSpeakerPlayStreamServerRecv) Err() error {
+	if s.err == __io.EOF {
+		return nil
 	}
-	var published []string
-	if published, err = call.Server().Published(); err != nil || published == nil {
-		return
-	}
-	reply = make([]string, len(published))
-	for i, p := range published {
-		reply[i] = _gen_naming.Join(p, call.Name())
-	}
-	return
+	return s.err
 }
 
-func (__gen_s *ServerStubSpeaker) Play(call _gen_ipc.ServerCall) (err error) {
-	err = __gen_s.service.Play(call)
-	return
+type implSpeakerPlayStreamContext struct {
+	__ipc.ServerContext
+	recv implSpeakerPlayStreamServerRecv
 }
 
-func (__gen_s *ServerStubSpeaker) PlaySong(call _gen_ipc.ServerCall, songName string) (err error) {
-	err = __gen_s.service.PlaySong(call, songName)
-	return
-}
-
-func (__gen_s *ServerStubSpeaker) PlayStream(call _gen_ipc.ServerCall) (err error) {
-	stream := &implSpeakerServicePlayStreamStream{reader: implSpeakerServicePlayStreamStreamIterator{serverCall: call}}
-	err = __gen_s.service.PlayStream(call, stream)
-	return
-}
-
-func (__gen_s *ServerStubSpeaker) GetSong(call _gen_ipc.ServerCall) (reply string, err error) {
-	reply, err = __gen_s.service.GetSong(call)
-	return
-}
-
-func (__gen_s *ServerStubSpeaker) Pause(call _gen_ipc.ServerCall) (err error) {
-	err = __gen_s.service.Pause(call)
-	return
-}
-
-func (__gen_s *ServerStubSpeaker) Stop(call _gen_ipc.ServerCall) (err error) {
-	err = __gen_s.service.Stop(call)
-	return
-}
-
-func (__gen_s *ServerStubSpeaker) Volume(call _gen_ipc.ServerCall, volumeLevel uint16) (err error) {
-	err = __gen_s.service.Volume(call, volumeLevel)
-	return
-}
-
-func (__gen_s *ServerStubSpeaker) GetVolume(call _gen_ipc.ServerCall) (reply uint16, err error) {
-	reply, err = __gen_s.service.GetVolume(call)
-	return
-}
-
-func (__gen_s *ServerStubSpeaker) AddSongs(call _gen_ipc.ServerCall, songs []string) (err error) {
-	err = __gen_s.service.AddSongs(call, songs)
-	return
-}
-
-func (__gen_s *ServerStubSpeaker) RemoveSongs(call _gen_ipc.ServerCall, songs []string) (err error) {
-	err = __gen_s.service.RemoveSongs(call, songs)
-	return
+func (s *implSpeakerPlayStreamContext) RecvStream() interface {
+	Advance() bool
+	Value() []byte
+	Err() error
+} {
+	return &s.recv
 }

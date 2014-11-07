@@ -4,171 +4,192 @@
 package sample
 
 import (
-	// The non-user imports are prefixed with "_gen_" to prevent collisions.
-	_gen_veyron2 "veyron.io/veyron/veyron2"
-	_gen_context "veyron.io/veyron/veyron2/context"
-	_gen_ipc "veyron.io/veyron/veyron2/ipc"
-	_gen_naming "veyron.io/veyron/veyron2/naming"
-	_gen_vdlutil "veyron.io/veyron/veyron2/vdl/vdlutil"
-	_gen_wiretype "veyron.io/veyron/veyron2/wiretype"
+	// The non-user imports are prefixed with "__" to prevent collisions.
+	__veyron2 "veyron.io/veyron/veyron2"
+	__context "veyron.io/veyron/veyron2/context"
+	__ipc "veyron.io/veyron/veyron2/ipc"
+	__vdlutil "veyron.io/veyron/veyron2/vdl/vdlutil"
+	__wiretype "veyron.io/veyron/veyron2/wiretype"
 )
 
-// TODO(bprosnitz) Remove this line once signatures are updated to use typevals.
-// It corrects a bug where _gen_wiretype is unused in VDL pacakges where only bootstrap types are used on interfaces.
-const _ = _gen_wiretype.TypeIDInvalid
+// TODO(toddw): Remove this line once the new signature support is done.
+// It corrects a bug where __wiretype is unused in VDL pacakges where only
+// bootstrap types are used on interfaces.
+const _ = __wiretype.TypeIDInvalid
 
+// SprinklerClientMethods is the client interface
+// containing Sprinkler methods.
+//
 // Sprinkler allows clients to control the virtual sprinkler.
-// Sprinkler is the interface the client binds and uses.
-// Sprinkler_ExcludingUniversal is the interface without internal framework-added methods
-// to enable embedding without method collisions.  Not to be used directly by clients.
-type Sprinkler_ExcludingUniversal interface {
+type SprinklerClientMethods interface {
 	// Status retrieves the Sprinkler's status (i.e., active, idle)
-	Status(ctx _gen_context.T, opts ..._gen_ipc.CallOpt) (reply string, err error)
+	Status(__context.T, ...__ipc.CallOpt) (string, error)
 	// Start causes the Sprinkler to emit water for the given duration (in seconds).
-	Start(ctx _gen_context.T, duration uint16, opts ..._gen_ipc.CallOpt) (err error)
+	Start(ctx __context.T, duration uint16, opts ...__ipc.CallOpt) error
 	// Stop causes the Sprinkler to cease watering.
-	Stop(ctx _gen_context.T, opts ..._gen_ipc.CallOpt) (err error)
-}
-type Sprinkler interface {
-	_gen_ipc.UniversalServiceMethods
-	Sprinkler_ExcludingUniversal
+	Stop(__context.T, ...__ipc.CallOpt) error
 }
 
-// SprinklerService is the interface the server implements.
-type SprinklerService interface {
-
-	// Status retrieves the Sprinkler's status (i.e., active, idle)
-	Status(context _gen_ipc.ServerContext) (reply string, err error)
-	// Start causes the Sprinkler to emit water for the given duration (in seconds).
-	Start(context _gen_ipc.ServerContext, duration uint16) (err error)
-	// Stop causes the Sprinkler to cease watering.
-	Stop(context _gen_ipc.ServerContext) (err error)
+// SprinklerClientStub adds universal methods to SprinklerClientMethods.
+type SprinklerClientStub interface {
+	SprinklerClientMethods
+	__ipc.UniversalServiceMethods
 }
 
-// BindSprinkler returns the client stub implementing the Sprinkler
-// interface.
-//
-// If no _gen_ipc.Client is specified, the default _gen_ipc.Client in the
-// global Runtime is used.
-func BindSprinkler(name string, opts ..._gen_ipc.BindOpt) (Sprinkler, error) {
-	var client _gen_ipc.Client
-	switch len(opts) {
-	case 0:
-		// Do nothing.
-	case 1:
-		if clientOpt, ok := opts[0].(_gen_ipc.Client); opts[0] == nil || ok {
+// SprinklerClient returns a client stub for Sprinkler.
+func SprinklerClient(name string, opts ...__ipc.BindOpt) SprinklerClientStub {
+	var client __ipc.Client
+	for _, opt := range opts {
+		if clientOpt, ok := opt.(__ipc.Client); ok {
 			client = clientOpt
-		} else {
-			return nil, _gen_vdlutil.ErrUnrecognizedOption
 		}
-	default:
-		return nil, _gen_vdlutil.ErrTooManyOptionsToBind
 	}
-	stub := &clientStubSprinkler{defaultClient: client, name: name}
-
-	return stub, nil
+	return implSprinklerClientStub{name, client}
 }
 
-// NewServerSprinkler creates a new server stub.
+type implSprinklerClientStub struct {
+	name   string
+	client __ipc.Client
+}
+
+func (c implSprinklerClientStub) c(ctx __context.T) __ipc.Client {
+	if c.client != nil {
+		return c.client
+	}
+	return __veyron2.RuntimeFromContext(ctx).Client()
+}
+
+func (c implSprinklerClientStub) Status(ctx __context.T, opts ...__ipc.CallOpt) (o0 string, err error) {
+	var call __ipc.Call
+	if call, err = c.c(ctx).StartCall(ctx, c.name, "Status", nil, opts...); err != nil {
+		return
+	}
+	if ierr := call.Finish(&o0, &err); ierr != nil {
+		err = ierr
+	}
+	return
+}
+
+func (c implSprinklerClientStub) Start(ctx __context.T, i0 uint16, opts ...__ipc.CallOpt) (err error) {
+	var call __ipc.Call
+	if call, err = c.c(ctx).StartCall(ctx, c.name, "Start", []interface{}{i0}, opts...); err != nil {
+		return
+	}
+	if ierr := call.Finish(&err); ierr != nil {
+		err = ierr
+	}
+	return
+}
+
+func (c implSprinklerClientStub) Stop(ctx __context.T, opts ...__ipc.CallOpt) (err error) {
+	var call __ipc.Call
+	if call, err = c.c(ctx).StartCall(ctx, c.name, "Stop", nil, opts...); err != nil {
+		return
+	}
+	if ierr := call.Finish(&err); ierr != nil {
+		err = ierr
+	}
+	return
+}
+
+func (c implSprinklerClientStub) Signature(ctx __context.T, opts ...__ipc.CallOpt) (o0 __ipc.ServiceSignature, err error) {
+	var call __ipc.Call
+	if call, err = c.c(ctx).StartCall(ctx, c.name, "Signature", nil, opts...); err != nil {
+		return
+	}
+	if ierr := call.Finish(&o0, &err); ierr != nil {
+		err = ierr
+	}
+	return
+}
+
+func (c implSprinklerClientStub) GetMethodTags(ctx __context.T, method string, opts ...__ipc.CallOpt) (o0 []interface{}, err error) {
+	var call __ipc.Call
+	if call, err = c.c(ctx).StartCall(ctx, c.name, "GetMethodTags", []interface{}{method}, opts...); err != nil {
+		return
+	}
+	if ierr := call.Finish(&o0, &err); ierr != nil {
+		err = ierr
+	}
+	return
+}
+
+// SprinklerServerMethods is the interface a server writer
+// implements for Sprinkler.
 //
-// It takes a regular server implementing the SprinklerService
-// interface, and returns a new server stub.
-func NewServerSprinkler(server SprinklerService) interface{} {
-	return &ServerStubSprinkler{
-		service: server,
-	}
+// Sprinkler allows clients to control the virtual sprinkler.
+type SprinklerServerMethods interface {
+	// Status retrieves the Sprinkler's status (i.e., active, idle)
+	Status(__ipc.ServerContext) (string, error)
+	// Start causes the Sprinkler to emit water for the given duration (in seconds).
+	Start(ctx __ipc.ServerContext, duration uint16) error
+	// Stop causes the Sprinkler to cease watering.
+	Stop(__ipc.ServerContext) error
 }
 
-// clientStubSprinkler implements Sprinkler.
-type clientStubSprinkler struct {
-	defaultClient _gen_ipc.Client
-	name          string
+// SprinklerServerStubMethods is the server interface containing
+// Sprinkler methods, as expected by ipc.Server.  The difference between
+// this interface and SprinklerServerMethods is that the first context
+// argument for each method is always ipc.ServerCall here, while it is either
+// ipc.ServerContext or a typed streaming context there.
+type SprinklerServerStubMethods interface {
+	// Status retrieves the Sprinkler's status (i.e., active, idle)
+	Status(__ipc.ServerCall) (string, error)
+	// Start causes the Sprinkler to emit water for the given duration (in seconds).
+	Start(call __ipc.ServerCall, duration uint16) error
+	// Stop causes the Sprinkler to cease watering.
+	Stop(__ipc.ServerCall) error
 }
 
-func (__gen_c *clientStubSprinkler) client(ctx _gen_context.T) _gen_ipc.Client {
-	if __gen_c.defaultClient != nil {
-		return __gen_c.defaultClient
-	}
-	return _gen_veyron2.RuntimeFromContext(ctx).Client()
+// SprinklerServerStub adds universal methods to SprinklerServerStubMethods.
+type SprinklerServerStub interface {
+	SprinklerServerStubMethods
+	// GetMethodTags will be replaced with DescribeInterfaces.
+	GetMethodTags(call __ipc.ServerCall, method string) ([]interface{}, error)
+	// Signature will be replaced with DescribeInterfaces.
+	Signature(call __ipc.ServerCall) (__ipc.ServiceSignature, error)
 }
 
-func (__gen_c *clientStubSprinkler) Status(ctx _gen_context.T, opts ..._gen_ipc.CallOpt) (reply string, err error) {
-	var call _gen_ipc.Call
-	if call, err = __gen_c.client(ctx).StartCall(ctx, __gen_c.name, "Status", nil, opts...); err != nil {
-		return
+// SprinklerServer returns a server stub for Sprinkler.
+// It converts an implementation of SprinklerServerMethods into
+// an object that may be used by ipc.Server.
+func SprinklerServer(impl SprinklerServerMethods) SprinklerServerStub {
+	stub := implSprinklerServerStub{
+		impl: impl,
 	}
-	if ierr := call.Finish(&reply, &err); ierr != nil {
-		err = ierr
+	// Initialize GlobState; always check the stub itself first, to handle the
+	// case where the user has the Glob method defined in their VDL source.
+	if gs := __ipc.NewGlobState(stub); gs != nil {
+		stub.gs = gs
+	} else if gs := __ipc.NewGlobState(impl); gs != nil {
+		stub.gs = gs
 	}
-	return
+	return stub
 }
 
-func (__gen_c *clientStubSprinkler) Start(ctx _gen_context.T, duration uint16, opts ..._gen_ipc.CallOpt) (err error) {
-	var call _gen_ipc.Call
-	if call, err = __gen_c.client(ctx).StartCall(ctx, __gen_c.name, "Start", []interface{}{duration}, opts...); err != nil {
-		return
-	}
-	if ierr := call.Finish(&err); ierr != nil {
-		err = ierr
-	}
-	return
+type implSprinklerServerStub struct {
+	impl SprinklerServerMethods
+	gs   *__ipc.GlobState
 }
 
-func (__gen_c *clientStubSprinkler) Stop(ctx _gen_context.T, opts ..._gen_ipc.CallOpt) (err error) {
-	var call _gen_ipc.Call
-	if call, err = __gen_c.client(ctx).StartCall(ctx, __gen_c.name, "Stop", nil, opts...); err != nil {
-		return
-	}
-	if ierr := call.Finish(&err); ierr != nil {
-		err = ierr
-	}
-	return
+func (s implSprinklerServerStub) Status(call __ipc.ServerCall) (string, error) {
+	return s.impl.Status(call)
 }
 
-func (__gen_c *clientStubSprinkler) UnresolveStep(ctx _gen_context.T, opts ..._gen_ipc.CallOpt) (reply []string, err error) {
-	var call _gen_ipc.Call
-	if call, err = __gen_c.client(ctx).StartCall(ctx, __gen_c.name, "UnresolveStep", nil, opts...); err != nil {
-		return
-	}
-	if ierr := call.Finish(&reply, &err); ierr != nil {
-		err = ierr
-	}
-	return
+func (s implSprinklerServerStub) Start(call __ipc.ServerCall, i0 uint16) error {
+	return s.impl.Start(call, i0)
 }
 
-func (__gen_c *clientStubSprinkler) Signature(ctx _gen_context.T, opts ..._gen_ipc.CallOpt) (reply _gen_ipc.ServiceSignature, err error) {
-	var call _gen_ipc.Call
-	if call, err = __gen_c.client(ctx).StartCall(ctx, __gen_c.name, "Signature", nil, opts...); err != nil {
-		return
-	}
-	if ierr := call.Finish(&reply, &err); ierr != nil {
-		err = ierr
-	}
-	return
+func (s implSprinklerServerStub) Stop(call __ipc.ServerCall) error {
+	return s.impl.Stop(call)
 }
 
-func (__gen_c *clientStubSprinkler) GetMethodTags(ctx _gen_context.T, method string, opts ..._gen_ipc.CallOpt) (reply []interface{}, err error) {
-	var call _gen_ipc.Call
-	if call, err = __gen_c.client(ctx).StartCall(ctx, __gen_c.name, "GetMethodTags", []interface{}{method}, opts...); err != nil {
-		return
-	}
-	if ierr := call.Finish(&reply, &err); ierr != nil {
-		err = ierr
-	}
-	return
+func (s implSprinklerServerStub) VGlob() *__ipc.GlobState {
+	return s.gs
 }
 
-// ServerStubSprinkler wraps a server that implements
-// SprinklerService and provides an object that satisfies
-// the requirements of veyron2/ipc.ReflectInvoker.
-type ServerStubSprinkler struct {
-	service SprinklerService
-}
-
-func (__gen_s *ServerStubSprinkler) GetMethodTags(call _gen_ipc.ServerCall, method string) ([]interface{}, error) {
-	// TODO(bprosnitz) GetMethodTags() will be replaces with Signature().
-	// Note: This exhibits some weird behavior like returning a nil error if the method isn't found.
-	// This will change when it is replaced with Signature().
+func (s implSprinklerServerStub) GetMethodTags(call __ipc.ServerCall, method string) ([]interface{}, error) {
+	// TODO(toddw): Replace with new DescribeInterfaces implementation.
 	switch method {
 	case "Status":
 		return []interface{}{}, nil
@@ -181,65 +202,33 @@ func (__gen_s *ServerStubSprinkler) GetMethodTags(call _gen_ipc.ServerCall, meth
 	}
 }
 
-func (__gen_s *ServerStubSprinkler) Signature(call _gen_ipc.ServerCall) (_gen_ipc.ServiceSignature, error) {
-	result := _gen_ipc.ServiceSignature{Methods: make(map[string]_gen_ipc.MethodSignature)}
-	result.Methods["Start"] = _gen_ipc.MethodSignature{
-		InArgs: []_gen_ipc.MethodArgument{
+func (s implSprinklerServerStub) Signature(call __ipc.ServerCall) (__ipc.ServiceSignature, error) {
+	// TODO(toddw) Replace with new DescribeInterfaces implementation.
+	result := __ipc.ServiceSignature{Methods: make(map[string]__ipc.MethodSignature)}
+	result.Methods["Start"] = __ipc.MethodSignature{
+		InArgs: []__ipc.MethodArgument{
 			{Name: "duration", Type: 51},
 		},
-		OutArgs: []_gen_ipc.MethodArgument{
+		OutArgs: []__ipc.MethodArgument{
 			{Name: "", Type: 65},
 		},
 	}
-	result.Methods["Status"] = _gen_ipc.MethodSignature{
-		InArgs: []_gen_ipc.MethodArgument{},
-		OutArgs: []_gen_ipc.MethodArgument{
+	result.Methods["Status"] = __ipc.MethodSignature{
+		InArgs: []__ipc.MethodArgument{},
+		OutArgs: []__ipc.MethodArgument{
 			{Name: "", Type: 3},
 			{Name: "", Type: 65},
 		},
 	}
-	result.Methods["Stop"] = _gen_ipc.MethodSignature{
-		InArgs: []_gen_ipc.MethodArgument{},
-		OutArgs: []_gen_ipc.MethodArgument{
+	result.Methods["Stop"] = __ipc.MethodSignature{
+		InArgs: []__ipc.MethodArgument{},
+		OutArgs: []__ipc.MethodArgument{
 			{Name: "", Type: 65},
 		},
 	}
 
-	result.TypeDefs = []_gen_vdlutil.Any{
-		_gen_wiretype.NamedPrimitiveType{Type: 0x1, Name: "error", Tags: []string(nil)}}
+	result.TypeDefs = []__vdlutil.Any{
+		__wiretype.NamedPrimitiveType{Type: 0x1, Name: "error", Tags: []string(nil)}}
 
 	return result, nil
-}
-
-func (__gen_s *ServerStubSprinkler) UnresolveStep(call _gen_ipc.ServerCall) (reply []string, err error) {
-	if unresolver, ok := __gen_s.service.(_gen_ipc.Unresolver); ok {
-		return unresolver.UnresolveStep(call)
-	}
-	if call.Server() == nil {
-		return
-	}
-	var published []string
-	if published, err = call.Server().Published(); err != nil || published == nil {
-		return
-	}
-	reply = make([]string, len(published))
-	for i, p := range published {
-		reply[i] = _gen_naming.Join(p, call.Name())
-	}
-	return
-}
-
-func (__gen_s *ServerStubSprinkler) Status(call _gen_ipc.ServerCall) (reply string, err error) {
-	reply, err = __gen_s.service.Status(call)
-	return
-}
-
-func (__gen_s *ServerStubSprinkler) Start(call _gen_ipc.ServerCall, duration uint16) (err error) {
-	err = __gen_s.service.Start(call, duration)
-	return
-}
-
-func (__gen_s *ServerStubSprinkler) Stop(call _gen_ipc.ServerCall) (err error) {
-	err = __gen_s.service.Stop(call)
-	return
 }

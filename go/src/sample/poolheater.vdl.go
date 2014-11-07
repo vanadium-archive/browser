@@ -4,171 +4,192 @@
 package sample
 
 import (
-	// The non-user imports are prefixed with "_gen_" to prevent collisions.
-	_gen_veyron2 "veyron.io/veyron/veyron2"
-	_gen_context "veyron.io/veyron/veyron2/context"
-	_gen_ipc "veyron.io/veyron/veyron2/ipc"
-	_gen_naming "veyron.io/veyron/veyron2/naming"
-	_gen_vdlutil "veyron.io/veyron/veyron2/vdl/vdlutil"
-	_gen_wiretype "veyron.io/veyron/veyron2/wiretype"
+	// The non-user imports are prefixed with "__" to prevent collisions.
+	__veyron2 "veyron.io/veyron/veyron2"
+	__context "veyron.io/veyron/veyron2/context"
+	__ipc "veyron.io/veyron/veyron2/ipc"
+	__vdlutil "veyron.io/veyron/veyron2/vdl/vdlutil"
+	__wiretype "veyron.io/veyron/veyron2/wiretype"
 )
 
-// TODO(bprosnitz) Remove this line once signatures are updated to use typevals.
-// It corrects a bug where _gen_wiretype is unused in VDL pacakges where only bootstrap types are used on interfaces.
-const _ = _gen_wiretype.TypeIDInvalid
+// TODO(toddw): Remove this line once the new signature support is done.
+// It corrects a bug where __wiretype is unused in VDL pacakges where only
+// bootstrap types are used on interfaces.
+const _ = __wiretype.TypeIDInvalid
 
+// PoolHeaterClientMethods is the client interface
+// containing PoolHeater methods.
+//
 // PoolHeater allows clients to control when the pool is being heated.
-// PoolHeater is the interface the client binds and uses.
-// PoolHeater_ExcludingUniversal is the interface without internal framework-added methods
-// to enable embedding without method collisions.  Not to be used directly by clients.
-type PoolHeater_ExcludingUniversal interface {
+type PoolHeaterClientMethods interface {
 	// Status retrieves the PoolHeater's status (i.e., active, idle) and temperature.
-	Status(ctx _gen_context.T, opts ..._gen_ipc.CallOpt) (running string, temperature uint64, err error)
+	Status(__context.T, ...__ipc.CallOpt) (running string, temperature uint64, err error)
 	// Start informs the PoolHeater to heat the pool to the given temperature until the duration expires.
-	Start(ctx _gen_context.T, temperature uint64, duration uint64, opts ..._gen_ipc.CallOpt) (err error)
+	Start(ctx __context.T, temperature uint64, duration uint64, opts ...__ipc.CallOpt) error
 	// Stop informs the PoolHeater to cease heating the pool.
-	Stop(ctx _gen_context.T, opts ..._gen_ipc.CallOpt) (err error)
-}
-type PoolHeater interface {
-	_gen_ipc.UniversalServiceMethods
-	PoolHeater_ExcludingUniversal
+	Stop(__context.T, ...__ipc.CallOpt) error
 }
 
-// PoolHeaterService is the interface the server implements.
-type PoolHeaterService interface {
-
-	// Status retrieves the PoolHeater's status (i.e., active, idle) and temperature.
-	Status(context _gen_ipc.ServerContext) (running string, temperature uint64, err error)
-	// Start informs the PoolHeater to heat the pool to the given temperature until the duration expires.
-	Start(context _gen_ipc.ServerContext, temperature uint64, duration uint64) (err error)
-	// Stop informs the PoolHeater to cease heating the pool.
-	Stop(context _gen_ipc.ServerContext) (err error)
+// PoolHeaterClientStub adds universal methods to PoolHeaterClientMethods.
+type PoolHeaterClientStub interface {
+	PoolHeaterClientMethods
+	__ipc.UniversalServiceMethods
 }
 
-// BindPoolHeater returns the client stub implementing the PoolHeater
-// interface.
-//
-// If no _gen_ipc.Client is specified, the default _gen_ipc.Client in the
-// global Runtime is used.
-func BindPoolHeater(name string, opts ..._gen_ipc.BindOpt) (PoolHeater, error) {
-	var client _gen_ipc.Client
-	switch len(opts) {
-	case 0:
-		// Do nothing.
-	case 1:
-		if clientOpt, ok := opts[0].(_gen_ipc.Client); opts[0] == nil || ok {
+// PoolHeaterClient returns a client stub for PoolHeater.
+func PoolHeaterClient(name string, opts ...__ipc.BindOpt) PoolHeaterClientStub {
+	var client __ipc.Client
+	for _, opt := range opts {
+		if clientOpt, ok := opt.(__ipc.Client); ok {
 			client = clientOpt
-		} else {
-			return nil, _gen_vdlutil.ErrUnrecognizedOption
 		}
-	default:
-		return nil, _gen_vdlutil.ErrTooManyOptionsToBind
 	}
-	stub := &clientStubPoolHeater{defaultClient: client, name: name}
-
-	return stub, nil
+	return implPoolHeaterClientStub{name, client}
 }
 
-// NewServerPoolHeater creates a new server stub.
+type implPoolHeaterClientStub struct {
+	name   string
+	client __ipc.Client
+}
+
+func (c implPoolHeaterClientStub) c(ctx __context.T) __ipc.Client {
+	if c.client != nil {
+		return c.client
+	}
+	return __veyron2.RuntimeFromContext(ctx).Client()
+}
+
+func (c implPoolHeaterClientStub) Status(ctx __context.T, opts ...__ipc.CallOpt) (o0 string, o1 uint64, err error) {
+	var call __ipc.Call
+	if call, err = c.c(ctx).StartCall(ctx, c.name, "Status", nil, opts...); err != nil {
+		return
+	}
+	if ierr := call.Finish(&o0, &o1, &err); ierr != nil {
+		err = ierr
+	}
+	return
+}
+
+func (c implPoolHeaterClientStub) Start(ctx __context.T, i0 uint64, i1 uint64, opts ...__ipc.CallOpt) (err error) {
+	var call __ipc.Call
+	if call, err = c.c(ctx).StartCall(ctx, c.name, "Start", []interface{}{i0, i1}, opts...); err != nil {
+		return
+	}
+	if ierr := call.Finish(&err); ierr != nil {
+		err = ierr
+	}
+	return
+}
+
+func (c implPoolHeaterClientStub) Stop(ctx __context.T, opts ...__ipc.CallOpt) (err error) {
+	var call __ipc.Call
+	if call, err = c.c(ctx).StartCall(ctx, c.name, "Stop", nil, opts...); err != nil {
+		return
+	}
+	if ierr := call.Finish(&err); ierr != nil {
+		err = ierr
+	}
+	return
+}
+
+func (c implPoolHeaterClientStub) Signature(ctx __context.T, opts ...__ipc.CallOpt) (o0 __ipc.ServiceSignature, err error) {
+	var call __ipc.Call
+	if call, err = c.c(ctx).StartCall(ctx, c.name, "Signature", nil, opts...); err != nil {
+		return
+	}
+	if ierr := call.Finish(&o0, &err); ierr != nil {
+		err = ierr
+	}
+	return
+}
+
+func (c implPoolHeaterClientStub) GetMethodTags(ctx __context.T, method string, opts ...__ipc.CallOpt) (o0 []interface{}, err error) {
+	var call __ipc.Call
+	if call, err = c.c(ctx).StartCall(ctx, c.name, "GetMethodTags", []interface{}{method}, opts...); err != nil {
+		return
+	}
+	if ierr := call.Finish(&o0, &err); ierr != nil {
+		err = ierr
+	}
+	return
+}
+
+// PoolHeaterServerMethods is the interface a server writer
+// implements for PoolHeater.
 //
-// It takes a regular server implementing the PoolHeaterService
-// interface, and returns a new server stub.
-func NewServerPoolHeater(server PoolHeaterService) interface{} {
-	return &ServerStubPoolHeater{
-		service: server,
-	}
+// PoolHeater allows clients to control when the pool is being heated.
+type PoolHeaterServerMethods interface {
+	// Status retrieves the PoolHeater's status (i.e., active, idle) and temperature.
+	Status(__ipc.ServerContext) (running string, temperature uint64, err error)
+	// Start informs the PoolHeater to heat the pool to the given temperature until the duration expires.
+	Start(ctx __ipc.ServerContext, temperature uint64, duration uint64) error
+	// Stop informs the PoolHeater to cease heating the pool.
+	Stop(__ipc.ServerContext) error
 }
 
-// clientStubPoolHeater implements PoolHeater.
-type clientStubPoolHeater struct {
-	defaultClient _gen_ipc.Client
-	name          string
+// PoolHeaterServerStubMethods is the server interface containing
+// PoolHeater methods, as expected by ipc.Server.  The difference between
+// this interface and PoolHeaterServerMethods is that the first context
+// argument for each method is always ipc.ServerCall here, while it is either
+// ipc.ServerContext or a typed streaming context there.
+type PoolHeaterServerStubMethods interface {
+	// Status retrieves the PoolHeater's status (i.e., active, idle) and temperature.
+	Status(__ipc.ServerCall) (running string, temperature uint64, err error)
+	// Start informs the PoolHeater to heat the pool to the given temperature until the duration expires.
+	Start(call __ipc.ServerCall, temperature uint64, duration uint64) error
+	// Stop informs the PoolHeater to cease heating the pool.
+	Stop(__ipc.ServerCall) error
 }
 
-func (__gen_c *clientStubPoolHeater) client(ctx _gen_context.T) _gen_ipc.Client {
-	if __gen_c.defaultClient != nil {
-		return __gen_c.defaultClient
-	}
-	return _gen_veyron2.RuntimeFromContext(ctx).Client()
+// PoolHeaterServerStub adds universal methods to PoolHeaterServerStubMethods.
+type PoolHeaterServerStub interface {
+	PoolHeaterServerStubMethods
+	// GetMethodTags will be replaced with DescribeInterfaces.
+	GetMethodTags(call __ipc.ServerCall, method string) ([]interface{}, error)
+	// Signature will be replaced with DescribeInterfaces.
+	Signature(call __ipc.ServerCall) (__ipc.ServiceSignature, error)
 }
 
-func (__gen_c *clientStubPoolHeater) Status(ctx _gen_context.T, opts ..._gen_ipc.CallOpt) (running string, temperature uint64, err error) {
-	var call _gen_ipc.Call
-	if call, err = __gen_c.client(ctx).StartCall(ctx, __gen_c.name, "Status", nil, opts...); err != nil {
-		return
+// PoolHeaterServer returns a server stub for PoolHeater.
+// It converts an implementation of PoolHeaterServerMethods into
+// an object that may be used by ipc.Server.
+func PoolHeaterServer(impl PoolHeaterServerMethods) PoolHeaterServerStub {
+	stub := implPoolHeaterServerStub{
+		impl: impl,
 	}
-	if ierr := call.Finish(&running, &temperature, &err); ierr != nil {
-		err = ierr
+	// Initialize GlobState; always check the stub itself first, to handle the
+	// case where the user has the Glob method defined in their VDL source.
+	if gs := __ipc.NewGlobState(stub); gs != nil {
+		stub.gs = gs
+	} else if gs := __ipc.NewGlobState(impl); gs != nil {
+		stub.gs = gs
 	}
-	return
+	return stub
 }
 
-func (__gen_c *clientStubPoolHeater) Start(ctx _gen_context.T, temperature uint64, duration uint64, opts ..._gen_ipc.CallOpt) (err error) {
-	var call _gen_ipc.Call
-	if call, err = __gen_c.client(ctx).StartCall(ctx, __gen_c.name, "Start", []interface{}{temperature, duration}, opts...); err != nil {
-		return
-	}
-	if ierr := call.Finish(&err); ierr != nil {
-		err = ierr
-	}
-	return
+type implPoolHeaterServerStub struct {
+	impl PoolHeaterServerMethods
+	gs   *__ipc.GlobState
 }
 
-func (__gen_c *clientStubPoolHeater) Stop(ctx _gen_context.T, opts ..._gen_ipc.CallOpt) (err error) {
-	var call _gen_ipc.Call
-	if call, err = __gen_c.client(ctx).StartCall(ctx, __gen_c.name, "Stop", nil, opts...); err != nil {
-		return
-	}
-	if ierr := call.Finish(&err); ierr != nil {
-		err = ierr
-	}
-	return
+func (s implPoolHeaterServerStub) Status(call __ipc.ServerCall) (string, uint64, error) {
+	return s.impl.Status(call)
 }
 
-func (__gen_c *clientStubPoolHeater) UnresolveStep(ctx _gen_context.T, opts ..._gen_ipc.CallOpt) (reply []string, err error) {
-	var call _gen_ipc.Call
-	if call, err = __gen_c.client(ctx).StartCall(ctx, __gen_c.name, "UnresolveStep", nil, opts...); err != nil {
-		return
-	}
-	if ierr := call.Finish(&reply, &err); ierr != nil {
-		err = ierr
-	}
-	return
+func (s implPoolHeaterServerStub) Start(call __ipc.ServerCall, i0 uint64, i1 uint64) error {
+	return s.impl.Start(call, i0, i1)
 }
 
-func (__gen_c *clientStubPoolHeater) Signature(ctx _gen_context.T, opts ..._gen_ipc.CallOpt) (reply _gen_ipc.ServiceSignature, err error) {
-	var call _gen_ipc.Call
-	if call, err = __gen_c.client(ctx).StartCall(ctx, __gen_c.name, "Signature", nil, opts...); err != nil {
-		return
-	}
-	if ierr := call.Finish(&reply, &err); ierr != nil {
-		err = ierr
-	}
-	return
+func (s implPoolHeaterServerStub) Stop(call __ipc.ServerCall) error {
+	return s.impl.Stop(call)
 }
 
-func (__gen_c *clientStubPoolHeater) GetMethodTags(ctx _gen_context.T, method string, opts ..._gen_ipc.CallOpt) (reply []interface{}, err error) {
-	var call _gen_ipc.Call
-	if call, err = __gen_c.client(ctx).StartCall(ctx, __gen_c.name, "GetMethodTags", []interface{}{method}, opts...); err != nil {
-		return
-	}
-	if ierr := call.Finish(&reply, &err); ierr != nil {
-		err = ierr
-	}
-	return
+func (s implPoolHeaterServerStub) VGlob() *__ipc.GlobState {
+	return s.gs
 }
 
-// ServerStubPoolHeater wraps a server that implements
-// PoolHeaterService and provides an object that satisfies
-// the requirements of veyron2/ipc.ReflectInvoker.
-type ServerStubPoolHeater struct {
-	service PoolHeaterService
-}
-
-func (__gen_s *ServerStubPoolHeater) GetMethodTags(call _gen_ipc.ServerCall, method string) ([]interface{}, error) {
-	// TODO(bprosnitz) GetMethodTags() will be replaces with Signature().
-	// Note: This exhibits some weird behavior like returning a nil error if the method isn't found.
-	// This will change when it is replaced with Signature().
+func (s implPoolHeaterServerStub) GetMethodTags(call __ipc.ServerCall, method string) ([]interface{}, error) {
+	// TODO(toddw): Replace with new DescribeInterfaces implementation.
 	switch method {
 	case "Status":
 		return []interface{}{}, nil
@@ -181,67 +202,35 @@ func (__gen_s *ServerStubPoolHeater) GetMethodTags(call _gen_ipc.ServerCall, met
 	}
 }
 
-func (__gen_s *ServerStubPoolHeater) Signature(call _gen_ipc.ServerCall) (_gen_ipc.ServiceSignature, error) {
-	result := _gen_ipc.ServiceSignature{Methods: make(map[string]_gen_ipc.MethodSignature)}
-	result.Methods["Start"] = _gen_ipc.MethodSignature{
-		InArgs: []_gen_ipc.MethodArgument{
+func (s implPoolHeaterServerStub) Signature(call __ipc.ServerCall) (__ipc.ServiceSignature, error) {
+	// TODO(toddw) Replace with new DescribeInterfaces implementation.
+	result := __ipc.ServiceSignature{Methods: make(map[string]__ipc.MethodSignature)}
+	result.Methods["Start"] = __ipc.MethodSignature{
+		InArgs: []__ipc.MethodArgument{
 			{Name: "temperature", Type: 53},
 			{Name: "duration", Type: 53},
 		},
-		OutArgs: []_gen_ipc.MethodArgument{
+		OutArgs: []__ipc.MethodArgument{
 			{Name: "", Type: 65},
 		},
 	}
-	result.Methods["Status"] = _gen_ipc.MethodSignature{
-		InArgs: []_gen_ipc.MethodArgument{},
-		OutArgs: []_gen_ipc.MethodArgument{
+	result.Methods["Status"] = __ipc.MethodSignature{
+		InArgs: []__ipc.MethodArgument{},
+		OutArgs: []__ipc.MethodArgument{
 			{Name: "running", Type: 3},
 			{Name: "temperature", Type: 53},
 			{Name: "err", Type: 65},
 		},
 	}
-	result.Methods["Stop"] = _gen_ipc.MethodSignature{
-		InArgs: []_gen_ipc.MethodArgument{},
-		OutArgs: []_gen_ipc.MethodArgument{
+	result.Methods["Stop"] = __ipc.MethodSignature{
+		InArgs: []__ipc.MethodArgument{},
+		OutArgs: []__ipc.MethodArgument{
 			{Name: "", Type: 65},
 		},
 	}
 
-	result.TypeDefs = []_gen_vdlutil.Any{
-		_gen_wiretype.NamedPrimitiveType{Type: 0x1, Name: "error", Tags: []string(nil)}}
+	result.TypeDefs = []__vdlutil.Any{
+		__wiretype.NamedPrimitiveType{Type: 0x1, Name: "error", Tags: []string(nil)}}
 
 	return result, nil
-}
-
-func (__gen_s *ServerStubPoolHeater) UnresolveStep(call _gen_ipc.ServerCall) (reply []string, err error) {
-	if unresolver, ok := __gen_s.service.(_gen_ipc.Unresolver); ok {
-		return unresolver.UnresolveStep(call)
-	}
-	if call.Server() == nil {
-		return
-	}
-	var published []string
-	if published, err = call.Server().Published(); err != nil || published == nil {
-		return
-	}
-	reply = make([]string, len(published))
-	for i, p := range published {
-		reply[i] = _gen_naming.Join(p, call.Name())
-	}
-	return
-}
-
-func (__gen_s *ServerStubPoolHeater) Status(call _gen_ipc.ServerCall) (running string, temperature uint64, err error) {
-	running, temperature, err = __gen_s.service.Status(call)
-	return
-}
-
-func (__gen_s *ServerStubPoolHeater) Start(call _gen_ipc.ServerCall, temperature uint64, duration uint64) (err error) {
-	err = __gen_s.service.Start(call, temperature, duration)
-	return
-}
-
-func (__gen_s *ServerStubPoolHeater) Stop(call _gen_ipc.ServerCall) (err error) {
-	err = __gen_s.service.Stop(call)
-	return
 }

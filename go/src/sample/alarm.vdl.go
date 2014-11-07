@@ -4,201 +4,234 @@
 package sample
 
 import (
-	// The non-user imports are prefixed with "_gen_" to prevent collisions.
-	_gen_veyron2 "veyron.io/veyron/veyron2"
-	_gen_context "veyron.io/veyron/veyron2/context"
-	_gen_ipc "veyron.io/veyron/veyron2/ipc"
-	_gen_naming "veyron.io/veyron/veyron2/naming"
-	_gen_vdlutil "veyron.io/veyron/veyron2/vdl/vdlutil"
-	_gen_wiretype "veyron.io/veyron/veyron2/wiretype"
+	// The non-user imports are prefixed with "__" to prevent collisions.
+	__veyron2 "veyron.io/veyron/veyron2"
+	__context "veyron.io/veyron/veyron2/context"
+	__ipc "veyron.io/veyron/veyron2/ipc"
+	__vdlutil "veyron.io/veyron/veyron2/vdl/vdlutil"
+	__wiretype "veyron.io/veyron/veyron2/wiretype"
 )
 
-// TODO(bprosnitz) Remove this line once signatures are updated to use typevals.
-// It corrects a bug where _gen_wiretype is unused in VDL pacakges where only bootstrap types are used on interfaces.
-const _ = _gen_wiretype.TypeIDInvalid
+// TODO(toddw): Remove this line once the new signature support is done.
+// It corrects a bug where __wiretype is unused in VDL pacakges where only
+// bootstrap types are used on interfaces.
+const _ = __wiretype.TypeIDInvalid
 
+// AlarmClientMethods is the client interface
+// containing Alarm methods.
+//
 // Alarm allows clients to manipulate an alarm and query its status.
-// Alarm is the interface the client binds and uses.
-// Alarm_ExcludingUniversal is the interface without internal framework-added methods
-// to enable embedding without method collisions.  Not to be used directly by clients.
-type Alarm_ExcludingUniversal interface {
+type AlarmClientMethods interface {
 	// Status returns the current status of the Alarm (i.e., armed, unarmed, panicking).
-	Status(ctx _gen_context.T, opts ..._gen_ipc.CallOpt) (reply string, err error)
+	Status(__context.T, ...__ipc.CallOpt) (string, error)
 	// Arm sets the Alarm to the armed state.
-	Arm(ctx _gen_context.T, opts ..._gen_ipc.CallOpt) (err error)
+	Arm(__context.T, ...__ipc.CallOpt) error
 	// DelayArm sets the Alarm to the armed state after the given delay in seconds.
-	DelayArm(ctx _gen_context.T, seconds float32, opts ..._gen_ipc.CallOpt) (err error)
+	DelayArm(ctx __context.T, seconds float32, opts ...__ipc.CallOpt) error
 	// Unarm sets the Alarm to the unarmed state.
-	Unarm(ctx _gen_context.T, opts ..._gen_ipc.CallOpt) (err error)
+	Unarm(__context.T, ...__ipc.CallOpt) error
 	// Panic sets the Alarm to the panicking state.
-	Panic(ctx _gen_context.T, opts ..._gen_ipc.CallOpt) (err error)
-}
-type Alarm interface {
-	_gen_ipc.UniversalServiceMethods
-	Alarm_ExcludingUniversal
+	Panic(__context.T, ...__ipc.CallOpt) error
 }
 
-// AlarmService is the interface the server implements.
-type AlarmService interface {
-
-	// Status returns the current status of the Alarm (i.e., armed, unarmed, panicking).
-	Status(context _gen_ipc.ServerContext) (reply string, err error)
-	// Arm sets the Alarm to the armed state.
-	Arm(context _gen_ipc.ServerContext) (err error)
-	// DelayArm sets the Alarm to the armed state after the given delay in seconds.
-	DelayArm(context _gen_ipc.ServerContext, seconds float32) (err error)
-	// Unarm sets the Alarm to the unarmed state.
-	Unarm(context _gen_ipc.ServerContext) (err error)
-	// Panic sets the Alarm to the panicking state.
-	Panic(context _gen_ipc.ServerContext) (err error)
+// AlarmClientStub adds universal methods to AlarmClientMethods.
+type AlarmClientStub interface {
+	AlarmClientMethods
+	__ipc.UniversalServiceMethods
 }
 
-// BindAlarm returns the client stub implementing the Alarm
-// interface.
-//
-// If no _gen_ipc.Client is specified, the default _gen_ipc.Client in the
-// global Runtime is used.
-func BindAlarm(name string, opts ..._gen_ipc.BindOpt) (Alarm, error) {
-	var client _gen_ipc.Client
-	switch len(opts) {
-	case 0:
-		// Do nothing.
-	case 1:
-		if clientOpt, ok := opts[0].(_gen_ipc.Client); opts[0] == nil || ok {
+// AlarmClient returns a client stub for Alarm.
+func AlarmClient(name string, opts ...__ipc.BindOpt) AlarmClientStub {
+	var client __ipc.Client
+	for _, opt := range opts {
+		if clientOpt, ok := opt.(__ipc.Client); ok {
 			client = clientOpt
-		} else {
-			return nil, _gen_vdlutil.ErrUnrecognizedOption
 		}
-	default:
-		return nil, _gen_vdlutil.ErrTooManyOptionsToBind
 	}
-	stub := &clientStubAlarm{defaultClient: client, name: name}
-
-	return stub, nil
+	return implAlarmClientStub{name, client}
 }
 
-// NewServerAlarm creates a new server stub.
+type implAlarmClientStub struct {
+	name   string
+	client __ipc.Client
+}
+
+func (c implAlarmClientStub) c(ctx __context.T) __ipc.Client {
+	if c.client != nil {
+		return c.client
+	}
+	return __veyron2.RuntimeFromContext(ctx).Client()
+}
+
+func (c implAlarmClientStub) Status(ctx __context.T, opts ...__ipc.CallOpt) (o0 string, err error) {
+	var call __ipc.Call
+	if call, err = c.c(ctx).StartCall(ctx, c.name, "Status", nil, opts...); err != nil {
+		return
+	}
+	if ierr := call.Finish(&o0, &err); ierr != nil {
+		err = ierr
+	}
+	return
+}
+
+func (c implAlarmClientStub) Arm(ctx __context.T, opts ...__ipc.CallOpt) (err error) {
+	var call __ipc.Call
+	if call, err = c.c(ctx).StartCall(ctx, c.name, "Arm", nil, opts...); err != nil {
+		return
+	}
+	if ierr := call.Finish(&err); ierr != nil {
+		err = ierr
+	}
+	return
+}
+
+func (c implAlarmClientStub) DelayArm(ctx __context.T, i0 float32, opts ...__ipc.CallOpt) (err error) {
+	var call __ipc.Call
+	if call, err = c.c(ctx).StartCall(ctx, c.name, "DelayArm", []interface{}{i0}, opts...); err != nil {
+		return
+	}
+	if ierr := call.Finish(&err); ierr != nil {
+		err = ierr
+	}
+	return
+}
+
+func (c implAlarmClientStub) Unarm(ctx __context.T, opts ...__ipc.CallOpt) (err error) {
+	var call __ipc.Call
+	if call, err = c.c(ctx).StartCall(ctx, c.name, "Unarm", nil, opts...); err != nil {
+		return
+	}
+	if ierr := call.Finish(&err); ierr != nil {
+		err = ierr
+	}
+	return
+}
+
+func (c implAlarmClientStub) Panic(ctx __context.T, opts ...__ipc.CallOpt) (err error) {
+	var call __ipc.Call
+	if call, err = c.c(ctx).StartCall(ctx, c.name, "Panic", nil, opts...); err != nil {
+		return
+	}
+	if ierr := call.Finish(&err); ierr != nil {
+		err = ierr
+	}
+	return
+}
+
+func (c implAlarmClientStub) Signature(ctx __context.T, opts ...__ipc.CallOpt) (o0 __ipc.ServiceSignature, err error) {
+	var call __ipc.Call
+	if call, err = c.c(ctx).StartCall(ctx, c.name, "Signature", nil, opts...); err != nil {
+		return
+	}
+	if ierr := call.Finish(&o0, &err); ierr != nil {
+		err = ierr
+	}
+	return
+}
+
+func (c implAlarmClientStub) GetMethodTags(ctx __context.T, method string, opts ...__ipc.CallOpt) (o0 []interface{}, err error) {
+	var call __ipc.Call
+	if call, err = c.c(ctx).StartCall(ctx, c.name, "GetMethodTags", []interface{}{method}, opts...); err != nil {
+		return
+	}
+	if ierr := call.Finish(&o0, &err); ierr != nil {
+		err = ierr
+	}
+	return
+}
+
+// AlarmServerMethods is the interface a server writer
+// implements for Alarm.
 //
-// It takes a regular server implementing the AlarmService
-// interface, and returns a new server stub.
-func NewServerAlarm(server AlarmService) interface{} {
-	return &ServerStubAlarm{
-		service: server,
-	}
+// Alarm allows clients to manipulate an alarm and query its status.
+type AlarmServerMethods interface {
+	// Status returns the current status of the Alarm (i.e., armed, unarmed, panicking).
+	Status(__ipc.ServerContext) (string, error)
+	// Arm sets the Alarm to the armed state.
+	Arm(__ipc.ServerContext) error
+	// DelayArm sets the Alarm to the armed state after the given delay in seconds.
+	DelayArm(ctx __ipc.ServerContext, seconds float32) error
+	// Unarm sets the Alarm to the unarmed state.
+	Unarm(__ipc.ServerContext) error
+	// Panic sets the Alarm to the panicking state.
+	Panic(__ipc.ServerContext) error
 }
 
-// clientStubAlarm implements Alarm.
-type clientStubAlarm struct {
-	defaultClient _gen_ipc.Client
-	name          string
+// AlarmServerStubMethods is the server interface containing
+// Alarm methods, as expected by ipc.Server.  The difference between
+// this interface and AlarmServerMethods is that the first context
+// argument for each method is always ipc.ServerCall here, while it is either
+// ipc.ServerContext or a typed streaming context there.
+type AlarmServerStubMethods interface {
+	// Status returns the current status of the Alarm (i.e., armed, unarmed, panicking).
+	Status(__ipc.ServerCall) (string, error)
+	// Arm sets the Alarm to the armed state.
+	Arm(__ipc.ServerCall) error
+	// DelayArm sets the Alarm to the armed state after the given delay in seconds.
+	DelayArm(call __ipc.ServerCall, seconds float32) error
+	// Unarm sets the Alarm to the unarmed state.
+	Unarm(__ipc.ServerCall) error
+	// Panic sets the Alarm to the panicking state.
+	Panic(__ipc.ServerCall) error
 }
 
-func (__gen_c *clientStubAlarm) client(ctx _gen_context.T) _gen_ipc.Client {
-	if __gen_c.defaultClient != nil {
-		return __gen_c.defaultClient
-	}
-	return _gen_veyron2.RuntimeFromContext(ctx).Client()
+// AlarmServerStub adds universal methods to AlarmServerStubMethods.
+type AlarmServerStub interface {
+	AlarmServerStubMethods
+	// GetMethodTags will be replaced with DescribeInterfaces.
+	GetMethodTags(call __ipc.ServerCall, method string) ([]interface{}, error)
+	// Signature will be replaced with DescribeInterfaces.
+	Signature(call __ipc.ServerCall) (__ipc.ServiceSignature, error)
 }
 
-func (__gen_c *clientStubAlarm) Status(ctx _gen_context.T, opts ..._gen_ipc.CallOpt) (reply string, err error) {
-	var call _gen_ipc.Call
-	if call, err = __gen_c.client(ctx).StartCall(ctx, __gen_c.name, "Status", nil, opts...); err != nil {
-		return
+// AlarmServer returns a server stub for Alarm.
+// It converts an implementation of AlarmServerMethods into
+// an object that may be used by ipc.Server.
+func AlarmServer(impl AlarmServerMethods) AlarmServerStub {
+	stub := implAlarmServerStub{
+		impl: impl,
 	}
-	if ierr := call.Finish(&reply, &err); ierr != nil {
-		err = ierr
+	// Initialize GlobState; always check the stub itself first, to handle the
+	// case where the user has the Glob method defined in their VDL source.
+	if gs := __ipc.NewGlobState(stub); gs != nil {
+		stub.gs = gs
+	} else if gs := __ipc.NewGlobState(impl); gs != nil {
+		stub.gs = gs
 	}
-	return
+	return stub
 }
 
-func (__gen_c *clientStubAlarm) Arm(ctx _gen_context.T, opts ..._gen_ipc.CallOpt) (err error) {
-	var call _gen_ipc.Call
-	if call, err = __gen_c.client(ctx).StartCall(ctx, __gen_c.name, "Arm", nil, opts...); err != nil {
-		return
-	}
-	if ierr := call.Finish(&err); ierr != nil {
-		err = ierr
-	}
-	return
+type implAlarmServerStub struct {
+	impl AlarmServerMethods
+	gs   *__ipc.GlobState
 }
 
-func (__gen_c *clientStubAlarm) DelayArm(ctx _gen_context.T, seconds float32, opts ..._gen_ipc.CallOpt) (err error) {
-	var call _gen_ipc.Call
-	if call, err = __gen_c.client(ctx).StartCall(ctx, __gen_c.name, "DelayArm", []interface{}{seconds}, opts...); err != nil {
-		return
-	}
-	if ierr := call.Finish(&err); ierr != nil {
-		err = ierr
-	}
-	return
+func (s implAlarmServerStub) Status(call __ipc.ServerCall) (string, error) {
+	return s.impl.Status(call)
 }
 
-func (__gen_c *clientStubAlarm) Unarm(ctx _gen_context.T, opts ..._gen_ipc.CallOpt) (err error) {
-	var call _gen_ipc.Call
-	if call, err = __gen_c.client(ctx).StartCall(ctx, __gen_c.name, "Unarm", nil, opts...); err != nil {
-		return
-	}
-	if ierr := call.Finish(&err); ierr != nil {
-		err = ierr
-	}
-	return
+func (s implAlarmServerStub) Arm(call __ipc.ServerCall) error {
+	return s.impl.Arm(call)
 }
 
-func (__gen_c *clientStubAlarm) Panic(ctx _gen_context.T, opts ..._gen_ipc.CallOpt) (err error) {
-	var call _gen_ipc.Call
-	if call, err = __gen_c.client(ctx).StartCall(ctx, __gen_c.name, "Panic", nil, opts...); err != nil {
-		return
-	}
-	if ierr := call.Finish(&err); ierr != nil {
-		err = ierr
-	}
-	return
+func (s implAlarmServerStub) DelayArm(call __ipc.ServerCall, i0 float32) error {
+	return s.impl.DelayArm(call, i0)
 }
 
-func (__gen_c *clientStubAlarm) UnresolveStep(ctx _gen_context.T, opts ..._gen_ipc.CallOpt) (reply []string, err error) {
-	var call _gen_ipc.Call
-	if call, err = __gen_c.client(ctx).StartCall(ctx, __gen_c.name, "UnresolveStep", nil, opts...); err != nil {
-		return
-	}
-	if ierr := call.Finish(&reply, &err); ierr != nil {
-		err = ierr
-	}
-	return
+func (s implAlarmServerStub) Unarm(call __ipc.ServerCall) error {
+	return s.impl.Unarm(call)
 }
 
-func (__gen_c *clientStubAlarm) Signature(ctx _gen_context.T, opts ..._gen_ipc.CallOpt) (reply _gen_ipc.ServiceSignature, err error) {
-	var call _gen_ipc.Call
-	if call, err = __gen_c.client(ctx).StartCall(ctx, __gen_c.name, "Signature", nil, opts...); err != nil {
-		return
-	}
-	if ierr := call.Finish(&reply, &err); ierr != nil {
-		err = ierr
-	}
-	return
+func (s implAlarmServerStub) Panic(call __ipc.ServerCall) error {
+	return s.impl.Panic(call)
 }
 
-func (__gen_c *clientStubAlarm) GetMethodTags(ctx _gen_context.T, method string, opts ..._gen_ipc.CallOpt) (reply []interface{}, err error) {
-	var call _gen_ipc.Call
-	if call, err = __gen_c.client(ctx).StartCall(ctx, __gen_c.name, "GetMethodTags", []interface{}{method}, opts...); err != nil {
-		return
-	}
-	if ierr := call.Finish(&reply, &err); ierr != nil {
-		err = ierr
-	}
-	return
+func (s implAlarmServerStub) VGlob() *__ipc.GlobState {
+	return s.gs
 }
 
-// ServerStubAlarm wraps a server that implements
-// AlarmService and provides an object that satisfies
-// the requirements of veyron2/ipc.ReflectInvoker.
-type ServerStubAlarm struct {
-	service AlarmService
-}
-
-func (__gen_s *ServerStubAlarm) GetMethodTags(call _gen_ipc.ServerCall, method string) ([]interface{}, error) {
-	// TODO(bprosnitz) GetMethodTags() will be replaces with Signature().
-	// Note: This exhibits some weird behavior like returning a nil error if the method isn't found.
-	// This will change when it is replaced with Signature().
+func (s implAlarmServerStub) GetMethodTags(call __ipc.ServerCall, method string) ([]interface{}, error) {
+	// TODO(toddw): Replace with new DescribeInterfaces implementation.
 	switch method {
 	case "Status":
 		return []interface{}{}, nil
@@ -215,87 +248,45 @@ func (__gen_s *ServerStubAlarm) GetMethodTags(call _gen_ipc.ServerCall, method s
 	}
 }
 
-func (__gen_s *ServerStubAlarm) Signature(call _gen_ipc.ServerCall) (_gen_ipc.ServiceSignature, error) {
-	result := _gen_ipc.ServiceSignature{Methods: make(map[string]_gen_ipc.MethodSignature)}
-	result.Methods["Arm"] = _gen_ipc.MethodSignature{
-		InArgs: []_gen_ipc.MethodArgument{},
-		OutArgs: []_gen_ipc.MethodArgument{
+func (s implAlarmServerStub) Signature(call __ipc.ServerCall) (__ipc.ServiceSignature, error) {
+	// TODO(toddw) Replace with new DescribeInterfaces implementation.
+	result := __ipc.ServiceSignature{Methods: make(map[string]__ipc.MethodSignature)}
+	result.Methods["Arm"] = __ipc.MethodSignature{
+		InArgs: []__ipc.MethodArgument{},
+		OutArgs: []__ipc.MethodArgument{
 			{Name: "", Type: 65},
 		},
 	}
-	result.Methods["DelayArm"] = _gen_ipc.MethodSignature{
-		InArgs: []_gen_ipc.MethodArgument{
+	result.Methods["DelayArm"] = __ipc.MethodSignature{
+		InArgs: []__ipc.MethodArgument{
 			{Name: "seconds", Type: 25},
 		},
-		OutArgs: []_gen_ipc.MethodArgument{
+		OutArgs: []__ipc.MethodArgument{
 			{Name: "", Type: 65},
 		},
 	}
-	result.Methods["Panic"] = _gen_ipc.MethodSignature{
-		InArgs: []_gen_ipc.MethodArgument{},
-		OutArgs: []_gen_ipc.MethodArgument{
+	result.Methods["Panic"] = __ipc.MethodSignature{
+		InArgs: []__ipc.MethodArgument{},
+		OutArgs: []__ipc.MethodArgument{
 			{Name: "", Type: 65},
 		},
 	}
-	result.Methods["Status"] = _gen_ipc.MethodSignature{
-		InArgs: []_gen_ipc.MethodArgument{},
-		OutArgs: []_gen_ipc.MethodArgument{
+	result.Methods["Status"] = __ipc.MethodSignature{
+		InArgs: []__ipc.MethodArgument{},
+		OutArgs: []__ipc.MethodArgument{
 			{Name: "", Type: 3},
 			{Name: "", Type: 65},
 		},
 	}
-	result.Methods["Unarm"] = _gen_ipc.MethodSignature{
-		InArgs: []_gen_ipc.MethodArgument{},
-		OutArgs: []_gen_ipc.MethodArgument{
+	result.Methods["Unarm"] = __ipc.MethodSignature{
+		InArgs: []__ipc.MethodArgument{},
+		OutArgs: []__ipc.MethodArgument{
 			{Name: "", Type: 65},
 		},
 	}
 
-	result.TypeDefs = []_gen_vdlutil.Any{
-		_gen_wiretype.NamedPrimitiveType{Type: 0x1, Name: "error", Tags: []string(nil)}}
+	result.TypeDefs = []__vdlutil.Any{
+		__wiretype.NamedPrimitiveType{Type: 0x1, Name: "error", Tags: []string(nil)}}
 
 	return result, nil
-}
-
-func (__gen_s *ServerStubAlarm) UnresolveStep(call _gen_ipc.ServerCall) (reply []string, err error) {
-	if unresolver, ok := __gen_s.service.(_gen_ipc.Unresolver); ok {
-		return unresolver.UnresolveStep(call)
-	}
-	if call.Server() == nil {
-		return
-	}
-	var published []string
-	if published, err = call.Server().Published(); err != nil || published == nil {
-		return
-	}
-	reply = make([]string, len(published))
-	for i, p := range published {
-		reply[i] = _gen_naming.Join(p, call.Name())
-	}
-	return
-}
-
-func (__gen_s *ServerStubAlarm) Status(call _gen_ipc.ServerCall) (reply string, err error) {
-	reply, err = __gen_s.service.Status(call)
-	return
-}
-
-func (__gen_s *ServerStubAlarm) Arm(call _gen_ipc.ServerCall) (err error) {
-	err = __gen_s.service.Arm(call)
-	return
-}
-
-func (__gen_s *ServerStubAlarm) DelayArm(call _gen_ipc.ServerCall, seconds float32) (err error) {
-	err = __gen_s.service.DelayArm(call, seconds)
-	return
-}
-
-func (__gen_s *ServerStubAlarm) Unarm(call _gen_ipc.ServerCall) (err error) {
-	err = __gen_s.service.Unarm(call)
-	return
-}
-
-func (__gen_s *ServerStubAlarm) Panic(call _gen_ipc.ServerCall) (err error) {
-	err = __gen_s.service.Panic(call)
-	return
 }

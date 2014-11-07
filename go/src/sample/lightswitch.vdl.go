@@ -4,104 +4,73 @@
 package sample
 
 import (
-	// The non-user imports are prefixed with "_gen_" to prevent collisions.
-	_gen_veyron2 "veyron.io/veyron/veyron2"
-	_gen_context "veyron.io/veyron/veyron2/context"
-	_gen_ipc "veyron.io/veyron/veyron2/ipc"
-	_gen_naming "veyron.io/veyron/veyron2/naming"
-	_gen_vdlutil "veyron.io/veyron/veyron2/vdl/vdlutil"
-	_gen_wiretype "veyron.io/veyron/veyron2/wiretype"
+	// The non-user imports are prefixed with "__" to prevent collisions.
+	__veyron2 "veyron.io/veyron/veyron2"
+	__context "veyron.io/veyron/veyron2/context"
+	__ipc "veyron.io/veyron/veyron2/ipc"
+	__vdlutil "veyron.io/veyron/veyron2/vdl/vdlutil"
+	__wiretype "veyron.io/veyron/veyron2/wiretype"
 )
 
-// TODO(bprosnitz) Remove this line once signatures are updated to use typevals.
-// It corrects a bug where _gen_wiretype is unused in VDL pacakges where only bootstrap types are used on interfaces.
-const _ = _gen_wiretype.TypeIDInvalid
+// TODO(toddw): Remove this line once the new signature support is done.
+// It corrects a bug where __wiretype is unused in VDL pacakges where only
+// bootstrap types are used on interfaces.
+const _ = __wiretype.TypeIDInvalid
 
+// LightSwitchClientMethods is the client interface
+// containing LightSwitch methods.
+//
 // LightSwitch allows clients to manipulate a virtual light switch.
-// LightSwitch is the interface the client binds and uses.
-// LightSwitch_ExcludingUniversal is the interface without internal framework-added methods
-// to enable embedding without method collisions.  Not to be used directly by clients.
-type LightSwitch_ExcludingUniversal interface {
+type LightSwitchClientMethods interface {
 	// Status indicates whether the light is on or off.
-	Status(ctx _gen_context.T, opts ..._gen_ipc.CallOpt) (reply string, err error)
+	Status(__context.T, ...__ipc.CallOpt) (string, error)
 	// FlipSwitch sets the light to on or off, depending on the input.
-	FlipSwitch(ctx _gen_context.T, toOn bool, opts ..._gen_ipc.CallOpt) (err error)
-}
-type LightSwitch interface {
-	_gen_ipc.UniversalServiceMethods
-	LightSwitch_ExcludingUniversal
+	FlipSwitch(ctx __context.T, toOn bool, opts ...__ipc.CallOpt) error
 }
 
-// LightSwitchService is the interface the server implements.
-type LightSwitchService interface {
-
-	// Status indicates whether the light is on or off.
-	Status(context _gen_ipc.ServerContext) (reply string, err error)
-	// FlipSwitch sets the light to on or off, depending on the input.
-	FlipSwitch(context _gen_ipc.ServerContext, toOn bool) (err error)
+// LightSwitchClientStub adds universal methods to LightSwitchClientMethods.
+type LightSwitchClientStub interface {
+	LightSwitchClientMethods
+	__ipc.UniversalServiceMethods
 }
 
-// BindLightSwitch returns the client stub implementing the LightSwitch
-// interface.
-//
-// If no _gen_ipc.Client is specified, the default _gen_ipc.Client in the
-// global Runtime is used.
-func BindLightSwitch(name string, opts ..._gen_ipc.BindOpt) (LightSwitch, error) {
-	var client _gen_ipc.Client
-	switch len(opts) {
-	case 0:
-		// Do nothing.
-	case 1:
-		if clientOpt, ok := opts[0].(_gen_ipc.Client); opts[0] == nil || ok {
+// LightSwitchClient returns a client stub for LightSwitch.
+func LightSwitchClient(name string, opts ...__ipc.BindOpt) LightSwitchClientStub {
+	var client __ipc.Client
+	for _, opt := range opts {
+		if clientOpt, ok := opt.(__ipc.Client); ok {
 			client = clientOpt
-		} else {
-			return nil, _gen_vdlutil.ErrUnrecognizedOption
 		}
-	default:
-		return nil, _gen_vdlutil.ErrTooManyOptionsToBind
 	}
-	stub := &clientStubLightSwitch{defaultClient: client, name: name}
-
-	return stub, nil
+	return implLightSwitchClientStub{name, client}
 }
 
-// NewServerLightSwitch creates a new server stub.
-//
-// It takes a regular server implementing the LightSwitchService
-// interface, and returns a new server stub.
-func NewServerLightSwitch(server LightSwitchService) interface{} {
-	return &ServerStubLightSwitch{
-		service: server,
+type implLightSwitchClientStub struct {
+	name   string
+	client __ipc.Client
+}
+
+func (c implLightSwitchClientStub) c(ctx __context.T) __ipc.Client {
+	if c.client != nil {
+		return c.client
 	}
+	return __veyron2.RuntimeFromContext(ctx).Client()
 }
 
-// clientStubLightSwitch implements LightSwitch.
-type clientStubLightSwitch struct {
-	defaultClient _gen_ipc.Client
-	name          string
-}
-
-func (__gen_c *clientStubLightSwitch) client(ctx _gen_context.T) _gen_ipc.Client {
-	if __gen_c.defaultClient != nil {
-		return __gen_c.defaultClient
-	}
-	return _gen_veyron2.RuntimeFromContext(ctx).Client()
-}
-
-func (__gen_c *clientStubLightSwitch) Status(ctx _gen_context.T, opts ..._gen_ipc.CallOpt) (reply string, err error) {
-	var call _gen_ipc.Call
-	if call, err = __gen_c.client(ctx).StartCall(ctx, __gen_c.name, "Status", nil, opts...); err != nil {
+func (c implLightSwitchClientStub) Status(ctx __context.T, opts ...__ipc.CallOpt) (o0 string, err error) {
+	var call __ipc.Call
+	if call, err = c.c(ctx).StartCall(ctx, c.name, "Status", nil, opts...); err != nil {
 		return
 	}
-	if ierr := call.Finish(&reply, &err); ierr != nil {
+	if ierr := call.Finish(&o0, &err); ierr != nil {
 		err = ierr
 	}
 	return
 }
 
-func (__gen_c *clientStubLightSwitch) FlipSwitch(ctx _gen_context.T, toOn bool, opts ..._gen_ipc.CallOpt) (err error) {
-	var call _gen_ipc.Call
-	if call, err = __gen_c.client(ctx).StartCall(ctx, __gen_c.name, "FlipSwitch", []interface{}{toOn}, opts...); err != nil {
+func (c implLightSwitchClientStub) FlipSwitch(ctx __context.T, i0 bool, opts ...__ipc.CallOpt) (err error) {
+	var call __ipc.Call
+	if call, err = c.c(ctx).StartCall(ctx, c.name, "FlipSwitch", []interface{}{i0}, opts...); err != nil {
 		return
 	}
 	if ierr := call.Finish(&err); ierr != nil {
@@ -110,50 +79,96 @@ func (__gen_c *clientStubLightSwitch) FlipSwitch(ctx _gen_context.T, toOn bool, 
 	return
 }
 
-func (__gen_c *clientStubLightSwitch) UnresolveStep(ctx _gen_context.T, opts ..._gen_ipc.CallOpt) (reply []string, err error) {
-	var call _gen_ipc.Call
-	if call, err = __gen_c.client(ctx).StartCall(ctx, __gen_c.name, "UnresolveStep", nil, opts...); err != nil {
+func (c implLightSwitchClientStub) Signature(ctx __context.T, opts ...__ipc.CallOpt) (o0 __ipc.ServiceSignature, err error) {
+	var call __ipc.Call
+	if call, err = c.c(ctx).StartCall(ctx, c.name, "Signature", nil, opts...); err != nil {
 		return
 	}
-	if ierr := call.Finish(&reply, &err); ierr != nil {
+	if ierr := call.Finish(&o0, &err); ierr != nil {
 		err = ierr
 	}
 	return
 }
 
-func (__gen_c *clientStubLightSwitch) Signature(ctx _gen_context.T, opts ..._gen_ipc.CallOpt) (reply _gen_ipc.ServiceSignature, err error) {
-	var call _gen_ipc.Call
-	if call, err = __gen_c.client(ctx).StartCall(ctx, __gen_c.name, "Signature", nil, opts...); err != nil {
+func (c implLightSwitchClientStub) GetMethodTags(ctx __context.T, method string, opts ...__ipc.CallOpt) (o0 []interface{}, err error) {
+	var call __ipc.Call
+	if call, err = c.c(ctx).StartCall(ctx, c.name, "GetMethodTags", []interface{}{method}, opts...); err != nil {
 		return
 	}
-	if ierr := call.Finish(&reply, &err); ierr != nil {
+	if ierr := call.Finish(&o0, &err); ierr != nil {
 		err = ierr
 	}
 	return
 }
 
-func (__gen_c *clientStubLightSwitch) GetMethodTags(ctx _gen_context.T, method string, opts ..._gen_ipc.CallOpt) (reply []interface{}, err error) {
-	var call _gen_ipc.Call
-	if call, err = __gen_c.client(ctx).StartCall(ctx, __gen_c.name, "GetMethodTags", []interface{}{method}, opts...); err != nil {
-		return
-	}
-	if ierr := call.Finish(&reply, &err); ierr != nil {
-		err = ierr
-	}
-	return
+// LightSwitchServerMethods is the interface a server writer
+// implements for LightSwitch.
+//
+// LightSwitch allows clients to manipulate a virtual light switch.
+type LightSwitchServerMethods interface {
+	// Status indicates whether the light is on or off.
+	Status(__ipc.ServerContext) (string, error)
+	// FlipSwitch sets the light to on or off, depending on the input.
+	FlipSwitch(ctx __ipc.ServerContext, toOn bool) error
 }
 
-// ServerStubLightSwitch wraps a server that implements
-// LightSwitchService and provides an object that satisfies
-// the requirements of veyron2/ipc.ReflectInvoker.
-type ServerStubLightSwitch struct {
-	service LightSwitchService
+// LightSwitchServerStubMethods is the server interface containing
+// LightSwitch methods, as expected by ipc.Server.  The difference between
+// this interface and LightSwitchServerMethods is that the first context
+// argument for each method is always ipc.ServerCall here, while it is either
+// ipc.ServerContext or a typed streaming context there.
+type LightSwitchServerStubMethods interface {
+	// Status indicates whether the light is on or off.
+	Status(__ipc.ServerCall) (string, error)
+	// FlipSwitch sets the light to on or off, depending on the input.
+	FlipSwitch(call __ipc.ServerCall, toOn bool) error
 }
 
-func (__gen_s *ServerStubLightSwitch) GetMethodTags(call _gen_ipc.ServerCall, method string) ([]interface{}, error) {
-	// TODO(bprosnitz) GetMethodTags() will be replaces with Signature().
-	// Note: This exhibits some weird behavior like returning a nil error if the method isn't found.
-	// This will change when it is replaced with Signature().
+// LightSwitchServerStub adds universal methods to LightSwitchServerStubMethods.
+type LightSwitchServerStub interface {
+	LightSwitchServerStubMethods
+	// GetMethodTags will be replaced with DescribeInterfaces.
+	GetMethodTags(call __ipc.ServerCall, method string) ([]interface{}, error)
+	// Signature will be replaced with DescribeInterfaces.
+	Signature(call __ipc.ServerCall) (__ipc.ServiceSignature, error)
+}
+
+// LightSwitchServer returns a server stub for LightSwitch.
+// It converts an implementation of LightSwitchServerMethods into
+// an object that may be used by ipc.Server.
+func LightSwitchServer(impl LightSwitchServerMethods) LightSwitchServerStub {
+	stub := implLightSwitchServerStub{
+		impl: impl,
+	}
+	// Initialize GlobState; always check the stub itself first, to handle the
+	// case where the user has the Glob method defined in their VDL source.
+	if gs := __ipc.NewGlobState(stub); gs != nil {
+		stub.gs = gs
+	} else if gs := __ipc.NewGlobState(impl); gs != nil {
+		stub.gs = gs
+	}
+	return stub
+}
+
+type implLightSwitchServerStub struct {
+	impl LightSwitchServerMethods
+	gs   *__ipc.GlobState
+}
+
+func (s implLightSwitchServerStub) Status(call __ipc.ServerCall) (string, error) {
+	return s.impl.Status(call)
+}
+
+func (s implLightSwitchServerStub) FlipSwitch(call __ipc.ServerCall, i0 bool) error {
+	return s.impl.FlipSwitch(call, i0)
+}
+
+func (s implLightSwitchServerStub) VGlob() *__ipc.GlobState {
+	return s.gs
+}
+
+func (s implLightSwitchServerStub) GetMethodTags(call __ipc.ServerCall, method string) ([]interface{}, error) {
+	// TODO(toddw): Replace with new DescribeInterfaces implementation.
 	switch method {
 	case "Status":
 		return []interface{}{}, nil
@@ -164,54 +179,27 @@ func (__gen_s *ServerStubLightSwitch) GetMethodTags(call _gen_ipc.ServerCall, me
 	}
 }
 
-func (__gen_s *ServerStubLightSwitch) Signature(call _gen_ipc.ServerCall) (_gen_ipc.ServiceSignature, error) {
-	result := _gen_ipc.ServiceSignature{Methods: make(map[string]_gen_ipc.MethodSignature)}
-	result.Methods["FlipSwitch"] = _gen_ipc.MethodSignature{
-		InArgs: []_gen_ipc.MethodArgument{
+func (s implLightSwitchServerStub) Signature(call __ipc.ServerCall) (__ipc.ServiceSignature, error) {
+	// TODO(toddw) Replace with new DescribeInterfaces implementation.
+	result := __ipc.ServiceSignature{Methods: make(map[string]__ipc.MethodSignature)}
+	result.Methods["FlipSwitch"] = __ipc.MethodSignature{
+		InArgs: []__ipc.MethodArgument{
 			{Name: "toOn", Type: 2},
 		},
-		OutArgs: []_gen_ipc.MethodArgument{
+		OutArgs: []__ipc.MethodArgument{
 			{Name: "", Type: 65},
 		},
 	}
-	result.Methods["Status"] = _gen_ipc.MethodSignature{
-		InArgs: []_gen_ipc.MethodArgument{},
-		OutArgs: []_gen_ipc.MethodArgument{
+	result.Methods["Status"] = __ipc.MethodSignature{
+		InArgs: []__ipc.MethodArgument{},
+		OutArgs: []__ipc.MethodArgument{
 			{Name: "", Type: 3},
 			{Name: "", Type: 65},
 		},
 	}
 
-	result.TypeDefs = []_gen_vdlutil.Any{
-		_gen_wiretype.NamedPrimitiveType{Type: 0x1, Name: "error", Tags: []string(nil)}}
+	result.TypeDefs = []__vdlutil.Any{
+		__wiretype.NamedPrimitiveType{Type: 0x1, Name: "error", Tags: []string(nil)}}
 
 	return result, nil
-}
-
-func (__gen_s *ServerStubLightSwitch) UnresolveStep(call _gen_ipc.ServerCall) (reply []string, err error) {
-	if unresolver, ok := __gen_s.service.(_gen_ipc.Unresolver); ok {
-		return unresolver.UnresolveStep(call)
-	}
-	if call.Server() == nil {
-		return
-	}
-	var published []string
-	if published, err = call.Server().Published(); err != nil || published == nil {
-		return
-	}
-	reply = make([]string, len(published))
-	for i, p := range published {
-		reply[i] = _gen_naming.Join(p, call.Name())
-	}
-	return
-}
-
-func (__gen_s *ServerStubLightSwitch) Status(call _gen_ipc.ServerCall) (reply string, err error) {
-	reply, err = __gen_s.service.Status(call)
-	return
-}
-
-func (__gen_s *ServerStubLightSwitch) FlipSwitch(call _gen_ipc.ServerCall, toOn bool) (err error) {
-	err = __gen_s.service.FlipSwitch(call, toOn)
-	return
 }
