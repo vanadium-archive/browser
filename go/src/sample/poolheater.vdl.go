@@ -128,26 +128,18 @@ type PoolHeaterServerMethods interface {
 }
 
 // PoolHeaterServerStubMethods is the server interface containing
-// PoolHeater methods, as expected by ipc.Server.  The difference between
-// this interface and PoolHeaterServerMethods is that the first context
-// argument for each method is always ipc.ServerCall here, while it is either
-// ipc.ServerContext or a typed streaming context there.
-type PoolHeaterServerStubMethods interface {
-	// Status retrieves the PoolHeater's status (i.e., active, idle) and temperature.
-	Status(__ipc.ServerCall) (running string, temperature uint64, err error)
-	// Start informs the PoolHeater to heat the pool to the given temperature until the duration expires.
-	Start(call __ipc.ServerCall, temperature uint64, duration uint64) error
-	// Stop informs the PoolHeater to cease heating the pool.
-	Stop(__ipc.ServerCall) error
-}
+// PoolHeater methods, as expected by ipc.Server.
+// There is no difference between this interface and PoolHeaterServerMethods
+// since there are no streaming methods.
+type PoolHeaterServerStubMethods PoolHeaterServerMethods
 
 // PoolHeaterServerStub adds universal methods to PoolHeaterServerStubMethods.
 type PoolHeaterServerStub interface {
 	PoolHeaterServerStubMethods
 	// GetMethodTags will be replaced with DescribeInterfaces.
-	GetMethodTags(call __ipc.ServerCall, method string) ([]interface{}, error)
+	GetMethodTags(ctx __ipc.ServerContext, method string) ([]interface{}, error)
 	// Signature will be replaced with DescribeInterfaces.
-	Signature(call __ipc.ServerCall) (__ipc.ServiceSignature, error)
+	Signature(ctx __ipc.ServerContext) (__ipc.ServiceSignature, error)
 }
 
 // PoolHeaterServer returns a server stub for PoolHeater.
@@ -172,23 +164,23 @@ type implPoolHeaterServerStub struct {
 	gs   *__ipc.GlobState
 }
 
-func (s implPoolHeaterServerStub) Status(call __ipc.ServerCall) (string, uint64, error) {
-	return s.impl.Status(call)
+func (s implPoolHeaterServerStub) Status(ctx __ipc.ServerContext) (string, uint64, error) {
+	return s.impl.Status(ctx)
 }
 
-func (s implPoolHeaterServerStub) Start(call __ipc.ServerCall, i0 uint64, i1 uint64) error {
-	return s.impl.Start(call, i0, i1)
+func (s implPoolHeaterServerStub) Start(ctx __ipc.ServerContext, i0 uint64, i1 uint64) error {
+	return s.impl.Start(ctx, i0, i1)
 }
 
-func (s implPoolHeaterServerStub) Stop(call __ipc.ServerCall) error {
-	return s.impl.Stop(call)
+func (s implPoolHeaterServerStub) Stop(ctx __ipc.ServerContext) error {
+	return s.impl.Stop(ctx)
 }
 
 func (s implPoolHeaterServerStub) VGlob() *__ipc.GlobState {
 	return s.gs
 }
 
-func (s implPoolHeaterServerStub) GetMethodTags(call __ipc.ServerCall, method string) ([]interface{}, error) {
+func (s implPoolHeaterServerStub) GetMethodTags(ctx __ipc.ServerContext, method string) ([]interface{}, error) {
 	// TODO(toddw): Replace with new DescribeInterfaces implementation.
 	switch method {
 	case "Status":
@@ -202,7 +194,7 @@ func (s implPoolHeaterServerStub) GetMethodTags(call __ipc.ServerCall, method st
 	}
 }
 
-func (s implPoolHeaterServerStub) Signature(call __ipc.ServerCall) (__ipc.ServiceSignature, error) {
+func (s implPoolHeaterServerStub) Signature(ctx __ipc.ServerContext) (__ipc.ServiceSignature, error) {
 	// TODO(toddw) Replace with new DescribeInterfaces implementation.
 	result := __ipc.ServiceSignature{Methods: make(map[string]__ipc.MethodSignature)}
 	result.Methods["Start"] = __ipc.MethodSignature{

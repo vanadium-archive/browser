@@ -113,24 +113,18 @@ type LightSwitchServerMethods interface {
 }
 
 // LightSwitchServerStubMethods is the server interface containing
-// LightSwitch methods, as expected by ipc.Server.  The difference between
-// this interface and LightSwitchServerMethods is that the first context
-// argument for each method is always ipc.ServerCall here, while it is either
-// ipc.ServerContext or a typed streaming context there.
-type LightSwitchServerStubMethods interface {
-	// Status indicates whether the light is on or off.
-	Status(__ipc.ServerCall) (string, error)
-	// FlipSwitch sets the light to on or off, depending on the input.
-	FlipSwitch(call __ipc.ServerCall, toOn bool) error
-}
+// LightSwitch methods, as expected by ipc.Server.
+// There is no difference between this interface and LightSwitchServerMethods
+// since there are no streaming methods.
+type LightSwitchServerStubMethods LightSwitchServerMethods
 
 // LightSwitchServerStub adds universal methods to LightSwitchServerStubMethods.
 type LightSwitchServerStub interface {
 	LightSwitchServerStubMethods
 	// GetMethodTags will be replaced with DescribeInterfaces.
-	GetMethodTags(call __ipc.ServerCall, method string) ([]interface{}, error)
+	GetMethodTags(ctx __ipc.ServerContext, method string) ([]interface{}, error)
 	// Signature will be replaced with DescribeInterfaces.
-	Signature(call __ipc.ServerCall) (__ipc.ServiceSignature, error)
+	Signature(ctx __ipc.ServerContext) (__ipc.ServiceSignature, error)
 }
 
 // LightSwitchServer returns a server stub for LightSwitch.
@@ -155,19 +149,19 @@ type implLightSwitchServerStub struct {
 	gs   *__ipc.GlobState
 }
 
-func (s implLightSwitchServerStub) Status(call __ipc.ServerCall) (string, error) {
-	return s.impl.Status(call)
+func (s implLightSwitchServerStub) Status(ctx __ipc.ServerContext) (string, error) {
+	return s.impl.Status(ctx)
 }
 
-func (s implLightSwitchServerStub) FlipSwitch(call __ipc.ServerCall, i0 bool) error {
-	return s.impl.FlipSwitch(call, i0)
+func (s implLightSwitchServerStub) FlipSwitch(ctx __ipc.ServerContext, i0 bool) error {
+	return s.impl.FlipSwitch(ctx, i0)
 }
 
 func (s implLightSwitchServerStub) VGlob() *__ipc.GlobState {
 	return s.gs
 }
 
-func (s implLightSwitchServerStub) GetMethodTags(call __ipc.ServerCall, method string) ([]interface{}, error) {
+func (s implLightSwitchServerStub) GetMethodTags(ctx __ipc.ServerContext, method string) ([]interface{}, error) {
 	// TODO(toddw): Replace with new DescribeInterfaces implementation.
 	switch method {
 	case "Status":
@@ -179,7 +173,7 @@ func (s implLightSwitchServerStub) GetMethodTags(call __ipc.ServerCall, method s
 	}
 }
 
-func (s implLightSwitchServerStub) Signature(call __ipc.ServerCall) (__ipc.ServiceSignature, error) {
+func (s implLightSwitchServerStub) Signature(ctx __ipc.ServerContext) (__ipc.ServiceSignature, error) {
 	// TODO(toddw) Replace with new DescribeInterfaces implementation.
 	result := __ipc.ServiceSignature{Methods: make(map[string]__ipc.MethodSignature)}
 	result.Methods["FlipSwitch"] = __ipc.MethodSignature{

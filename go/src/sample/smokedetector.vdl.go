@@ -128,26 +128,18 @@ type SmokeDetectorServerMethods interface {
 }
 
 // SmokeDetectorServerStubMethods is the server interface containing
-// SmokeDetector methods, as expected by ipc.Server.  The difference between
-// this interface and SmokeDetectorServerMethods is that the first context
-// argument for each method is always ipc.ServerCall here, while it is either
-// ipc.ServerContext or a typed streaming context there.
-type SmokeDetectorServerStubMethods interface {
-	// Status retrieves the current status and sensitivity of the SmokeDetector.
-	Status(__ipc.ServerCall) (status string, sensitivity int16, err error)
-	// Test the SmokeDetector to check if it is working.
-	Test(__ipc.ServerCall) (bool, error)
-	// Sensitivity adjusts the SmokeDetector's sensitivity to smoke.
-	Sensitivity(call __ipc.ServerCall, sens int16) error
-}
+// SmokeDetector methods, as expected by ipc.Server.
+// There is no difference between this interface and SmokeDetectorServerMethods
+// since there are no streaming methods.
+type SmokeDetectorServerStubMethods SmokeDetectorServerMethods
 
 // SmokeDetectorServerStub adds universal methods to SmokeDetectorServerStubMethods.
 type SmokeDetectorServerStub interface {
 	SmokeDetectorServerStubMethods
 	// GetMethodTags will be replaced with DescribeInterfaces.
-	GetMethodTags(call __ipc.ServerCall, method string) ([]interface{}, error)
+	GetMethodTags(ctx __ipc.ServerContext, method string) ([]interface{}, error)
 	// Signature will be replaced with DescribeInterfaces.
-	Signature(call __ipc.ServerCall) (__ipc.ServiceSignature, error)
+	Signature(ctx __ipc.ServerContext) (__ipc.ServiceSignature, error)
 }
 
 // SmokeDetectorServer returns a server stub for SmokeDetector.
@@ -172,23 +164,23 @@ type implSmokeDetectorServerStub struct {
 	gs   *__ipc.GlobState
 }
 
-func (s implSmokeDetectorServerStub) Status(call __ipc.ServerCall) (string, int16, error) {
-	return s.impl.Status(call)
+func (s implSmokeDetectorServerStub) Status(ctx __ipc.ServerContext) (string, int16, error) {
+	return s.impl.Status(ctx)
 }
 
-func (s implSmokeDetectorServerStub) Test(call __ipc.ServerCall) (bool, error) {
-	return s.impl.Test(call)
+func (s implSmokeDetectorServerStub) Test(ctx __ipc.ServerContext) (bool, error) {
+	return s.impl.Test(ctx)
 }
 
-func (s implSmokeDetectorServerStub) Sensitivity(call __ipc.ServerCall, i0 int16) error {
-	return s.impl.Sensitivity(call, i0)
+func (s implSmokeDetectorServerStub) Sensitivity(ctx __ipc.ServerContext, i0 int16) error {
+	return s.impl.Sensitivity(ctx, i0)
 }
 
 func (s implSmokeDetectorServerStub) VGlob() *__ipc.GlobState {
 	return s.gs
 }
 
-func (s implSmokeDetectorServerStub) GetMethodTags(call __ipc.ServerCall, method string) ([]interface{}, error) {
+func (s implSmokeDetectorServerStub) GetMethodTags(ctx __ipc.ServerContext, method string) ([]interface{}, error) {
 	// TODO(toddw): Replace with new DescribeInterfaces implementation.
 	switch method {
 	case "Status":
@@ -202,7 +194,7 @@ func (s implSmokeDetectorServerStub) GetMethodTags(call __ipc.ServerCall, method
 	}
 }
 
-func (s implSmokeDetectorServerStub) Signature(call __ipc.ServerCall) (__ipc.ServiceSignature, error) {
+func (s implSmokeDetectorServerStub) Signature(ctx __ipc.ServerContext) (__ipc.ServiceSignature, error) {
 	// TODO(toddw) Replace with new DescribeInterfaces implementation.
 	result := __ipc.ServiceSignature{Methods: make(map[string]__ipc.MethodSignature)}
 	result.Methods["Sensitivity"] = __ipc.MethodSignature{

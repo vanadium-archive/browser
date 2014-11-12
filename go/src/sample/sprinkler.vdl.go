@@ -128,26 +128,18 @@ type SprinklerServerMethods interface {
 }
 
 // SprinklerServerStubMethods is the server interface containing
-// Sprinkler methods, as expected by ipc.Server.  The difference between
-// this interface and SprinklerServerMethods is that the first context
-// argument for each method is always ipc.ServerCall here, while it is either
-// ipc.ServerContext or a typed streaming context there.
-type SprinklerServerStubMethods interface {
-	// Status retrieves the Sprinkler's status (i.e., active, idle)
-	Status(__ipc.ServerCall) (string, error)
-	// Start causes the Sprinkler to emit water for the given duration (in seconds).
-	Start(call __ipc.ServerCall, duration uint16) error
-	// Stop causes the Sprinkler to cease watering.
-	Stop(__ipc.ServerCall) error
-}
+// Sprinkler methods, as expected by ipc.Server.
+// There is no difference between this interface and SprinklerServerMethods
+// since there are no streaming methods.
+type SprinklerServerStubMethods SprinklerServerMethods
 
 // SprinklerServerStub adds universal methods to SprinklerServerStubMethods.
 type SprinklerServerStub interface {
 	SprinklerServerStubMethods
 	// GetMethodTags will be replaced with DescribeInterfaces.
-	GetMethodTags(call __ipc.ServerCall, method string) ([]interface{}, error)
+	GetMethodTags(ctx __ipc.ServerContext, method string) ([]interface{}, error)
 	// Signature will be replaced with DescribeInterfaces.
-	Signature(call __ipc.ServerCall) (__ipc.ServiceSignature, error)
+	Signature(ctx __ipc.ServerContext) (__ipc.ServiceSignature, error)
 }
 
 // SprinklerServer returns a server stub for Sprinkler.
@@ -172,23 +164,23 @@ type implSprinklerServerStub struct {
 	gs   *__ipc.GlobState
 }
 
-func (s implSprinklerServerStub) Status(call __ipc.ServerCall) (string, error) {
-	return s.impl.Status(call)
+func (s implSprinklerServerStub) Status(ctx __ipc.ServerContext) (string, error) {
+	return s.impl.Status(ctx)
 }
 
-func (s implSprinklerServerStub) Start(call __ipc.ServerCall, i0 uint16) error {
-	return s.impl.Start(call, i0)
+func (s implSprinklerServerStub) Start(ctx __ipc.ServerContext, i0 uint16) error {
+	return s.impl.Start(ctx, i0)
 }
 
-func (s implSprinklerServerStub) Stop(call __ipc.ServerCall) error {
-	return s.impl.Stop(call)
+func (s implSprinklerServerStub) Stop(ctx __ipc.ServerContext) error {
+	return s.impl.Stop(ctx)
 }
 
 func (s implSprinklerServerStub) VGlob() *__ipc.GlobState {
 	return s.gs
 }
 
-func (s implSprinklerServerStub) GetMethodTags(call __ipc.ServerCall, method string) ([]interface{}, error) {
+func (s implSprinklerServerStub) GetMethodTags(ctx __ipc.ServerContext, method string) ([]interface{}, error) {
 	// TODO(toddw): Replace with new DescribeInterfaces implementation.
 	switch method {
 	case "Status":
@@ -202,7 +194,7 @@ func (s implSprinklerServerStub) GetMethodTags(call __ipc.ServerCall, method str
 	}
 }
 
-func (s implSprinklerServerStub) Signature(call __ipc.ServerCall) (__ipc.ServiceSignature, error) {
+func (s implSprinklerServerStub) Signature(ctx __ipc.ServerContext) (__ipc.ServiceSignature, error) {
 	// TODO(toddw) Replace with new DescribeInterfaces implementation.
 	result := __ipc.ServiceSignature{Methods: make(map[string]__ipc.MethodSignature)}
 	result.Methods["Start"] = __ipc.MethodSignature{

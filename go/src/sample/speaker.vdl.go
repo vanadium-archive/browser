@@ -101,7 +101,7 @@ func (c implSpeakerClientStub) PlayStream(ctx __context.T, opts ...__ipc.CallOpt
 	if call, err = c.c(ctx).StartCall(ctx, c.name, "PlayStream", nil, opts...); err != nil {
 		return
 	}
-	ocall = &implSpeakerPlayStreamCall{call, implSpeakerPlayStreamClientSend{call}}
+	ocall = &implSpeakerPlayStreamCall{Call: call}
 	return
 }
 
@@ -206,7 +206,7 @@ func (c implSpeakerClientStub) GetMethodTags(ctx __context.T, method string, opt
 
 // SpeakerPlayStreamClientStream is the client stream for Speaker.PlayStream.
 type SpeakerPlayStreamClientStream interface {
-	// SendStream returns the send side of the client stream.
+	// SendStream returns the send side of the Speaker.PlayStream client stream.
 	SendStream() interface {
 		// Send places the item onto the output stream.  Returns errors encountered
 		// while sending, or if Send is called after Close or Cancel.  Blocks if
@@ -243,36 +243,32 @@ type SpeakerPlayStreamCall interface {
 	Cancel()
 }
 
-type implSpeakerPlayStreamClientSend struct {
-	call __ipc.Call
-}
-
-func (c *implSpeakerPlayStreamClientSend) Send(item []byte) error {
-	return c.call.Send(item)
-}
-func (c *implSpeakerPlayStreamClientSend) Close() error {
-	return c.call.CloseSend()
-}
-
 type implSpeakerPlayStreamCall struct {
-	call __ipc.Call
-	send implSpeakerPlayStreamClientSend
+	__ipc.Call
 }
 
 func (c *implSpeakerPlayStreamCall) SendStream() interface {
 	Send(item []byte) error
 	Close() error
 } {
-	return &c.send
+	return implSpeakerPlayStreamCallSend{c}
+}
+
+type implSpeakerPlayStreamCallSend struct {
+	c *implSpeakerPlayStreamCall
+}
+
+func (c implSpeakerPlayStreamCallSend) Send(item []byte) error {
+	return c.c.Send(item)
+}
+func (c implSpeakerPlayStreamCallSend) Close() error {
+	return c.c.CloseSend()
 }
 func (c *implSpeakerPlayStreamCall) Finish() (err error) {
-	if ierr := c.call.Finish(&err); ierr != nil {
+	if ierr := c.Call.Finish(&err); ierr != nil {
 		err = ierr
 	}
 	return
-}
-func (c *implSpeakerPlayStreamCall) Cancel() {
-	c.call.Cancel()
 }
 
 // SpeakerServerMethods is the interface a server writer
@@ -303,40 +299,39 @@ type SpeakerServerMethods interface {
 }
 
 // SpeakerServerStubMethods is the server interface containing
-// Speaker methods, as expected by ipc.Server.  The difference between
-// this interface and SpeakerServerMethods is that the first context
-// argument for each method is always ipc.ServerCall here, while it is either
-// ipc.ServerContext or a typed streaming context there.
+// Speaker methods, as expected by ipc.Server.
+// The only difference between this interface and SpeakerServerMethods
+// is the streaming methods.
 type SpeakerServerStubMethods interface {
 	// Play starts or continues the current song.
-	Play(__ipc.ServerCall) error
+	Play(__ipc.ServerContext) error
 	// PlaySong plays back the given song title, if possible.
-	PlaySong(call __ipc.ServerCall, songName string) error
+	PlaySong(ctx __ipc.ServerContext, songName string) error
 	// PlayStream plays the given stream of music data.
-	PlayStream(__ipc.ServerCall) error
+	PlayStream(*SpeakerPlayStreamContextStub) error
 	// GetSong retrieves the title of the Speaker's current song, if any.
-	GetSong(__ipc.ServerCall) (string, error)
+	GetSong(__ipc.ServerContext) (string, error)
 	// Pause playback of the Speaker's current song.
-	Pause(__ipc.ServerCall) error
+	Pause(__ipc.ServerContext) error
 	// Stop playback of the Speaker's current song.
-	Stop(__ipc.ServerCall) error
+	Stop(__ipc.ServerContext) error
 	// Volume adjusts the Speaker's volume.
-	Volume(call __ipc.ServerCall, volumeLevel uint16) error
+	Volume(ctx __ipc.ServerContext, volumeLevel uint16) error
 	// GetVolume retrieves the Speaker's volume.
-	GetVolume(__ipc.ServerCall) (uint16, error)
+	GetVolume(__ipc.ServerContext) (uint16, error)
 	// AddSongs adds the list of given songs to the song library.
-	AddSongs(call __ipc.ServerCall, songs []string) error
+	AddSongs(ctx __ipc.ServerContext, songs []string) error
 	// RemoveSongs removes the list of given songs from the song library.
-	RemoveSongs(call __ipc.ServerCall, songs []string) error
+	RemoveSongs(ctx __ipc.ServerContext, songs []string) error
 }
 
 // SpeakerServerStub adds universal methods to SpeakerServerStubMethods.
 type SpeakerServerStub interface {
 	SpeakerServerStubMethods
 	// GetMethodTags will be replaced with DescribeInterfaces.
-	GetMethodTags(call __ipc.ServerCall, method string) ([]interface{}, error)
+	GetMethodTags(ctx __ipc.ServerContext, method string) ([]interface{}, error)
 	// Signature will be replaced with DescribeInterfaces.
-	Signature(call __ipc.ServerCall) (__ipc.ServiceSignature, error)
+	Signature(ctx __ipc.ServerContext) (__ipc.ServiceSignature, error)
 }
 
 // SpeakerServer returns a server stub for Speaker.
@@ -361,52 +356,51 @@ type implSpeakerServerStub struct {
 	gs   *__ipc.GlobState
 }
 
-func (s implSpeakerServerStub) Play(call __ipc.ServerCall) error {
-	return s.impl.Play(call)
+func (s implSpeakerServerStub) Play(ctx __ipc.ServerContext) error {
+	return s.impl.Play(ctx)
 }
 
-func (s implSpeakerServerStub) PlaySong(call __ipc.ServerCall, i0 string) error {
-	return s.impl.PlaySong(call, i0)
+func (s implSpeakerServerStub) PlaySong(ctx __ipc.ServerContext, i0 string) error {
+	return s.impl.PlaySong(ctx, i0)
 }
 
-func (s implSpeakerServerStub) PlayStream(call __ipc.ServerCall) error {
-	ctx := &implSpeakerPlayStreamContext{call, implSpeakerPlayStreamServerRecv{call: call}}
+func (s implSpeakerServerStub) PlayStream(ctx *SpeakerPlayStreamContextStub) error {
 	return s.impl.PlayStream(ctx)
 }
 
-func (s implSpeakerServerStub) GetSong(call __ipc.ServerCall) (string, error) {
-	return s.impl.GetSong(call)
+func (s implSpeakerServerStub) GetSong(ctx __ipc.ServerContext) (string, error) {
+	return s.impl.GetSong(ctx)
 }
 
-func (s implSpeakerServerStub) Pause(call __ipc.ServerCall) error {
-	return s.impl.Pause(call)
+func (s implSpeakerServerStub) Pause(ctx __ipc.ServerContext) error {
+	return s.impl.Pause(ctx)
 }
 
-func (s implSpeakerServerStub) Stop(call __ipc.ServerCall) error {
-	return s.impl.Stop(call)
+func (s implSpeakerServerStub) Stop(ctx __ipc.ServerContext) error {
+	return s.impl.Stop(ctx)
 }
 
-func (s implSpeakerServerStub) Volume(call __ipc.ServerCall, i0 uint16) error {
-	return s.impl.Volume(call, i0)
+func (s implSpeakerServerStub) Volume(ctx __ipc.ServerContext, i0 uint16) error {
+	return s.impl.Volume(ctx, i0)
 }
 
-func (s implSpeakerServerStub) GetVolume(call __ipc.ServerCall) (uint16, error) {
-	return s.impl.GetVolume(call)
+func (s implSpeakerServerStub) GetVolume(ctx __ipc.ServerContext) (uint16, error) {
+	return s.impl.GetVolume(ctx)
 }
 
-func (s implSpeakerServerStub) AddSongs(call __ipc.ServerCall, i0 []string) error {
-	return s.impl.AddSongs(call, i0)
+func (s implSpeakerServerStub) AddSongs(ctx __ipc.ServerContext, i0 []string) error {
+	return s.impl.AddSongs(ctx, i0)
 }
 
-func (s implSpeakerServerStub) RemoveSongs(call __ipc.ServerCall, i0 []string) error {
-	return s.impl.RemoveSongs(call, i0)
+func (s implSpeakerServerStub) RemoveSongs(ctx __ipc.ServerContext, i0 []string) error {
+	return s.impl.RemoveSongs(ctx, i0)
 }
 
 func (s implSpeakerServerStub) VGlob() *__ipc.GlobState {
 	return s.gs
 }
 
-func (s implSpeakerServerStub) GetMethodTags(call __ipc.ServerCall, method string) ([]interface{}, error) {
+func (s implSpeakerServerStub) GetMethodTags(ctx __ipc.ServerContext, method string) ([]interface{}, error) {
 	// TODO(toddw): Replace with new DescribeInterfaces implementation.
 	switch method {
 	case "Play":
@@ -434,7 +428,7 @@ func (s implSpeakerServerStub) GetMethodTags(call __ipc.ServerCall, method strin
 	}
 }
 
-func (s implSpeakerServerStub) Signature(call __ipc.ServerCall) (__ipc.ServiceSignature, error) {
+func (s implSpeakerServerStub) Signature(ctx __ipc.ServerContext) (__ipc.ServiceSignature, error) {
 	// TODO(toddw) Replace with new DescribeInterfaces implementation.
 	result := __ipc.ServiceSignature{Methods: make(map[string]__ipc.MethodSignature)}
 	result.Methods["AddSongs"] = __ipc.MethodSignature{
@@ -517,7 +511,7 @@ func (s implSpeakerServerStub) Signature(call __ipc.ServerCall) (__ipc.ServiceSi
 
 // SpeakerPlayStreamServerStream is the server stream for Speaker.PlayStream.
 type SpeakerPlayStreamServerStream interface {
-	// RecvStream returns the receiver side of the server stream.
+	// RecvStream returns the receiver side of the Speaker.PlayStream server stream.
 	RecvStream() interface {
 		// Advance stages an item so that it may be retrieved via Value.  Returns
 		// true iff there is an item to retrieve.  Advance must be called before
@@ -537,35 +531,42 @@ type SpeakerPlayStreamContext interface {
 	SpeakerPlayStreamServerStream
 }
 
-type implSpeakerPlayStreamServerRecv struct {
-	call __ipc.ServerCall
-	val  []byte
-	err  error
+// SpeakerPlayStreamContextStub is a wrapper that converts ipc.ServerCall into
+// a typesafe stub that implements SpeakerPlayStreamContext.
+type SpeakerPlayStreamContextStub struct {
+	__ipc.ServerCall
+	valRecv []byte
+	errRecv error
 }
 
-func (s *implSpeakerPlayStreamServerRecv) Advance() bool {
-	s.err = s.call.Recv(&s.val)
-	return s.err == nil
-}
-func (s *implSpeakerPlayStreamServerRecv) Value() []byte {
-	return s.val
-}
-func (s *implSpeakerPlayStreamServerRecv) Err() error {
-	if s.err == __io.EOF {
-		return nil
-	}
-	return s.err
+// Init initializes SpeakerPlayStreamContextStub from ipc.ServerCall.
+func (s *SpeakerPlayStreamContextStub) Init(call __ipc.ServerCall) {
+	s.ServerCall = call
 }
 
-type implSpeakerPlayStreamContext struct {
-	__ipc.ServerContext
-	recv implSpeakerPlayStreamServerRecv
-}
-
-func (s *implSpeakerPlayStreamContext) RecvStream() interface {
+// RecvStream returns the receiver side of the Speaker.PlayStream server stream.
+func (s *SpeakerPlayStreamContextStub) RecvStream() interface {
 	Advance() bool
 	Value() []byte
 	Err() error
 } {
-	return &s.recv
+	return implSpeakerPlayStreamContextRecv{s}
+}
+
+type implSpeakerPlayStreamContextRecv struct {
+	s *SpeakerPlayStreamContextStub
+}
+
+func (s implSpeakerPlayStreamContextRecv) Advance() bool {
+	s.s.errRecv = s.s.Recv(&s.s.valRecv)
+	return s.s.errRecv == nil
+}
+func (s implSpeakerPlayStreamContextRecv) Value() []byte {
+	return s.s.valRecv
+}
+func (s implSpeakerPlayStreamContextRecv) Err() error {
+	if s.s.errRecv == __io.EOF {
+		return nil
+	}
+	return s.s.errRecv
 }

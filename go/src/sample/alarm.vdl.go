@@ -158,30 +158,18 @@ type AlarmServerMethods interface {
 }
 
 // AlarmServerStubMethods is the server interface containing
-// Alarm methods, as expected by ipc.Server.  The difference between
-// this interface and AlarmServerMethods is that the first context
-// argument for each method is always ipc.ServerCall here, while it is either
-// ipc.ServerContext or a typed streaming context there.
-type AlarmServerStubMethods interface {
-	// Status returns the current status of the Alarm (i.e., armed, unarmed, panicking).
-	Status(__ipc.ServerCall) (string, error)
-	// Arm sets the Alarm to the armed state.
-	Arm(__ipc.ServerCall) error
-	// DelayArm sets the Alarm to the armed state after the given delay in seconds.
-	DelayArm(call __ipc.ServerCall, seconds float32) error
-	// Unarm sets the Alarm to the unarmed state.
-	Unarm(__ipc.ServerCall) error
-	// Panic sets the Alarm to the panicking state.
-	Panic(__ipc.ServerCall) error
-}
+// Alarm methods, as expected by ipc.Server.
+// There is no difference between this interface and AlarmServerMethods
+// since there are no streaming methods.
+type AlarmServerStubMethods AlarmServerMethods
 
 // AlarmServerStub adds universal methods to AlarmServerStubMethods.
 type AlarmServerStub interface {
 	AlarmServerStubMethods
 	// GetMethodTags will be replaced with DescribeInterfaces.
-	GetMethodTags(call __ipc.ServerCall, method string) ([]interface{}, error)
+	GetMethodTags(ctx __ipc.ServerContext, method string) ([]interface{}, error)
 	// Signature will be replaced with DescribeInterfaces.
-	Signature(call __ipc.ServerCall) (__ipc.ServiceSignature, error)
+	Signature(ctx __ipc.ServerContext) (__ipc.ServiceSignature, error)
 }
 
 // AlarmServer returns a server stub for Alarm.
@@ -206,31 +194,31 @@ type implAlarmServerStub struct {
 	gs   *__ipc.GlobState
 }
 
-func (s implAlarmServerStub) Status(call __ipc.ServerCall) (string, error) {
-	return s.impl.Status(call)
+func (s implAlarmServerStub) Status(ctx __ipc.ServerContext) (string, error) {
+	return s.impl.Status(ctx)
 }
 
-func (s implAlarmServerStub) Arm(call __ipc.ServerCall) error {
-	return s.impl.Arm(call)
+func (s implAlarmServerStub) Arm(ctx __ipc.ServerContext) error {
+	return s.impl.Arm(ctx)
 }
 
-func (s implAlarmServerStub) DelayArm(call __ipc.ServerCall, i0 float32) error {
-	return s.impl.DelayArm(call, i0)
+func (s implAlarmServerStub) DelayArm(ctx __ipc.ServerContext, i0 float32) error {
+	return s.impl.DelayArm(ctx, i0)
 }
 
-func (s implAlarmServerStub) Unarm(call __ipc.ServerCall) error {
-	return s.impl.Unarm(call)
+func (s implAlarmServerStub) Unarm(ctx __ipc.ServerContext) error {
+	return s.impl.Unarm(ctx)
 }
 
-func (s implAlarmServerStub) Panic(call __ipc.ServerCall) error {
-	return s.impl.Panic(call)
+func (s implAlarmServerStub) Panic(ctx __ipc.ServerContext) error {
+	return s.impl.Panic(ctx)
 }
 
 func (s implAlarmServerStub) VGlob() *__ipc.GlobState {
 	return s.gs
 }
 
-func (s implAlarmServerStub) GetMethodTags(call __ipc.ServerCall, method string) ([]interface{}, error) {
+func (s implAlarmServerStub) GetMethodTags(ctx __ipc.ServerContext, method string) ([]interface{}, error) {
 	// TODO(toddw): Replace with new DescribeInterfaces implementation.
 	switch method {
 	case "Status":
@@ -248,7 +236,7 @@ func (s implAlarmServerStub) GetMethodTags(call __ipc.ServerCall, method string)
 	}
 }
 
-func (s implAlarmServerStub) Signature(call __ipc.ServerCall) (__ipc.ServiceSignature, error) {
+func (s implAlarmServerStub) Signature(ctx __ipc.ServerContext) (__ipc.ServiceSignature, error) {
 	// TODO(toddw) Replace with new DescribeInterfaces implementation.
 	result := __ipc.ServiceSignature{Methods: make(map[string]__ipc.MethodSignature)}
 	result.Methods["Arm"] = __ipc.MethodSignature{
