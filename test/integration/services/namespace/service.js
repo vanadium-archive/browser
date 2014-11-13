@@ -24,23 +24,21 @@ var namespaceService =
   });
 
 test('getChildren of default namespace root', function(t) {
+  var TIMEOUT = 1000;
   namespaceService.getChildren().
   then(function assertResult(result) {
-    // Wait until we receive the 2 top level items: cottage, house
     assertIsImmutable(t, result);
-    var numMutations = 0;
-    result(function(children) {
-      numMutations++;
-      // TODO(aghassemi) namespace glob can return duplicate results, glob
-      // function replaces duplicate nodes so we wait until 4 mutations
-      // are done (two adds and two replaces of house and cottage)
-      if (numMutations === 4) {
+    // Wait until we receive the 2 top level items: cottage, house
+    setTimeout(function validate() {
+      mercury.watch(result, function(children) {
         children = _.sortBy(children, 'mountedName');
         assertCottage(children[0]);
         assertHouse(children[1]);
         t.end();
-      }
-    });
+      });
+    }, TIMEOUT);
+    // TODO(aghassemi), TIMEOUT is sill not good, but events such as oncomplete
+    // are coming to Glob soon, so change when that's available.
   }).catch(t.end);
 
   function assertCottage(item) {
