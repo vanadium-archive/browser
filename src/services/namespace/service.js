@@ -231,7 +231,7 @@ function hashSignature(signature) {
  */
 function isGlobbable(objectName) {
   return getSignature(objectName).then(function(sig) {
-    return sig['glob'] !== undefined;
+    return sig.get('glob') !== undefined;
   }).catch(function(e) {
     return false;
   });
@@ -328,9 +328,9 @@ function getServerTypeInfo(signature) {
   // .meta/stats to get information about a server. For now we just understand
   // mounttable and store. Everything else is unknown.
   var isMounttable = (signature &&
-    signature['glob'] &&
-    signature['mount'] &&
-    signature['unmount']);
+    signature.get('glob') &&
+    signature.get('mount') &&
+    signature.get('unmount'));
 
   if (isMounttable) {
     return itemFactory.createServerTypeInfo({
