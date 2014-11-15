@@ -175,7 +175,13 @@ test('getNamespaceItem of intermediary name', function(t) {
   }).catch(t.end);
 });
 
-test('getNamespaceItem of mounttable leaf server', function(t) {
+// TODO(aghassemi) This tests is flaky and relies on
+// order of RPC returns. Since glob is returning cottage
+// as both a mounttable and an intermediary node and the
+// order in which it is returned is underterministic
+// having the end events on glob will fix this issue
+// skipping the test until then.
+test.skip('getNamespaceItem of mounttable leaf server', function(t) {
   namespaceService.getNamespaceItem('cottage').
   then(function assertItem(itemObs) {
     assertIsImmutable(t, itemObs);
