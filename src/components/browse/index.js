@@ -426,7 +426,7 @@ function renderItem(browseState, browseEvents, navEvents, item, isShortcut) {
     'title': itemTooltip
   }, [
     h('a.label', {
-      'href': '#',
+      'href': 'javascript:;',
       'ev-click': mercury.event(
         browseEvents.selectItem, {
           name: item.objectName

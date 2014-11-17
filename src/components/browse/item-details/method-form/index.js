@@ -321,7 +321,7 @@ function renderMethodHeader(state, events) {
   }, labelText);
 
   var expand = h('a.drill', {
-    'href': '#',
+    'href': 'javascript:;',
     'title': state.expanded ? 'Hide form' : 'Show form',
     'ev-click': mercury.event(events.expandAction)
   }, h('core-icon.icon', {
@@ -399,7 +399,7 @@ function renderInvocation(state, events, argsStr) {
   }, labelText);
 
   var runButton = h('a.drill', {
-    'href': '#',
+    'href': 'javascript:;',
     'title': 'Run ' + state.methodName,
     'ev-click': getRunEvent(state, events, args)
   }, renderPlayIcon());
@@ -410,7 +410,7 @@ function renderInvocation(state, events, argsStr) {
 
   var starred = state.starred.indexOf(argsStr) !== -1;
   var starButton = h('a.drill', {
-    'href': '#',
+    'href': 'javascript:;',
     'title': starred ? 'Unstar' : 'Star',
     'ev-click': mercury.event(events.starAction, {
       argsStr: argsStr,
@@ -462,7 +462,7 @@ function renderStarUserInputButton(state, events) {
   var starButton = h(
     'paper-button.method-input-star',
     {
-      'href': '#',
+      'href': 'javascript:;',
       'ev-click': mercury.event(events.starAction, {
         star: true
       }),
@@ -480,7 +480,7 @@ function renderRPCRunButton(state, events) {
   var runButton = h(
     'paper-button.method-input-run',
     {
-      'href': '#',
+      'href': 'javascript:;',
       'ev-click': getRunEvent(state, events, state.args),
       'label': 'RUN'
     },

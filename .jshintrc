@@ -20,6 +20,7 @@
   "maxlen": 80,
   "devel": true,
   "expr": true,
+  "scripturl": true,
   "sub": true,
   "node": true,
   "globals": {
