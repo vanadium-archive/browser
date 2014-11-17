@@ -193,17 +193,6 @@ func (c implSpeakerClientStub) Signature(ctx __context.T, opts ...__ipc.CallOpt)
 	return
 }
 
-func (c implSpeakerClientStub) GetMethodTags(ctx __context.T, method string, opts ...__ipc.CallOpt) (o0 []interface{}, err error) {
-	var call __ipc.Call
-	if call, err = c.c(ctx).StartCall(ctx, c.name, "GetMethodTags", []interface{}{method}, opts...); err != nil {
-		return
-	}
-	if ierr := call.Finish(&o0, &err); ierr != nil {
-		err = ierr
-	}
-	return
-}
-
 // SpeakerPlayStreamClientStream is the client stream for Speaker.PlayStream.
 type SpeakerPlayStreamClientStream interface {
 	// SendStream returns the send side of the Speaker.PlayStream client stream.
@@ -328,9 +317,9 @@ type SpeakerServerStubMethods interface {
 // SpeakerServerStub adds universal methods to SpeakerServerStubMethods.
 type SpeakerServerStub interface {
 	SpeakerServerStubMethods
-	// GetMethodTags will be replaced with DescribeInterfaces.
-	GetMethodTags(ctx __ipc.ServerContext, method string) ([]interface{}, error)
-	// Signature will be replaced with DescribeInterfaces.
+	// Describe the Speaker interfaces.
+	Describe__() []__ipc.InterfaceDesc
+	// Signature will be replaced with Describe__.
 	Signature(ctx __ipc.ServerContext) (__ipc.ServiceSignature, error)
 }
 
@@ -400,36 +389,108 @@ func (s implSpeakerServerStub) VGlob() *__ipc.GlobState {
 	return s.gs
 }
 
-func (s implSpeakerServerStub) GetMethodTags(ctx __ipc.ServerContext, method string) ([]interface{}, error) {
-	// TODO(toddw): Replace with new DescribeInterfaces implementation.
-	switch method {
-	case "Play":
-		return []interface{}{}, nil
-	case "PlaySong":
-		return []interface{}{}, nil
-	case "PlayStream":
-		return []interface{}{}, nil
-	case "GetSong":
-		return []interface{}{}, nil
-	case "Pause":
-		return []interface{}{}, nil
-	case "Stop":
-		return []interface{}{}, nil
-	case "Volume":
-		return []interface{}{}, nil
-	case "GetVolume":
-		return []interface{}{}, nil
-	case "AddSongs":
-		return []interface{}{}, nil
-	case "RemoveSongs":
-		return []interface{}{}, nil
-	default:
-		return nil, nil
-	}
+func (s implSpeakerServerStub) Describe__() []__ipc.InterfaceDesc {
+	return []__ipc.InterfaceDesc{SpeakerDesc}
+}
+
+// SpeakerDesc describes the Speaker interface.
+var SpeakerDesc __ipc.InterfaceDesc = descSpeaker
+
+// descSpeaker hides the desc to keep godoc clean.
+var descSpeaker = __ipc.InterfaceDesc{
+	Name:    "Speaker",
+	PkgPath: "sample",
+	Doc:     "// Speaker allows clients to control the music being played.",
+	Methods: []__ipc.MethodDesc{
+		{
+			Name: "Play",
+			Doc:  "// Play starts or continues the current song.",
+			OutArgs: []__ipc.ArgDesc{
+				{"", ``}, // error
+			},
+		},
+		{
+			Name: "PlaySong",
+			Doc:  "// PlaySong plays back the given song title, if possible.",
+			InArgs: []__ipc.ArgDesc{
+				{"songName", ``}, // string
+			},
+			OutArgs: []__ipc.ArgDesc{
+				{"", ``}, // error
+			},
+		},
+		{
+			Name: "PlayStream",
+			Doc:  "// PlayStream plays the given stream of music data.",
+			OutArgs: []__ipc.ArgDesc{
+				{"", ``}, // error
+			},
+		},
+		{
+			Name: "GetSong",
+			Doc:  "// GetSong retrieves the title of the Speaker's current song, if any.",
+			OutArgs: []__ipc.ArgDesc{
+				{"", ``}, // string
+				{"", ``}, // error
+			},
+		},
+		{
+			Name: "Pause",
+			Doc:  "// Pause playback of the Speaker's current song.",
+			OutArgs: []__ipc.ArgDesc{
+				{"", ``}, // error
+			},
+		},
+		{
+			Name: "Stop",
+			Doc:  "// Stop playback of the Speaker's current song.",
+			OutArgs: []__ipc.ArgDesc{
+				{"", ``}, // error
+			},
+		},
+		{
+			Name: "Volume",
+			Doc:  "// Volume adjusts the Speaker's volume.",
+			InArgs: []__ipc.ArgDesc{
+				{"volumeLevel", ``}, // uint16
+			},
+			OutArgs: []__ipc.ArgDesc{
+				{"", ``}, // error
+			},
+		},
+		{
+			Name: "GetVolume",
+			Doc:  "// GetVolume retrieves the Speaker's volume.",
+			OutArgs: []__ipc.ArgDesc{
+				{"", ``}, // uint16
+				{"", ``}, // error
+			},
+		},
+		{
+			Name: "AddSongs",
+			Doc:  "// AddSongs adds the list of given songs to the song library.",
+			InArgs: []__ipc.ArgDesc{
+				{"songs", ``}, // []string
+			},
+			OutArgs: []__ipc.ArgDesc{
+				{"", ``}, // error
+			},
+		},
+		{
+			Name: "RemoveSongs",
+			Doc:  "// RemoveSongs removes the list of given songs from the song library.",
+			InArgs: []__ipc.ArgDesc{
+				{"songs", ``}, // []string
+			},
+			OutArgs: []__ipc.ArgDesc{
+				{"", ``}, // error
+			},
+		},
+	},
 }
 
 func (s implSpeakerServerStub) Signature(ctx __ipc.ServerContext) (__ipc.ServiceSignature, error) {
-	// TODO(toddw) Replace with new DescribeInterfaces implementation.
+	// TODO(toddw): Replace with new Describe__ implementation.
 	result := __ipc.ServiceSignature{Methods: make(map[string]__ipc.MethodSignature)}
 	result.Methods["AddSongs"] = __ipc.MethodSignature{
 		InArgs: []__ipc.MethodArgument{

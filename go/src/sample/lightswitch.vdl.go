@@ -90,17 +90,6 @@ func (c implLightSwitchClientStub) Signature(ctx __context.T, opts ...__ipc.Call
 	return
 }
 
-func (c implLightSwitchClientStub) GetMethodTags(ctx __context.T, method string, opts ...__ipc.CallOpt) (o0 []interface{}, err error) {
-	var call __ipc.Call
-	if call, err = c.c(ctx).StartCall(ctx, c.name, "GetMethodTags", []interface{}{method}, opts...); err != nil {
-		return
-	}
-	if ierr := call.Finish(&o0, &err); ierr != nil {
-		err = ierr
-	}
-	return
-}
-
 // LightSwitchServerMethods is the interface a server writer
 // implements for LightSwitch.
 //
@@ -121,9 +110,9 @@ type LightSwitchServerStubMethods LightSwitchServerMethods
 // LightSwitchServerStub adds universal methods to LightSwitchServerStubMethods.
 type LightSwitchServerStub interface {
 	LightSwitchServerStubMethods
-	// GetMethodTags will be replaced with DescribeInterfaces.
-	GetMethodTags(ctx __ipc.ServerContext, method string) ([]interface{}, error)
-	// Signature will be replaced with DescribeInterfaces.
+	// Describe the LightSwitch interfaces.
+	Describe__() []__ipc.InterfaceDesc
+	// Signature will be replaced with Describe__.
 	Signature(ctx __ipc.ServerContext) (__ipc.ServiceSignature, error)
 }
 
@@ -161,20 +150,42 @@ func (s implLightSwitchServerStub) VGlob() *__ipc.GlobState {
 	return s.gs
 }
 
-func (s implLightSwitchServerStub) GetMethodTags(ctx __ipc.ServerContext, method string) ([]interface{}, error) {
-	// TODO(toddw): Replace with new DescribeInterfaces implementation.
-	switch method {
-	case "Status":
-		return []interface{}{}, nil
-	case "FlipSwitch":
-		return []interface{}{}, nil
-	default:
-		return nil, nil
-	}
+func (s implLightSwitchServerStub) Describe__() []__ipc.InterfaceDesc {
+	return []__ipc.InterfaceDesc{LightSwitchDesc}
+}
+
+// LightSwitchDesc describes the LightSwitch interface.
+var LightSwitchDesc __ipc.InterfaceDesc = descLightSwitch
+
+// descLightSwitch hides the desc to keep godoc clean.
+var descLightSwitch = __ipc.InterfaceDesc{
+	Name:    "LightSwitch",
+	PkgPath: "sample",
+	Doc:     "// LightSwitch allows clients to manipulate a virtual light switch.",
+	Methods: []__ipc.MethodDesc{
+		{
+			Name: "Status",
+			Doc:  "// Status indicates whether the light is on or off.",
+			OutArgs: []__ipc.ArgDesc{
+				{"", ``}, // string
+				{"", ``}, // error
+			},
+		},
+		{
+			Name: "FlipSwitch",
+			Doc:  "// FlipSwitch sets the light to on or off, depending on the input.",
+			InArgs: []__ipc.ArgDesc{
+				{"toOn", ``}, // bool
+			},
+			OutArgs: []__ipc.ArgDesc{
+				{"", ``}, // error
+			},
+		},
+	},
 }
 
 func (s implLightSwitchServerStub) Signature(ctx __ipc.ServerContext) (__ipc.ServiceSignature, error) {
-	// TODO(toddw) Replace with new DescribeInterfaces implementation.
+	// TODO(toddw): Replace with new Describe__ implementation.
 	result := __ipc.ServiceSignature{Methods: make(map[string]__ipc.MethodSignature)}
 	result.Methods["FlipSwitch"] = __ipc.MethodSignature{
 		InArgs: []__ipc.MethodArgument{

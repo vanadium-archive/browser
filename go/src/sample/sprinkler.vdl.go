@@ -103,17 +103,6 @@ func (c implSprinklerClientStub) Signature(ctx __context.T, opts ...__ipc.CallOp
 	return
 }
 
-func (c implSprinklerClientStub) GetMethodTags(ctx __context.T, method string, opts ...__ipc.CallOpt) (o0 []interface{}, err error) {
-	var call __ipc.Call
-	if call, err = c.c(ctx).StartCall(ctx, c.name, "GetMethodTags", []interface{}{method}, opts...); err != nil {
-		return
-	}
-	if ierr := call.Finish(&o0, &err); ierr != nil {
-		err = ierr
-	}
-	return
-}
-
 // SprinklerServerMethods is the interface a server writer
 // implements for Sprinkler.
 //
@@ -136,9 +125,9 @@ type SprinklerServerStubMethods SprinklerServerMethods
 // SprinklerServerStub adds universal methods to SprinklerServerStubMethods.
 type SprinklerServerStub interface {
 	SprinklerServerStubMethods
-	// GetMethodTags will be replaced with DescribeInterfaces.
-	GetMethodTags(ctx __ipc.ServerContext, method string) ([]interface{}, error)
-	// Signature will be replaced with DescribeInterfaces.
+	// Describe the Sprinkler interfaces.
+	Describe__() []__ipc.InterfaceDesc
+	// Signature will be replaced with Describe__.
 	Signature(ctx __ipc.ServerContext) (__ipc.ServiceSignature, error)
 }
 
@@ -180,22 +169,49 @@ func (s implSprinklerServerStub) VGlob() *__ipc.GlobState {
 	return s.gs
 }
 
-func (s implSprinklerServerStub) GetMethodTags(ctx __ipc.ServerContext, method string) ([]interface{}, error) {
-	// TODO(toddw): Replace with new DescribeInterfaces implementation.
-	switch method {
-	case "Status":
-		return []interface{}{}, nil
-	case "Start":
-		return []interface{}{}, nil
-	case "Stop":
-		return []interface{}{}, nil
-	default:
-		return nil, nil
-	}
+func (s implSprinklerServerStub) Describe__() []__ipc.InterfaceDesc {
+	return []__ipc.InterfaceDesc{SprinklerDesc}
+}
+
+// SprinklerDesc describes the Sprinkler interface.
+var SprinklerDesc __ipc.InterfaceDesc = descSprinkler
+
+// descSprinkler hides the desc to keep godoc clean.
+var descSprinkler = __ipc.InterfaceDesc{
+	Name:    "Sprinkler",
+	PkgPath: "sample",
+	Doc:     "// Sprinkler allows clients to control the virtual sprinkler.",
+	Methods: []__ipc.MethodDesc{
+		{
+			Name: "Status",
+			Doc:  "// Status retrieves the Sprinkler's status (i.e., active, idle)",
+			OutArgs: []__ipc.ArgDesc{
+				{"", ``}, // string
+				{"", ``}, // error
+			},
+		},
+		{
+			Name: "Start",
+			Doc:  "// Start causes the Sprinkler to emit water for the given duration (in seconds).",
+			InArgs: []__ipc.ArgDesc{
+				{"duration", ``}, // uint16
+			},
+			OutArgs: []__ipc.ArgDesc{
+				{"", ``}, // error
+			},
+		},
+		{
+			Name: "Stop",
+			Doc:  "// Stop causes the Sprinkler to cease watering.",
+			OutArgs: []__ipc.ArgDesc{
+				{"", ``}, // error
+			},
+		},
+	},
 }
 
 func (s implSprinklerServerStub) Signature(ctx __ipc.ServerContext) (__ipc.ServiceSignature, error) {
-	// TODO(toddw) Replace with new DescribeInterfaces implementation.
+	// TODO(toddw): Replace with new Describe__ implementation.
 	result := __ipc.ServiceSignature{Methods: make(map[string]__ipc.MethodSignature)}
 	result.Methods["Start"] = __ipc.MethodSignature{
 		InArgs: []__ipc.MethodArgument{

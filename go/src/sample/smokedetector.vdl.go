@@ -103,17 +103,6 @@ func (c implSmokeDetectorClientStub) Signature(ctx __context.T, opts ...__ipc.Ca
 	return
 }
 
-func (c implSmokeDetectorClientStub) GetMethodTags(ctx __context.T, method string, opts ...__ipc.CallOpt) (o0 []interface{}, err error) {
-	var call __ipc.Call
-	if call, err = c.c(ctx).StartCall(ctx, c.name, "GetMethodTags", []interface{}{method}, opts...); err != nil {
-		return
-	}
-	if ierr := call.Finish(&o0, &err); ierr != nil {
-		err = ierr
-	}
-	return
-}
-
 // SmokeDetectorServerMethods is the interface a server writer
 // implements for SmokeDetector.
 //
@@ -136,9 +125,9 @@ type SmokeDetectorServerStubMethods SmokeDetectorServerMethods
 // SmokeDetectorServerStub adds universal methods to SmokeDetectorServerStubMethods.
 type SmokeDetectorServerStub interface {
 	SmokeDetectorServerStubMethods
-	// GetMethodTags will be replaced with DescribeInterfaces.
-	GetMethodTags(ctx __ipc.ServerContext, method string) ([]interface{}, error)
-	// Signature will be replaced with DescribeInterfaces.
+	// Describe the SmokeDetector interfaces.
+	Describe__() []__ipc.InterfaceDesc
+	// Signature will be replaced with Describe__.
 	Signature(ctx __ipc.ServerContext) (__ipc.ServiceSignature, error)
 }
 
@@ -180,22 +169,51 @@ func (s implSmokeDetectorServerStub) VGlob() *__ipc.GlobState {
 	return s.gs
 }
 
-func (s implSmokeDetectorServerStub) GetMethodTags(ctx __ipc.ServerContext, method string) ([]interface{}, error) {
-	// TODO(toddw): Replace with new DescribeInterfaces implementation.
-	switch method {
-	case "Status":
-		return []interface{}{}, nil
-	case "Test":
-		return []interface{}{}, nil
-	case "Sensitivity":
-		return []interface{}{}, nil
-	default:
-		return nil, nil
-	}
+func (s implSmokeDetectorServerStub) Describe__() []__ipc.InterfaceDesc {
+	return []__ipc.InterfaceDesc{SmokeDetectorDesc}
+}
+
+// SmokeDetectorDesc describes the SmokeDetector interface.
+var SmokeDetectorDesc __ipc.InterfaceDesc = descSmokeDetector
+
+// descSmokeDetector hides the desc to keep godoc clean.
+var descSmokeDetector = __ipc.InterfaceDesc{
+	Name:    "SmokeDetector",
+	PkgPath: "sample",
+	Doc:     "// SmokeDetector allows clients to monitor and adjust a smoke detector.",
+	Methods: []__ipc.MethodDesc{
+		{
+			Name: "Status",
+			Doc:  "// Status retrieves the current status and sensitivity of the SmokeDetector. ",
+			OutArgs: []__ipc.ArgDesc{
+				{"status", ``},      // string
+				{"sensitivity", ``}, // int16
+				{"err", ``},         // error
+			},
+		},
+		{
+			Name: "Test",
+			Doc:  "// Test the SmokeDetector to check if it is working.",
+			OutArgs: []__ipc.ArgDesc{
+				{"", ``}, // bool
+				{"", ``}, // error
+			},
+		},
+		{
+			Name: "Sensitivity",
+			Doc:  "// Sensitivity adjusts the SmokeDetector's sensitivity to smoke.",
+			InArgs: []__ipc.ArgDesc{
+				{"sens", ``}, // int16
+			},
+			OutArgs: []__ipc.ArgDesc{
+				{"", ``}, // error
+			},
+		},
+	},
 }
 
 func (s implSmokeDetectorServerStub) Signature(ctx __ipc.ServerContext) (__ipc.ServiceSignature, error) {
-	// TODO(toddw) Replace with new DescribeInterfaces implementation.
+	// TODO(toddw): Replace with new Describe__ implementation.
 	result := __ipc.ServiceSignature{Methods: make(map[string]__ipc.MethodSignature)}
 	result.Methods["Sensitivity"] = __ipc.MethodSignature{
 		InArgs: []__ipc.MethodArgument{

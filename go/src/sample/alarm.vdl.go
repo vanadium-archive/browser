@@ -129,17 +129,6 @@ func (c implAlarmClientStub) Signature(ctx __context.T, opts ...__ipc.CallOpt) (
 	return
 }
 
-func (c implAlarmClientStub) GetMethodTags(ctx __context.T, method string, opts ...__ipc.CallOpt) (o0 []interface{}, err error) {
-	var call __ipc.Call
-	if call, err = c.c(ctx).StartCall(ctx, c.name, "GetMethodTags", []interface{}{method}, opts...); err != nil {
-		return
-	}
-	if ierr := call.Finish(&o0, &err); ierr != nil {
-		err = ierr
-	}
-	return
-}
-
 // AlarmServerMethods is the interface a server writer
 // implements for Alarm.
 //
@@ -166,9 +155,9 @@ type AlarmServerStubMethods AlarmServerMethods
 // AlarmServerStub adds universal methods to AlarmServerStubMethods.
 type AlarmServerStub interface {
 	AlarmServerStubMethods
-	// GetMethodTags will be replaced with DescribeInterfaces.
-	GetMethodTags(ctx __ipc.ServerContext, method string) ([]interface{}, error)
-	// Signature will be replaced with DescribeInterfaces.
+	// Describe the Alarm interfaces.
+	Describe__() []__ipc.InterfaceDesc
+	// Signature will be replaced with Describe__.
 	Signature(ctx __ipc.ServerContext) (__ipc.ServiceSignature, error)
 }
 
@@ -218,26 +207,63 @@ func (s implAlarmServerStub) VGlob() *__ipc.GlobState {
 	return s.gs
 }
 
-func (s implAlarmServerStub) GetMethodTags(ctx __ipc.ServerContext, method string) ([]interface{}, error) {
-	// TODO(toddw): Replace with new DescribeInterfaces implementation.
-	switch method {
-	case "Status":
-		return []interface{}{}, nil
-	case "Arm":
-		return []interface{}{}, nil
-	case "DelayArm":
-		return []interface{}{}, nil
-	case "Unarm":
-		return []interface{}{}, nil
-	case "Panic":
-		return []interface{}{}, nil
-	default:
-		return nil, nil
-	}
+func (s implAlarmServerStub) Describe__() []__ipc.InterfaceDesc {
+	return []__ipc.InterfaceDesc{AlarmDesc}
+}
+
+// AlarmDesc describes the Alarm interface.
+var AlarmDesc __ipc.InterfaceDesc = descAlarm
+
+// descAlarm hides the desc to keep godoc clean.
+var descAlarm = __ipc.InterfaceDesc{
+	Name:    "Alarm",
+	PkgPath: "sample",
+	Doc:     "// Alarm allows clients to manipulate an alarm and query its status.",
+	Methods: []__ipc.MethodDesc{
+		{
+			Name: "Status",
+			Doc:  "// Status returns the current status of the Alarm (i.e., armed, unarmed, panicking).",
+			OutArgs: []__ipc.ArgDesc{
+				{"", ``}, // string
+				{"", ``}, // error
+			},
+		},
+		{
+			Name: "Arm",
+			Doc:  "// Arm sets the Alarm to the armed state.",
+			OutArgs: []__ipc.ArgDesc{
+				{"", ``}, // error
+			},
+		},
+		{
+			Name: "DelayArm",
+			Doc:  "// DelayArm sets the Alarm to the armed state after the given delay in seconds.",
+			InArgs: []__ipc.ArgDesc{
+				{"seconds", ``}, // float32
+			},
+			OutArgs: []__ipc.ArgDesc{
+				{"", ``}, // error
+			},
+		},
+		{
+			Name: "Unarm",
+			Doc:  "// Unarm sets the Alarm to the unarmed state.",
+			OutArgs: []__ipc.ArgDesc{
+				{"", ``}, // error
+			},
+		},
+		{
+			Name: "Panic",
+			Doc:  "// Panic sets the Alarm to the panicking state.",
+			OutArgs: []__ipc.ArgDesc{
+				{"", ``}, // error
+			},
+		},
+	},
 }
 
 func (s implAlarmServerStub) Signature(ctx __ipc.ServerContext) (__ipc.ServiceSignature, error) {
-	// TODO(toddw) Replace with new DescribeInterfaces implementation.
+	// TODO(toddw): Replace with new Describe__ implementation.
 	result := __ipc.ServiceSignature{Methods: make(map[string]__ipc.MethodSignature)}
 	result.Methods["Arm"] = __ipc.MethodSignature{
 		InArgs: []__ipc.MethodArgument{},
