@@ -157,7 +157,12 @@ function renderMethodSignatures(state, events) {
   var methods = [];
 
   // Render all the methods in alphabetical order.
-  Object.getOwnPropertyNames(sig).sort().forEach(function(m) {
+  // ES6 Map iterates in the order values were added, so we must sort them.
+  var methodNames = [];
+  for (var methodName of sig.keys()) {
+    methodNames.push(methodName);
+  }
+  methodNames.sort().forEach(function(m) {
     methods.push(methodForm.render(state.methodForm[m], events.methodForm[m]));
   });
 

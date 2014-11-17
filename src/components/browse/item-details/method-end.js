@@ -21,7 +21,7 @@ function methodEnd(state, method, data) {
   var sig = state.item().serverInfo.signature;
 
   // Otherwise, we'll have to learn from the results and draw them, if possible.
-  var numInArgs = sig[method].inArgs.length;
+  var numInArgs = sig.get(method).inArgs.length;
 
   // Since the RPC was successful, we can assume the inputs were good.
   if (numInArgs > 0) {
@@ -31,7 +31,7 @@ function methodEnd(state, method, data) {
 
   // Do not process results we expect to be empty.
   // TODO(alexfandrianto): Streaming results are ignored with this logic.
-  var expectedOutArgs = sig[method].numOutArgs;
+  var expectedOutArgs = sig.get(method).numOutArgs;
   if (expectedOutArgs === 1) { // Error is the only possible out argument.
     replaceResult(state, data.runID, '<ok>');
     return;
@@ -73,7 +73,7 @@ function replaceResult(state, runID, newResult) {
 function learnMethodInput(state, method, args) {
   var sig = state.item().serverInfo.signature;
   args.forEach(function(value, i) {
-    var argName = sig[method].inArgs[i];
+    var argName = sig.get(method).inArgs[i];
     var input = {
       argName: argName,
       methodName: method,

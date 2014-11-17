@@ -63,29 +63,26 @@ function displayItemDetails(state, events, data) {
       // Go through each signature method, preparing the state needed for its
       // form to be rendered and deciding if the method should be recommended.
       var signatureResult = item.serverInfo.signature;
-      for (var m in signatureResult) {
-        if (signatureResult.hasOwnProperty(m)) {
-          // Initialize the method form for future rendering.
-          var form = methodForm();
-          state.methodForm.put(m, form.state);
-          events.methodForm.put(m, form.events);
+      for (var m of signatureResult.keys()) {
+        var form = methodForm();
+        state.methodForm.put(m, form.state);
+        events.methodForm.put(m, form.events);
 
-          // Hook up the new form's method start, end, and toast events.
-          form.events.methodStart(
-            methodStart.bind(null, state, m)
-          );
-          form.events.methodEnd(
-            methodEnd.bind(null, state, m)
-          );
-          form.events.toast = events.toast;
+        // Hook up the new form's method start, end, and toast events.
+        form.events.methodStart(
+          methodStart.bind(null, state, m)
+        );
+        form.events.methodEnd(
+          methodEnd.bind(null, state, m)
+        );
+        form.events.toast = events.toast;
 
-          // Finally, allow the form to gather the info it needs to display.
-          form.events.displayMethodForm({
-            itemName: name,
-            signature: signatureResult,
-            methodName: m
-          });
-        }
+        // Finally, allow the form to gather the info it needs to display.
+        form.events.displayMethodForm({
+          itemName: name,
+          signature: signatureResult,
+          methodName: m
+        });
       }
     });
   }).catch(function(err) {

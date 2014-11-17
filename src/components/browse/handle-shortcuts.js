@@ -54,6 +54,7 @@ function loadShortcutKeys() {
  */
 function saveShortcutKey(key, shouldSet) {
   return loadShortcutKeys().then(function(keys) {
+    keys = keys || []; // Initialize the shortcuts, if none were loaded.
     arraySet.set(keys, key, shouldSet);
     return store.setValue(userShortcutsID, keys);
   });

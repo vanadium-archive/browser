@@ -7,7 +7,6 @@ var veyronConfig = require('../../veyron-config');
 var itemFactory = require('./item');
 var freeze = require('../../lib/mercury/freeze');
 var log = require('../../lib/log')('services:namespace:service');
-var _ = require('lodash');
 
 module.exports = {
   getChildren: getChildren,
@@ -217,7 +216,7 @@ function getSignature(objectName) {
  */
 function hashSignature(signature) {
   var cp = {};
-  _.forOwn(signature, function(method, methodName) {
+  signature.forEach(function(method, methodName) {
     cp[methodName] = method.inArgs.length;
   });
   return jsonStableStringify(cp);

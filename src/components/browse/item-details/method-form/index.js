@@ -127,7 +127,7 @@ function displayMethodForm(state, events, data) {
  * Clear the mercury values related to the input arguments.
  */
 function initializeInputArguments(state) {
-  var param = state.signature()[state.methodName()];
+  var param = state.signature().get(state.methodName());
   var startingArgs = _.range(param.inArgs.length).map(function() {
     return undefined; // Initialize array with undefined values using lodash.
   });
@@ -138,7 +138,7 @@ function initializeInputArguments(state) {
  * Returns a promise that refreshes the suggestions to the input arguments.
  */
 function refreshInputSuggestions(state) {
-  var param = state.signature()[state.methodName()];
+  var param = state.signature().get(state.methodName());
   var input = {
     signature: state.signature(),
     methodName: state.methodName(),
@@ -339,7 +339,7 @@ function renderMethodHeader(state, events) {
  */
 function getMethodSignature(state, args) {
   var methodName = state.methodName;
-  var param = state.signature[methodName];
+  var param = state.signature.get(methodName);
   var text = methodName + '(';
   for (var i = 0; i < param.inArgs.length; i++) {
     var arg = args !== undefined ? args[i] : param.inArgs[i];
@@ -427,7 +427,7 @@ function renderInvocation(state, events, argsStr) {
  */
 function renderMethodInput(state, index) {
   var methodName = state.methodName;
-  var argName = state.signature[methodName].inArgs[index];
+  var argName = state.signature.get(methodName).inArgs[index];
   var inputSuggestions = state.inputSuggestions[index];
   var args = state.args;
 
