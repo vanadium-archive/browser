@@ -6,3 +6,4 @@ public/platform.*
 public/polymer.*
 npm-debug.log
 go/bin/
+*.vdl.go
