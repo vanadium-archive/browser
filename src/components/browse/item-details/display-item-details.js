@@ -63,7 +63,7 @@ function displayItemDetails(state, events, data) {
       // Go through each signature method, preparing the state needed for its
       // form to be rendered and deciding if the method should be recommended.
       var signatureResult = item.serverInfo.signature;
-      for (var m of signatureResult.keys()) {
+      signatureResult.forEach(function(methodData, m) {
         var form = methodForm();
         state.methodForm.put(m, form.state);
         events.methodForm.put(m, form.events);
@@ -83,7 +83,7 @@ function displayItemDetails(state, events, data) {
           signature: signatureResult,
           methodName: m
         });
-      }
+      });
     });
   }).catch(function(err) {
     log.error('Error while getting details for', name, err);
