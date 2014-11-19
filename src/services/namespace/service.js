@@ -299,7 +299,7 @@ function getServerInfo(objectName) {
     isAccessible = true;
     return getServerTypeInfo(sig);
   }, function failedToGetSignature(err) {
-    signature = {};
+    signature = new Map();
     //TODO(aghassemi): We should at least be able to tell if inaccessible
     //because not authorized vs other reasons.
     isAccessible = false;
