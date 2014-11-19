@@ -80,7 +80,10 @@ function render(state, events) {
   var tabContent;
 
   if(state.showLoadingIndicator) {
-    tabContent = h('paper-loading');
+    tabContent = h('paper-spinner', {
+      'active': new AttributeHook(true),
+      'aria-label': new AttributeHook('Loading')
+    });
   } else if(state.item) {
     var detailsContent = renderDetailsContent(state, events);
 

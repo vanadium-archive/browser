@@ -2,8 +2,7 @@ node_modules/
 bower_components/
 go/pkg/
 public/bundle.*
-public/platform.*
-public/polymer.*
+public/webcomponents.js
 npm-debug.log
 go/bin/
 *.vdl.go

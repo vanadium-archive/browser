@@ -173,6 +173,11 @@
 
 .search-box {
   white-space: nowrap;
+  width: var(--size-input-width-normal);
+}
+
+.search-box core-tooltip {
+  width: 100%;
 }
 
 .search-box .icon, .namespace-box .icon {
@@ -205,11 +210,11 @@
   color: inherit;
 }
 
-paper-autocomplete.autocomplete {
-  width: 16em;
+paper-autocomplete {
+  width: var(--size-input-width-normal);
 }
 
-paper-autocomplete.autocomplete::shadow #suggest-box {
+paper-autocomplete::shadow #suggest-box {
   background-color: var(--color-grey-light);
 }
 
