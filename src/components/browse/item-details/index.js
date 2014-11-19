@@ -4,6 +4,7 @@ var insertCss = require('insert-css');
 var displayItemDetails = require('./display-item-details');
 var h = mercury.h;
 var css = require('./index.css');
+var methodNameToVarHashKey = require('./methodNameToVarHashKey.js');
 var methodForm = require('./method-form/index.js');
 
 module.exports = create;
@@ -162,8 +163,12 @@ function renderMethodSignatures(state, events) {
   sig.forEach(function(methodData, methodName) {
     methodNames.push(methodName);
   });
-  methodNames.sort().forEach(function(m) {
-    methods.push(methodForm.render(state.methodForm[m], events.methodForm[m]));
+  methodNames.sort().forEach(function(methodName) {
+    var methodKey = methodNameToVarHashKey(methodName);
+    methods.push(methodForm.render(
+        state.methodForm[methodKey],
+        events.methodForm[methodKey]
+      ));
   });
 
   return h('div', methods); // Note: allows 0 method signatures

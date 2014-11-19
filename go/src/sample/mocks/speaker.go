@@ -81,8 +81,8 @@ func (s *speaker) AddSongs(_ ipc.ServerContext, songs []string) error {
 	return nil
 }
 
-// RemoveSongs removes the list of given songs from the song library.
-func (s *speaker) RemoveSongs(_ ipc.ServerContext, songs []string) error {
+// Delete removes the list of given songs from the song library.
+func (s *speaker) Delete(_ ipc.ServerContext, songs []string) error {
 	for _, song := range songs {
 		delete(s.speakerLibrary, song) // No-op if the song isn't there.
 		if s.currentSong == song {     // Stop playing the current song if it was removed.

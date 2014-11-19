@@ -20,6 +20,6 @@ type Speaker interface {
  GetVolume() (uint16, error)
  // AddSongs adds the list of given songs to the song library.
  AddSongs(songs []string) (error)
- // RemoveSongs removes the list of given songs from the song library.
- RemoveSongs(songs []string) (error)
+ // Delete removes the list of given songs from the song library.
+ Delete(songs []string) (error)
 }

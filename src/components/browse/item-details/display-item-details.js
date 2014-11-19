@@ -1,6 +1,7 @@
 var mercury = require('mercury');
 var namespaceService = require('../../../services/namespace/service');
 var smartService = require('../../../services/smart/service');
+var methodNameToVarHashKey = require('./methodNameToVarHashKey');
 var log = require('../../../lib/log')(
   'components:browse:item-details:display-item-details'
 );
@@ -63,17 +64,18 @@ function displayItemDetails(state, events, data) {
       // Go through each signature method, preparing the state needed for its
       // form to be rendered and deciding if the method should be recommended.
       var signatureResult = item.serverInfo.signature;
-      signatureResult.forEach(function(methodData, m) {
+      signatureResult.forEach(function(methodData, methodName) {
+        var methodKey = methodNameToVarHashKey(methodName);
         var form = methodForm();
-        state.methodForm.put(m, form.state);
-        events.methodForm.put(m, form.events);
+        state.methodForm.put(methodKey, form.state);
+        events.methodForm.put(methodKey, form.events);
 
         // Hook up the new form's method start, end, and toast events.
         form.events.methodStart(
-          methodStart.bind(null, state, m)
+          methodStart.bind(null, state, methodName)
         );
         form.events.methodEnd(
-          methodEnd.bind(null, state, m)
+          methodEnd.bind(null, state, methodName)
         );
         form.events.toast = events.toast;
 
@@ -81,7 +83,7 @@ function displayItemDetails(state, events, data) {
         form.events.displayMethodForm({
           itemName: name,
           signature: signatureResult,
-          methodName: m
+          methodName: methodName
         });
       });
     });
