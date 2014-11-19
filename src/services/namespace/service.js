@@ -58,7 +58,7 @@ function glob(pattern) {
   var globItemsObservArrPromise =
     getRuntime().then(function callGlobOnNamespace(rt) {
       // TODO(aghassemi) use watchGlob when available
-      var namespace = rt.newNamespace();
+      var namespace = rt.namespace();
       return namespace.glob(pattern).stream;
     }).then(function updateResult(globStream) {
 
