@@ -61,7 +61,10 @@ function render(state, events) {
   insertCss(css);
 
   if(!state.navigation.pageKey) {
-    return mercury.h('paper-loading');
+    return mercury.h('paper-spinner', {
+      'active': new AttributeHook(true),
+      'aria-label': new AttributeHook('Loading')
+    });
   }
 
   var panelAttributes = {

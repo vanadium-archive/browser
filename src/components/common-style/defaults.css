@@ -26,6 +26,10 @@
   display: none;
 }
 
-paper-loading {
+paper-spinner {
   margin: var(--size-space-xsmall);
+}
+
+::shadow paper-input-decorator {
+  padding: 0;
 }

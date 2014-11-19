@@ -29,7 +29,7 @@ GO_FILES = $(shell find go -name "*.go")
 VDL_FILES = $(shell find go -name "*.vdl")
 
 # Builds everything.
-all: directories public/bundle.js public/bundle.html public/platform.js public/platform.js.map public/polymer.js.map
+all: directories public/bundle.js public/bundle.html public/webcomponents.js
 
 # Creating the bundle JS file.
 public/bundle.js: $(BROWSERIFY_FILES) node_modules
@@ -41,14 +41,8 @@ public/bundle.html: web-component-dependencies.html node_modules bower_component
 	:;vulcanize --output public/bundle.html web-component-dependencies.html --inline
 
 # Copies the web components platform file.
-public/platform.js: bower_components
-	cp bower_components/platform/platform.js public/platform.js
-
-public/platform.js.map: bower_components
-	cp bower_components/platform/platform.js.map public/platform.js.map
-
-public/polymer.js.map: bower_components
-	cp bower_components/polymer/polymer.js.map public/polymer.js.map
+public/webcomponents.js: bower_components
+	cp bower_components/webcomponentsjs/webcomponents.js public/webcomponents.js
 
 # Install what we need from NPM.
 node_modules: package.json
@@ -96,8 +90,7 @@ directories:
 # Clean all build artifacts.
 clean:
 	rm -f public/bundle.*
-	rm -f public/platform.*
-	rm -f public/polymer.*
+	rm -f public/webcomponents.js
 	rm -rf node_modules
 	rm -rf go/bin
 	rm -rf bower_components
