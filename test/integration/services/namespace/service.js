@@ -24,21 +24,20 @@ var namespaceService =
   });
 
 test('getChildren of default namespace root', function(t) {
-  var TIMEOUT = 1000;
   namespaceService.getChildren().
   then(function assertResult(result) {
     assertIsImmutable(t, result);
-    // Wait until we receive the 2 top level items: cottage, house
-    setTimeout(function validate() {
+    // Wait until we finish, we expect 2 top level items: cottage, house
+    result.events.on('end', function validate() {
       mercury.watch(result, function(children) {
         children = _.sortBy(children, 'mountedName');
         assertCottage(children[0]);
         assertHouse(children[1]);
         t.end();
       });
-    }, TIMEOUT);
-    // TODO(aghassemi), TIMEOUT is sill not good, but events such as oncomplete
-    // are coming to Glob soon, so change when that's available.
+    });
+    result.events.on('streamError', t.end);
+    result.events.on('itemError', t.end);
   }).catch(t.end);
 
   function assertCottage(item) {
@@ -63,19 +62,18 @@ test('getChildren of default namespace root', function(t) {
 test('getChildren of cottage/lawn', function(t) {
   namespaceService.getChildren('cottage/lawn').
   then(function assertResult(result) {
-    // Wait until we receive the 3 items,
-    // back, front and master-sprinkler come back
     assertIsImmutable(t, result);
-    var numReturnedChildren;
-    result(function(children) {
-      numReturnedChildren = children.length;
-      if (numReturnedChildren === 3) {
+    // Wait until we finish, we expect 3 items back, front and master-sprinkler
+    result.events.on('end', function validate() {
+      mercury.watch(result, function(children) {
         children = _.sortBy(children, 'mountedName');
         assertBack(children[0]);
         assertSprinkler(children[2]);
         t.end();
-      }
+      });
     });
+    result.events.on('streamError', t.end);
+    result.events.on('itemError', t.end);
   }).catch(t.end);
 
   function assertSprinkler(item) {
@@ -100,18 +98,18 @@ test('getChildren of rooted /localhost:8881/house/kitchen', function(t) {
   // 8881 is the expected root mounttable port to be running for the tests
   namespaceService.getChildren('/localhost:8881/house/kitchen').
   then(function assertResult(result) {
-    // Wait until we receive the 2 items, lights and smoke-detector
     assertIsImmutable(t, result);
-    var numReturnedChildren;
-    result(function(children) {
-      numReturnedChildren = children.length;
-      if (numReturnedChildren === 2) {
+    // Wait until we finish, we expect 2 items, lights and smoke-detector
+    result.events.on('end', function validate() {
+      mercury.watch(result, function(children) {
         children = _.sortBy(children, 'mountedName');
         assertLightSwitch(children[0]);
         assertSmokeDetector(children[1]);
         t.end();
-      }
+      });
     });
+    result.events.on('streamError', t.end);
+    result.events.on('itemError', t.end);
   }).catch(t.end);
 
   function assertLightSwitch(item) {
@@ -138,15 +136,18 @@ test('getChildren of non-existing mounttable', function(t) {
   // error when globbing rooted names that don't exist?
   namespaceService.getChildren('/DoesNotExist:666/What/Ever').
   then(function assertResult(result) {
-    // Expect empty results
-    mercury.watch(result, function(children) {
-      t.deepEqual(children, []);
-      t.end();
+    result.events.on('end', function validate() {
+      // Expect empty results
+      mercury.watch(result, function(children) {
+        t.deepEqual(children, []);
+        t.end();
+      });
     });
+    result.events.on('streamError', t.end);
+    result.events.on('itemError', t.end);
   }).catch(t.end);
 });
 
-// TODO(aghassemi) enable when getNamespaceItem is properly implemented
 test('getNamespaceItem of leaf server', function(t) {
   namespaceService.getNamespaceItem('cottage/lawn/master-sprinkler').
   then(function assertItem(itemObs) {
@@ -175,13 +176,7 @@ test('getNamespaceItem of intermediary name', function(t) {
   }).catch(t.end);
 });
 
-// TODO(aghassemi) This tests is flaky and relies on
-// order of RPC returns. Since glob is returning cottage
-// as both a mounttable and an intermediary node and the
-// order in which it is returned is underterministic
-// having the end events on glob will fix this issue
-// skipping the test until then.
-test.skip('getNamespaceItem of mounttable leaf server', function(t) {
+test('getNamespaceItem of mounttable leaf server', function(t) {
   namespaceService.getNamespaceItem('cottage').
   then(function assertItem(itemObs) {
     assertIsImmutable(t, itemObs);

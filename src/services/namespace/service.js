@@ -1,6 +1,7 @@
 var veyron = require('veyron');
 var mercury = require('mercury');
 var LRU = require('lru-cache');
+var EventEmitter = require('events').EventEmitter;
 var jsonStableStringify = require('json-stable-stringify');
 var namespaceUtil = veyron.namespaceUtil;
 var veyronConfig = require('../../veyron-config');
@@ -43,6 +44,10 @@ var globCache = new LRU({
  * of items as defined in @see item.js
  * As new items become available the observable array will change to reflect
  * the changes.
+ *
+ * The observable result has an events property which is an EventEmitter
+ * and emits 'end', 'streamError' and 'itemError' events.
+ *
  * @param {string} pattern Glob pattern
  * @return {Promise.<mercury.array>} Promise of an observable array
  * of namespace items
@@ -51,20 +56,31 @@ function glob(pattern) {
   var cacheKey = 'glob|' + pattern;
   var cacheHit = globCache.get(cacheKey);
   if (cacheHit) {
+    if (cacheHit._hasEnded) {
+      process.nextTick(function() {
+        // The addition of the end event to mark the end of a glob requires that
+        // our cache also causes the same event to be emitted.
+        cacheHit.events.emit('end');
+      });
+    }
     return Promise.resolve(cacheHit);
   }
 
   var globItemsObservArr = mercury.array([]);
+  var immutableResult = freeze(globItemsObservArr);
+  immutableResult.events = new EventEmitter();
   var globItemsObservArrPromise =
     getRuntime().then(function callGlobOnNamespace(rt) {
       // TODO(aghassemi) use watchGlob when available
       var namespace = rt.namespace();
       return namespace.glob(pattern).stream;
     }).then(function updateResult(globStream) {
+      var itemPromises = [];
 
       globStream.on('data', function createItem(result) {
         // Create an item as glob results come in and add the item to result
-        createNamespaceItem(result.name, result.servers).then(function(item) {
+        var createItemPromise = createNamespaceItem(result.name, result.servers)
+        .then(function(item) {
           // TODO(aghassemi) namespace glob can return duplicate results, this
           // temporary fix keeps the one that's a server. Is this correct?
           // If a name can be more than one thing, UI needs change too.
@@ -81,20 +97,34 @@ function glob(pattern) {
             globItemsObservArr.push(item);
           }
         }).catch(function(err) {
+          globCache.del(cacheKey);
+          immutableResult.events.emit('itemError', {
+            name: result.name,
+            error: err
+          });
           log.error('Failed to create item for "' + result.name + '"', err);
         });
+
+        itemPromises.push(createItemPromise);
+      });
+
+      globStream.on('end', function() {
+        var triggerEnd = function()  {
+          immutableResult._hasEnded = true;
+          immutableResult.events.emit('end');
+        };
+
+        // Wait until all createItem promises return before triggering has ended
+        Promise.all(itemPromises).then(triggerEnd).catch(triggerEnd);
       });
 
       globStream.on('error', function invalidateCacheAndLog(err) {
         globCache.del(cacheKey);
-        // TODO(aghassemi) UI might want to know about this error so it can
-        // tell the user things won't be updated automatically anymore and maybe
-        // instruct them to reload.
+        immutableResult.events.emit('streamError', err);
         log.error('Glob stream error for', name, err);
       });
 
     }).then(function cacheAndReturnResult() {
-      var immutableResult = freeze(globItemsObservArr);
       globCache.set(cacheKey, immutableResult);
       return immutableResult;
     }).catch(function invalidateCacheAndRethrow(err) {
@@ -107,10 +137,6 @@ function glob(pattern) {
 }
 
 /*
- * Time that if globbing for name does not return any results, we timeout.
- */
-var MAX_GET_ITEM_TIMEOUT = 5000;
-/*
  * Given a name, provide information about a the name as defined in @see item.js
  * @param {string} objectName Object name to get namespace item for.
  * @return {Promise.<mercury.value>} Promise of an observable value of an item
@@ -120,27 +146,24 @@ function getNamespaceItem(objectName) {
 
   // Globbing the name itself would provide information about the name.
   return glob(objectName).then(function(resultsObs) {
-    // wait until the glob has the one and only result before resolving
+    // Wait until the glob finishes before returning the item
     return new Promise(function(resolve, reject) {
-      var alreadyResolved = false;
-      mercury.watch(resultsObs, function(results) {
-        // wait until there is one item
-        if (!alreadyResolved && results.length > 0) {
+      resultsObs.events.on('streamError', function(err) {
+        reject(err);
+      });
+      resultsObs.events.on('itemError', function(err) {
+        reject(err);
+      });
+      resultsObs.events.on('end', function() {
+        var results = resultsObs();
+        if (results.length === 0) {
+          reject(new Error(objectName + ' Not Found'));
+        } else {
           var item = new mercury.value(results[0]);
           var immutableItem = freeze(item);
-          alreadyResolved = true;
           resolve(immutableItem);
         }
       });
-
-      setTimeout(function timer() {
-        if (!alreadyResolved) {
-          var err = new Error('Timeout: getNamespaceItem failed to get ' +
-            'any results back in ' + MAX_GET_ITEM_TIMEOUT + 'ms');
-          alreadyResolved = true;
-          reject(err);
-        }
-      }, MAX_GET_ITEM_TIMEOUT);
     });
   });
 }
