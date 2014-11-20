@@ -56,12 +56,17 @@ function glob(pattern) {
   var cacheKey = 'glob|' + pattern;
   var cacheHit = globCache.get(cacheKey);
   if (cacheHit) {
+    // The addition of the end event to mark the end of a glob requires that
+    // our cache also causes the same event to be emitted.
     if (cacheHit._hasEnded) {
+      // Remove old listeners to avoid memory leak but now we need to set
+      // _hasEnded to false until we trigger again otherwise a new request
+      // could wipe out an outstanding listener.
+      cacheHit._hasEnded = false;
       cacheHit.events.removeAllListeners();
       process.nextTick(function() {
-        // The addition of the end event to mark the end of a glob requires that
-        // our cache also causes the same event to be emitted.
         cacheHit.events.emit('end');
+        cacheHit._hasEnded = true;
       });
     }
     return Promise.resolve(cacheHit);
@@ -81,38 +86,38 @@ function glob(pattern) {
       globStream.on('data', function createItem(result) {
         // Create an item as glob results come in and add the item to result
         var createItemPromise = createNamespaceItem(result.name, result.servers)
-        .then(function(item) {
-          // TODO(aghassemi) namespace glob can return duplicate results, this
-          // temporary fix keeps the one that's a server. Is this correct?
-          // If a name can be more than one thing, UI needs change too.
-          var existingItem = globItemsObservArr.filter(function(curItem) {
-            return curItem().objectName === item().objectName;
-          }).get(0);
-          if (existingItem) {
-            // override the old one if new item is a server
-            if (item().isServer) {
-              var index = globItemsObservArr.indexOf(existingItem);
-              globItemsObservArr.put(index, item);
+          .then(function(item) {
+            // TODO(aghassemi) namespace glob can return duplicate results, this
+            // temporary fix keeps the one that's a server. Is this correct?
+            // If a name can be more than one thing, UI needs change too.
+            var existingItem = globItemsObservArr.filter(function(curItem) {
+              return curItem().objectName === item().objectName;
+            }).get(0);
+            if (existingItem) {
+              // override the old one if new item is a server
+              if (item().isServer) {
+                var index = globItemsObservArr.indexOf(existingItem);
+                globItemsObservArr.put(index, item);
+              }
+            } else {
+              globItemsObservArr.push(item);
             }
-          } else {
-            globItemsObservArr.push(item);
-          }
-        }).catch(function(err) {
-          globCache.del(cacheKey);
-          immutableResult.events.emit('itemError', {
-            name: result.name,
-            error: err
+          }).catch(function(err) {
+            globCache.del(cacheKey);
+            immutableResult.events.emit('itemError', {
+              name: result.name,
+              error: err
+            });
+            log.error('Failed to create item for "' + result.name + '"', err);
           });
-          log.error('Failed to create item for "' + result.name + '"', err);
-        });
 
         itemPromises.push(createItemPromise);
       });
 
       globStream.on('end', function() {
-        var triggerEnd = function()  {
-          immutableResult._hasEnded = true;
+        var triggerEnd = function() {
           immutableResult.events.emit('end');
+          immutableResult._hasEnded = true;
         };
 
         // Wait until all createItem promises return before triggering has ended
