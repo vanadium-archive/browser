@@ -28,8 +28,16 @@ function render(state, events) {
   function renderNavigationItems() {
     var navigationItems = [{
       key: 'browse',
-      label: 'Browse',
-      icon: 'search',
+      label: 'Iconview',
+      icon: 'apps',
+      href: browseRoute.createUrl(
+        state.browse.namespace,
+        state.browse.globQuery
+      )
+    }, {
+      key: 'tree',
+      label: 'Treeview',
+      icon: 'chevron-left',
       href: browseRoute.createUrl(
         state.browse.namespace,
         state.browse.globQuery
