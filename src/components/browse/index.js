@@ -183,13 +183,11 @@ function renderHeader(browseState, browseEvents, navEvents) {
 
   var inputEvent = new PropertyValueEvent(function(val) {
     browseEvents.getNamespaceSuggestions(val);
-  }, 'inputValue', true);
+  }, 'value', true);
 
   var children = browseState.namespaceSuggestions.map(
     function renderChildItem(child) {
-      return h('paper-item', {
-        'label': new AttributeHook(child.mountedName)
-      });
+      return h('paper-item', child.mountedName);
     }
   );
 

@@ -146,6 +146,8 @@ New Events:
         // Listen to inputs to determine editing status.
         this.addEventListener('input', this.inputAction.bind(this));
         this.addEventListener('keydown', this.keydownAction.bind(this));
+        this.addEventListener('focus', this.inputFocusAction.bind(this));
+        this.addEventListener('blur', this.inputBlurAction.bind(this));
 
         // Capture changes to children
         this.watchMutation();
@@ -164,9 +166,7 @@ New Events:
       },
 
       /**
-       * Wraps the subclass's focus action to set the editing flag to true.
-       *
-       * @Override
+       * Set the editing flag to true upon gaining focus.
        */
       inputFocusAction: function(e) {
         this.super(e);
@@ -178,11 +178,9 @@ New Events:
       },
 
       /**
-       * Wraps the subclass's blur action to potentially set editing to false.
+       * When blurring, potentially set editing to false.
        * Has a delay before the suggestion box is closed in case the user starts
        * to click on the suggestion box.
-       *
-       * @Override
        */
       inputBlurAction: function(e) {
         this.super(e);
@@ -245,7 +243,7 @@ New Events:
           // Show nodes with a prefix match, as long
           // as the maxItems limit has not been reached.
           if ((this.maxItems === null || showing.length < this.maxItems) &&
-            this.prefixMatch(item.label)) {
+            this.prefixMatch(this.getItemLabel(item))) {
 
             showing.push(i);
             item.style.display = '';
@@ -275,14 +273,15 @@ New Events:
        * then the full input value is used instead.
        */
       getInputValueSuffix: function() {
+        var value = this.value || '';
         if (this.delimiter === '') {
           return '';
         } else if (!this.delimiter) {
-          return this.inputValue;
+          return value;
         }
 
         // Find the suffix.
-        var parts = this.inputValue.split(this.delimiter);
+        var parts = value.split(this.delimiter);
         var suffix = parts[parts.length - 1];
 
         // Handle excess whitespace.
@@ -290,6 +289,15 @@ New Events:
           return suffix.trimLeft();
         }
         return suffix;
+      },
+
+      /**
+       * Gets the label out of the item for prefix-matching and replacement.
+       * Note: paper-item and core-item mismatch; label is not available on the
+       * former anymore.
+       */
+      getItemLabel: function(item) {
+        return item.textContent || item.label;
       },
 
       /**
@@ -330,10 +338,10 @@ New Events:
       selectItem: function(e, item) {
         this.highlightReset();
 
-        this.replaceValue(item.label);
+        this.replaceValue(this.getItemLabel(item));
 
         this.fireInput();
-        this.inputChangeAction(e);
+        this.changeAction(e);
 
         this.showSuggestions(false);
         this.editing = false;
@@ -345,12 +353,12 @@ New Events:
        */
       replaceValue: function(newValue) {
         if (this.delimiter === '') {
-          this.inputValue += newValue;
+          this.value += newValue;
         } else if (!this.delimiter) {
-          this.inputValue = newValue;
+          this.value = newValue;
         } else {
           // Find the suffix.
-          var parts = this.inputValue.split(this.delimiter);
+          var parts = this.value.split(this.delimiter);
           var suffix = parts[parts.length - 1];
 
           // Compute the replacement, taking into account whitespace.
@@ -361,9 +369,8 @@ New Events:
           parts[parts.length - 1] = suffix.substring(0, keepLength) + newValue;
 
           // Replace the input value.
-          this.inputValue = parts.join(this.delimiter);
+          this.value = parts.join(this.delimiter);
         }
-        this.commit();
       },
 
       /**
