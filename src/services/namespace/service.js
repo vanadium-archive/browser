@@ -57,6 +57,7 @@ function glob(pattern) {
   var cacheHit = globCache.get(cacheKey);
   if (cacheHit) {
     if (cacheHit._hasEnded) {
+      cacheHit.events.removeAllListeners();
       process.nextTick(function() {
         // The addition of the end event to mark the end of a glob requires that
         // our cache also causes the same event to be emitted.

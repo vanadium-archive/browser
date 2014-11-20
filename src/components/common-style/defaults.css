@@ -33,3 +33,30 @@ paper-spinner {
 ::shadow paper-input-decorator {
   padding: 0;
 }
+
+paper-progress {
+  width: 100%;
+  height: 2px;
+}
+
+/*
+ * With delayed class, we only make the progressbar visible after 500ms
+ * This normally creates better UX since if everything loads within a short time
+ * there is no flash of a short-lived loading indicator anymore.
+ */
+paper-progress.delayed {
+  -webkit-animation:delayed-progressbar 0.5s;
+}
+@-webkit-keyframes delayed-progressbar{
+  0%{visibility:hidden;}
+  99%{visibility:hidden;}
+  100%{visibility:visible;}
+}
+
+paper-progress::shadow #activeProgress {
+  background-color: var(--color-bright);
+}
+
+paper-progress::shadow #progressContainer {
+  background-color: transparent;
+}

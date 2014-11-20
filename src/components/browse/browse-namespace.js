@@ -1,4 +1,5 @@
 var mercury = require('mercury');
+var guid = require('guid');
 var handleShortcuts = require('./handle-shortcuts');
 var recommendShortcuts = require('./recommend-shortcuts');
 var exists = require('../../lib/exists');
@@ -31,11 +32,21 @@ function browseNamespace(browseState, browseEvents, data) {
   var namespace = browseState.namespace();
 
   // Search the namespace and update the browseState's items.
+  var requestId = guid.create().value;
+  browseState.isFinishedLoadingItems.set(false);
+  browseState.currentRequestId.set(requestId);
   browseState.put('items', mercury.array([]));
+
   namespaceService.search(namespace, browseState.globQuery()).
   then(function globResultsReceived(items) {
+    if (!isCurrentRequest()) {
+      return;
+    }
     browseState.put('items', items);
+    items.events.on('end', searchFinished);
+    items.events.on('streamError', searchFinished);
   }).catch(function(err) {
+    searchFinished();
     browseEvents.error(err);
     log.error(err);
   });
@@ -66,4 +77,18 @@ function browseNamespace(browseState, browseEvents, data) {
     action: browseNamespace.bind(null, browseState, browseEvents, data),
     actionText: 'REFRESH'
   });
+
+  function searchFinished() {
+    if (!isCurrentRequest()) {
+      return;
+    }
+    browseState.isFinishedLoadingItems.set(true);
+  }
+
+  // Whether were are still the current request. This is used to ignore out of
+  // order return of async calls where user has moved on to another item
+  // by the time previous requests result comes back.
+  function isCurrentRequest() {
+    return browseState.currentRequestId() === requestId;
+  }
 }

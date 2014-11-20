@@ -24,6 +24,9 @@
   --color-text-link: #03a9f4;
   --color-text-link-hover: #40c4ff;
 
+  /* Heading text. Darker blue */
+  --color-text-heading: #0288d1;
+
   /*
    * Layout colors
    */

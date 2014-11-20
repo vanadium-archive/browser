@@ -67,6 +67,19 @@ function create() {
     items: mercury.array([]),
 
     /*
+     * Whether loading items has finished.
+     * @type {Boolean}
+     */
+    isFinishedLoadingItems: mercury.value(false),
+
+    /*
+     * uuid for the current browse-namespace request.
+     * Needed to handle out-of-order return of async calls.
+     * @type {String}
+     */
+    currentRequestId: mercury.value(''),
+
+    /*
      * List of user-specified shortcuts to display
      * @see services/namespace/item
      * @type {Array<namespaceitem>}
@@ -247,10 +260,18 @@ function render(browseState, browseEvents, navEvents) {
   ];
 
   var sideViewWidth = '50%';
-  if (browseState.items.length === 0) {
+  var progressbar;
+  if( !browseState.isFinishedLoadingItems ) {
+    progressbar = h('paper-progress.delayed', {
+      'indeterminate': new AttributeHook(true),
+      'aria-label': new AttributeHook('Loading namespace items')
+    });
+  }
+  if (browseState.isFinishedLoadingItems && browseState.items.length === 0) {
     mainView.push(h('div.empty', 'No descendants to display.'));
   } else {
     mainView.push(h('div.items-container', [
+      progressbar,
       h('h2', 'Namespace Items'),
       renderItems(browseState, browseEvents, navEvents)
     ]));

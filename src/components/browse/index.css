@@ -36,15 +36,21 @@
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
-  margin-top: 0.5em;
   border-bottom: var(--border);
+  padding-bottom: 0.5em;
+}
+.items-container:last-child {
+  border-bottom: none;
+}
+.items-container paper-progress{
+  position: absolute;
 }
 .items-container h2 {
   width: 100%;
   font-size: var(--size-font-large);
-  color: var(--color-text-hint);
-  padding: 0.25em 0em 0em 0.75em;
-  text-decoration: underline;
+  color: var(--color-text-heading);
+  padding: 0.5em 0em 0em 0.75em;
+  text-decoration: none;
 }
 .item.card {
   box-sizing: border-box;
