@@ -433,7 +433,7 @@ function renderMethodInput(state, index) {
 
   // The children are the suggestions for this paper-autocomplete input.
   var children = inputSuggestions.map(function(suggestion) {
-    return h('paper-item', { 'label': new AttributeHook(suggestion) });
+    return h('paper-item', suggestion);
   });
 
   var changeEvent = new PropertyValueEvent(function(data) {
@@ -447,7 +447,7 @@ function renderMethodInput(state, index) {
   // That means spurious 'change' and 'input' events may appear occasionally.
   var elem = h('paper-autocomplete.method-input-item.autocomplete', {
     'key': state.itemName, // Enforce element refresh when switching items
-    'placeholder': argName,
+    'label': argName,
     'value': args[index],
     'ev-change': changeEvent
   }, children);
