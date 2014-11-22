@@ -409,7 +409,7 @@ function renderInvocation(state, events, argsStr) {
   }
 
   var starred = state.starred.indexOf(argsStr) !== -1;
-  var starButton = h('a.drill', {
+  var starButton = h('a.drill.star', {
     'href': 'javascript:;',
     'title': starred ? 'Unstar' : 'Star',
     'ev-click': mercury.event(events.starAction, {
@@ -460,9 +460,10 @@ function renderMethodInput(state, index) {
  */
 function renderStarUserInputButton(state, events) {
   var starButton = h(
-    'paper-button.method-input-star',
+    'paper-button',
     {
       'href': 'javascript:;',
+      'raised': new AttributeHook('true'),
       'ev-click': mercury.event(events.starAction, {
         star: true
       }),
@@ -478,9 +479,10 @@ function renderStarUserInputButton(state, events) {
  */
 function renderRPCRunButton(state, events) {
   var runButton = h(
-    'paper-button.method-input-run',
+    'paper-button',
     {
       'href': 'javascript:;',
+      'raised': new AttributeHook('true'),
       'ev-click': getRunEvent(state, events, state.args),
       'label': 'RUN'
     },

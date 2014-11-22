@@ -2,8 +2,8 @@
 @import "common-style/theme.css";
 
 .field {
-  font-size: 0.9em;
-  margin-bottom: 0.75em;
+  font-size: var(--size-font-small);
+  margin-bottom: var(--size-space-small);
 }
 
 .field h4 {
@@ -14,28 +14,32 @@
 .method-input {
   display: inline-block;
   vertical-align: top;
-  width: 17em;
-}
-
-.method-input .label {
-  align-items: baseline;
+  width: 18em;
   overflow: hidden;
 }
 
+.method-input .label {
+  align-items: center;
+  overflow: hidden;
+}
+
+.method-input paper-autocomplete {
+  width: 100%;
+}
+
+.method-input .drill.star {
+  border-left: none;
+  border-right: var(--border);
+}
+
 .method-input-expanded {
-  border-bottom: var(--border);
+  margin-bottom: var(--size-space-normal);
+  padding: var(--size-space-xsmall);
 }
 
 .method-input-item {
-  margin: 0.5em;
-}
-
-.method-input-run, .method-input-star, .method-input-remove,
-.method-input-cancel {
-  background-color: var(--color-dark);
-  color: var(--color-bright);
-  display: inline-block;
-  margin: 0.5em;
+  box-sizing: border-box;
+  padding: var(--size-space-xsmall);
 }
 
 .method-output table, .method-output th {
@@ -54,15 +58,12 @@
 .method-input .invocation {
   margin-top: 0em;
   margin-bottom: 0em;
-  height: 1.5em;
+  height: 2em;
+  margin-top: var(--size-space-xxsmall);
 }
 
-.method-input .invocation a {
-  padding: 0em;
-}
-.method-input .invocation div {
-  font-size: var(--size-font-xsmall);
-  background-color: var(--color-white-transparent);
+.method-input .invocation .label {
+  font-size: var(--size-font-small);
 }
 
 core-icon.run {

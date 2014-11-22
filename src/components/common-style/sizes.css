@@ -9,6 +9,7 @@
   --size-font-xlarge: 1.2em;
 
   /* margin and padding size */
+  --size-space-xxsmall: 0.25em;
   --size-space-xsmall: 0.5em;
   --size-space-small: 0.75em;
   --size-space-normal: 1em;

@@ -22,14 +22,14 @@
   flex: 5;
 }
 .browse-toolbar {
-  background-color: var(--color-grey-light);
+  background-color: var(--color-grey-very-light);
   box-shadow: none;
 }
 .browse-details-sidebar::shadow #dropShadow {
   display: none;
 }
 .browse-details-sidebar::shadow #mainContainer {
-  background-color: var(--color-grey-light);
+  background-color: var(--color-grey-very-light);
   border-left: solid 1px var(--color-divider);
 }
 .items-container {
@@ -54,6 +54,7 @@
 }
 .item.card {
   box-sizing: border-box;
+  background-color: var(--color-white);
   display: flex;
   flex-shrink: 0;
   flex-grow: 0;
@@ -221,7 +222,7 @@ paper-autocomplete {
 }
 
 paper-autocomplete::shadow #suggest-box {
-  background-color: var(--color-grey-light);
+  background-color: var(--color-grey-very-light);
 }
 
 paper-autocomplete::shadow #suggest-box {

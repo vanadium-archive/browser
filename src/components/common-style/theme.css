@@ -51,8 +51,11 @@
   /* Divider color for separators and borders. Grey */
   --color-divider: rgba(0, 0, 0, 0.12);
 
-  /* Light Grey. Use as background color where-ever darker shade of off-white is needed such as toolbars and secondary reading backgrounds */
+  /* Light Grey. Use as background color for buttons and actionable icons */
   --color-grey-light: #eeeeee;
+
+  /* Very Light Grey. Use as background color where-ever darker shade of off-white is needed such as toolbars and secondary reading backgrounds */
+  --color-grey-very-light: #f7f7f7;
 
   /*
    * Shadows
