@@ -105,11 +105,11 @@ test('Updates state.globQuery', function(t) {
   browseNamespace(state, events, {});
   t.equal(state.globQuery(), '**/*');
 
-  // Special: Convert empty string to glob everything at this level
+  // Empty glob keeps it empty in the state but behind the scenes does a '*'
   browseNamespace(state, events, {
     globQuery: ''
   });
-  t.equal(state.globQuery(), '*');
+  t.equal(state.globQuery(), '');
 });
 
 test('Updates state.items', function(t) {

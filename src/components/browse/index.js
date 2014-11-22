@@ -39,7 +39,7 @@ function create() {
      * Glob query applied to the Veyron namespace
      * @type {string}
      */
-    globQuery: mercury.value('*'),
+    globQuery: mercury.value(''),
 
     /*
      * List of direct descendants of the namespace input prefix.
@@ -190,7 +190,7 @@ function renderHeader(browseState, browseEvents, navEvents) {
       namespace = val;
     }
     navEvents.navigate({
-      path: browseRoute.createUrl(namespace, browseState.globQuery)
+      path: browseRoute.createUrl(namespace)
     });
   }, 'value', true);
 
@@ -268,11 +268,13 @@ function render(browseState, browseEvents, navEvents) {
     });
   }
   if (browseState.isFinishedLoadingItems && browseState.items.length === 0) {
-    mainView.push(h('div.empty', 'No descendants to display.'));
+    mainView.push(h('div.empty',
+      (browseState.globQuery ? 'No search results' : 'No children'))
+    );
   } else {
     mainView.push(h('div.items-container', [
       progressbar,
-      h('h2', 'Namespace Items'),
+      h('h2', (browseState.globQuery ? 'Search results' : 'Children')),
       renderItems(browseState, browseEvents, navEvents)
     ]));
   }
@@ -326,6 +328,16 @@ function renderSearch(browseState, navEvents) {
     });
   }, 'value', true);
 
+  var clearSearch;
+  if(browseState.globQuery) {
+    clearSearch = h('paper-icon-button.icon.clear-search', {
+      'icon': new AttributeHook('clear'),
+      'label': new AttributeHook('Clear search'),
+      'ev-click': mercury.event(navEvents.navigate, {
+        path: browseRoute.createUrl(browseState.namespace)
+      })
+    });
+  }
   return h('div.search-box',
     h('core-tooltip.tooltip', {
         'label': new AttributeHook(
@@ -345,7 +357,8 @@ function renderSearch(browseState, navEvents) {
           'name': 'globQuery',
           'value': browseState.globQuery,
           'ev-change': changeEvent
-        })
+        }),
+        clearSearch
       ])
     )
   );
@@ -399,9 +412,9 @@ function renderItem(browseState, browseEvents, navEvents, item, isShortcut) {
   var expandAction = null;
   if (item.isGlobbable) {
     expandAction = h('a.drill', {
-      'href': browseRoute.createUrl(item.objectName, browseState.globQuery),
+      'href': browseRoute.createUrl(item.objectName),
       'ev-click': mercury.event(navEvents.navigate, {
-        path: browseRoute.createUrl(item.objectName, browseState.globQuery)
+        path: browseRoute.createUrl(item.objectName)
       })
     }, h('core-icon.icon', {
       'icon': new AttributeHook('chevron-right')

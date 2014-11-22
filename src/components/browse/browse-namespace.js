@@ -23,9 +23,6 @@ function browseNamespace(browseState, browseEvents, data) {
   }
 
   if (exists(data.globQuery)) {
-    if (data.globQuery === '') {
-      data.globQuery = '*';
-    }
     browseState.globQuery.set(data.globQuery);
   }
 
@@ -37,7 +34,8 @@ function browseNamespace(browseState, browseEvents, data) {
   browseState.currentRequestId.set(requestId);
   browseState.put('items', mercury.array([]));
 
-  namespaceService.search(namespace, browseState.globQuery()).
+  var globQuery = browseState.globQuery() || '*';
+  namespaceService.search(namespace, globQuery).
   then(function globResultsReceived(items) {
     if (!isCurrentRequest()) {
       return;

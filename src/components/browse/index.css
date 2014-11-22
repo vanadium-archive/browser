@@ -196,6 +196,14 @@
   font-size: var(--size-font-xsmall)
 }
 
+/* Make space for the clear search icon */
+.search-box .clear-search {
+  margin-left: -25px;
+}
+.search-box paper-input::shadow /deep/ input {
+  width: calc(100% - 25px);
+}
+
 .service-type-icon {
   transform: scale(0.7);
   padding-right: 0.75em;
