@@ -43,6 +43,7 @@ paper-toast {
   min-height: 0;
   position: relative;
   display: block;
+  margin-bottom: var(--size-space-xsmall)
 }
 
 paper-toast::shadow .toast-text {

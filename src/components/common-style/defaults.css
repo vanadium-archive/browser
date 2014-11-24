@@ -60,3 +60,13 @@ paper-progress::shadow #activeProgress {
 paper-progress::shadow #progressContainer {
   background-color: transparent;
 }
+
+paper-button {
+  background-color: var(--color-grey-light);
+  margin: var(--size-space-xsmall);
+  max-height: 3em;
+}
+
+paper-button > core-icon {
+  margin-right: var(--size-space-xsmall);
+}
