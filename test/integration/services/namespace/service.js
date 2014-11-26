@@ -131,10 +131,7 @@ test('getChildren of rooted /localhost:8881/house/kitchen', function(t) {
   }
 });
 
-// TODO(aghassemi) reenable when
-// https://github.com/veyron/release-issues/issues/465
-// is fixed
-test.skip('getChildren of non-existing mounttable', function(t) {
+test('getChildren of non-existing mounttable', function(t) {
   // TODO(aghassemi) why does namespace library return empty results instead of
   // error when globbing rooted names that don't exist?
   namespaceService.getChildren('/DoesNotExist:666/What/Ever').
