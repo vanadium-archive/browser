@@ -136,17 +136,15 @@ common::run() {
   local -r IDENTITY_SERVER=/proxy.envyor.com:8101/identity/veyron-test/google
 
   # Get credentials
-
+  export VEYRON_CREDENTIALS="${IDENTITY_DIR}";
   if [[ ! -e "${IDENTITY_DIR}" ]] || [[ ! "$(ls -A ${IDENTITY_DIR})" ]]; then
-    ./principal create "${IDENTITY_DIR}" "veyron-browser"
+    ./principal create "${IDENTITY_DIR}" "veyron-browser" || common::fail "Failed to create principal."
     if [[ "${SEEK_BLESSSING}" = true ]]; then
       # TODO(aghassemi) This is temporarily needed since wspr can not talk to
       # Identity server otherwise which is a known but to be fixed.
-      ./principal seekblessings
+      ./principal seekblessings || common::fail "Failed to seek blessing."
     fi
   fi
-
-  export VEYRON_CREDENTIALS="${IDENTITY_DIR}";
 
   # Run each server in a sub shell so we can call common::fail if process fails to start
   # or panics as it is running.
