@@ -136,7 +136,6 @@ common::run() {
   local -r IDENTITY_SERVER=/proxy.envyor.com:8101/identity/veyron-test/google
 
   # Get credentials
-  export VEYRON_CREDENTIALS="${IDENTITY_DIR}";
 
   if [[ ! -e "${IDENTITY_DIR}" ]] || [[ ! "$(ls -A ${IDENTITY_DIR})" ]]; then
     ./principal create "${IDENTITY_DIR}" "veyron-browser"
@@ -146,6 +145,8 @@ common::run() {
       ./principal seekblessings
     fi
   fi
+
+  export VEYRON_CREDENTIALS="${IDENTITY_DIR}";
 
   # Run each server in a sub shell so we can call common::fail if process fails to start
   # or panics as it is running.
