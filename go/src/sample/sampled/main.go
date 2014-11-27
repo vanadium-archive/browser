@@ -89,5 +89,5 @@ func main() {
 	defer listenAndServe("cottage/lawn/master-sprinkler", makeServerSprinkler())()
 
 	// Wait forever.
-	<-signals.ShutdownOnSignals()
+	<-signals.ShutdownOnSignals(r)
 }
