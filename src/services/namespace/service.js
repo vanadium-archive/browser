@@ -289,7 +289,7 @@ function makeRPC(name, methodName, args) {
  * "bar/baz/foo"
  * @param {string} name The object name
  * @param {Array<string>} List of server addresses this name points to, if any.
- * @return {merucry.struct}
+ * @return {mercury.struct}
  */
 function createNamespaceItem(name, servers) {
 
@@ -318,7 +318,7 @@ function createNamespaceItem(name, servers) {
  * type information, signature, etc...
  * @see item.js for details.
  * @param {string} objectName Object name to get serverInfo for.
- * @return {merucry.struct}
+ * @return {mercury.struct}
  */
 function getServerInfo(objectName) {
   var signature;
@@ -349,7 +349,7 @@ function getServerInfo(objectName) {
  * the type of server.
  * @see item.js for details.
  * @param {string} objectName Object name to get serverTypeInfo for.
- * @return {merucry.struct}
+ * @return {mercury.struct}
  */
 function getServerTypeInfo(signature) {
   // TODO(aghassemi) Ideally we want a .meta or maybe piggy backing on
