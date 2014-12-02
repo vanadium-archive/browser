@@ -252,15 +252,40 @@ function hashSignature(signature) {
 }
 
 /*
+ * TODO(aghassemi) Technically right now every server is globbable
+ * so our definition of globbable is whether the server in question
+ * has any children.
+ * We may want to consider exposing some metadata about a service on
+ * whether that service actually implements Glob or GetChildren
+ * interfaces in a custom way or not.
+ *
  * Given a object name, returns whether the service referenced by the name
  * supports globbing.
  * @param {string} objectName Object name to check to see if globbale
  * @return {boolean} Whether the service is globbable
  */
 function isGlobbable(objectName) {
-  return getSignature(objectName).then(function(sig) {
-    return sig.get('glob') !== undefined;
-  }).catch(function(e) {
+  return getChildren(objectName).then(function(obs) {
+    return new Promise(function(resolve, reject) {
+      var removeListeners = function() {
+        removeWatch();
+        obs.events.removeListener('end', onEndListener);
+      };
+      var onEndListener = function() {
+        // no children
+        resolve(false);
+        removeListeners();
+      };
+      // resolve as soon as we find one child
+      var removeWatch = mercury.watch(obs, function(children) {
+        if (children.length > 0) {
+          resolve(true);
+          removeListeners();
+        }
+      });
+      obs.events.on('end', onEndListener);
+    });
+  }).catch(function() {
     return false;
   });
 }
@@ -356,7 +381,6 @@ function getServerTypeInfo(signature) {
   // .meta/stats to get information about a server. For now we just understand
   // mounttable and store. Everything else is unknown.
   var isMounttable = (signature &&
-    signature.get('glob') &&
     signature.get('mount') &&
     signature.get('unmount'));
 
