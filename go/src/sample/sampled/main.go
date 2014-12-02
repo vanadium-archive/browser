@@ -12,6 +12,7 @@ import (
 	_ "veyron.io/veyron/veyron/profiles"
 	"veyron.io/veyron/veyron2/ipc"
 	"veyron.io/veyron/veyron2/rt"
+	"veyron.io/veyron/veyron2/security"
 )
 
 func makeServerAlarm() interface{} {
@@ -31,6 +32,15 @@ func makeServerSpeaker() interface{} {
 }
 func makeServerSprinkler() interface{} {
 	return sample.SprinklerServer(mocks.NewSprinkler())
+}
+
+// openAuthorizer allows RPCs from all clients.
+// TODO(aghassemi): Write a more strict authorizer with proper ACLs and
+// identity setup
+type openAuthorizer struct{}
+
+func (o openAuthorizer) Authorize(_ security.Context) error {
+	return nil
 }
 
 func main() {
@@ -56,7 +66,7 @@ func main() {
 		}
 
 		// Serve these services at the given name.
-		if err := s.ServeDispatcher(name, ipc.LeafDispatcher(server, nil)); err != nil {
+		if err := s.ServeDispatcher(name, ipc.LeafDispatcher(server, openAuthorizer{})); err != nil {
 			log.Fatal("error serving service: ", err)
 		}
 
