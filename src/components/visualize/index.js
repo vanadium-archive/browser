@@ -8,6 +8,9 @@ var log = require('../../lib/log')('components:visualize');
 module.exports = create;
 module.exports.render = render;
 
+// Maximum number of levels that are automatically shown
+var MAX_AUTO_LOAD_DEPTH = 3;
+
 /*
  * Visualize view
  */
@@ -42,6 +45,8 @@ TreeWidget.prototype.init = function() {
 };
 
 TreeWidget.prototype.initNetwork = function(elem) {
+  var self = this;
+
   // Add the initial node.
   var rootNodeId = this.browseState.namespace;
   this.nodes.add({
@@ -50,28 +55,26 @@ TreeWidget.prototype.initNetwork = function(elem) {
     level: 0
   });
 
-  // Load the first level of subnodes.
-  var rootNode = this.nodes.get(rootNodeId);
-  this.loadSubNodes(rootNode);
+  // Load the subnodes.
+  this.rootNode = this.nodes.get(rootNodeId);
+  this.loadSubNodes(this.rootNode);
 
   var options = {
-    dragNetwork: false,
-    dragNodes: false,
-    hover: true,
-    selectable: false, // Setting this to false doesn't seem to do anything.
-    smoothCurves: false,
+    hover: false,
+    selectable: true, // Need this or nodes won't be click-able
+    smoothCurves: true,
     stabilize: false,
-    hierarchicalLayout: {
-      direction: 'UD' // Up to down
+    edges: {
+      width: 1
     },
     nodes: {
       radiusMin: 16,
       radiusMax: 32,
-      fontColor: '#FAFAFA',
+      fontColor: '#333333',
+      shape: 'dot',
       color: {
-        background: '#4285f4',
-        highlight: '#FF4081',
-        border: '#4d73ff'
+        background: '#03a9f4',
+        border: '#0288d1'
       }
     }
   };
@@ -83,19 +86,13 @@ TreeWidget.prototype.initNetwork = function(elem) {
   }, options);
 
   // Event listeners.
-  var self = this;
   network.on('click', function onClick(data) {
     var nodeId = data.nodes[0];
-    log.debug('click', nodeId);
+    var node = network.nodes[nodeId];
 
-    var node = self.nodes.get(nodeId);
-    self.loadSubNodes(node);
-  });
-
-  network.on('doubleClick', function onClick(data) {
-    var nodeId = data.nodes[0];
-    log.debug('doubleClick', nodeId);
-    log.debug(self.browseState);
+    if (node && !node.subNodesLoaded) {
+      self.loadSubNodes(node);
+    }
   });
 
   return network;
@@ -103,9 +100,8 @@ TreeWidget.prototype.initNetwork = function(elem) {
 
 TreeWidget.prototype.loadSubNodes = function(node) {
   var namespace = node.id;
-  // The new nodes should be at a deeper level that the parent.
-  var level = node.level + 1;
-
+  node.subNodesLoaded = true;
+  node.title = undefined;
   var self = this;
   namespaceService.getChildren(namespace).then(function(resultObservable) {
     mercury.watch(resultObservable, function(results) {
@@ -117,19 +113,39 @@ TreeWidget.prototype.loadSubNodes = function(node) {
         var isNew = existingIds.indexOf(item.objectName) === -1;
         return isNew;
       });
-
       var newNodes = nodesToAdd.map(function(item) {
+        var shape = 'dot';
+        var color;
+        if (item.isServer) {
+          shape = 'triangle';
+          color = '#ffab40';
+        }
         return {
           id: item.objectName,
           label: item.mountedName,
-          level: level
+          level: node.level + 1,
+          shape: shape,
+          color: color,
+          isGlobbable: item.isGlobbable
         };
       });
       var newEdges = nodesToAdd.map(function(item) {
         return {
           from: namespace,
-          to: item.objectName
+          to: item.objectName,
+          color: '#cccccc'
         };
+      });
+      newNodes.forEach(function(item) {
+        // recurse if within the MAX_AUTO_LOAD_DEPTH
+        if (!item.isGlobbable) {
+          return;
+        }
+        if (item.level - self.rootNode.level < MAX_AUTO_LOAD_DEPTH) {
+          self.loadSubNodes(item);
+        } else {
+          item.title = 'Click to expand';
+        }
       });
       self.nodes.add(newNodes);
       self.edges.add(newEdges);
