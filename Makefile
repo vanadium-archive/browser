@@ -54,8 +54,8 @@ node_modules: package.json
 
 # Install non-JS dependencies from bower.
 bower_components: bower.json node_modules
-	:;bower prune
-	:;bower install
+	:;bower prune --config.interactive=false
+	:;bower install --config.interactive=false
 	touch bower_components
 
 # PHONY targets:
