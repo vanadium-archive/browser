@@ -143,7 +143,10 @@ test('getChildren of non-existing mounttable', function(t) {
         t.end();
       });
     });
-    result.events.on('streamError', t.end);
+    result.events.on('streamError', function(error) {
+      // we do actually expect an error in this case
+      t.ok(error);
+    });
     result.events.on('itemError', t.end);
   }).catch(t.end);
 });
