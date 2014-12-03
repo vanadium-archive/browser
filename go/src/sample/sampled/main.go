@@ -45,8 +45,10 @@ func (o openAuthorizer) Authorize(_ security.Context) error {
 
 func main() {
 	// Create the runtime
-	r := rt.Init()
-
+	r, err := rt.New()
+	if err != nil {
+		log.Fatal("Could not initialize runtime: ", err)
+	}
 	defer r.Cleanup()
 
 	// Create new server and publish the given server under the given name
