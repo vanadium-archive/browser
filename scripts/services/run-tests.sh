@@ -29,6 +29,7 @@ main() {
   local -r PROVA="${VEYRON_ROOT}/veyron-browser/node_modules/.bin/prova"
   local -r TAP_XUNIT="${VEYRON_ROOT}/veyron-browser/node_modules/.bin/tap-xunit"
   local -r XUNIT_OUTPUT_FILE="${XUNIT_OUTPUT_FILE-${TMPDIR}/test_output.xml}"
+  local -r TAP_XUNIT_OPTIONS=" --package=namespace-browser --replaceWithUnicodeDot"
   if [[ "${PROVA_WATCH}" = false ]]; then
     PROVA_OPTIONS="${PROVA_OPTIONS} --headless --quit --progress --tap"
     PROVA_PORT=8891
@@ -42,7 +43,7 @@ main() {
 
   # Execute the test runner.
   set -o pipefail
-  DEBUG=false "${PROVA}" test/**/*.js ${PROVA_OPTIONS} | tee >("${TAP_XUNIT}" > "${XUNIT_OUTPUT_FILE}") || common::fail "Some tests failed"
+  DEBUG=false "${PROVA}" test/**/*.js ${PROVA_OPTIONS} | tee >("${TAP_XUNIT}" ${TAP_XUNIT_OPTIONS} > "${XUNIT_OUTPUT_FILE}") || common::fail "Some tests failed"
   echo -e "\033[32m\033[1mPASS\033[0m"
 }
 
