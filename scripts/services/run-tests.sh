@@ -27,11 +27,12 @@ main() {
   cd "${VEYRON_ROOT}/veyron-browser"
   local PROVA_OPTIONS="--browser --launch chrome --plugin proxyquireify/plugin --transform ./main-transform"
   local -r PROVA="${VEYRON_ROOT}/veyron-browser/node_modules/.bin/prova"
-  local -r PROVA_OUTPUT_FILE="${PROVA_OUTPUT_FILE-${TMPDIR}/test_output}"
+  local -r TAP_XUNIT="${VEYRON_ROOT}/veyron-browser/node_modules/.bin/tap-xunit"
+  local -r XUNIT_OUTPUT_FILE="${XUNIT_OUTPUT_FILE-${TMPDIR}/test_output.xml}"
   if [[ "${PROVA_WATCH}" = false ]]; then
     PROVA_OPTIONS="${PROVA_OPTIONS} --headless --quit --progress --tap"
     PROVA_PORT=8891
-    echo -e "\033[34m-Executing tests. See ${PROVA_OUTPUT_FILE} for test output.\033[0m"
+    echo -e "\033[34m-Executing tests. See ${XUNIT_OUTPUT_FILE} for test xunit output.\033[0m"
   else
     PROVA_PORT=8892
     echo -e "\033[34m-Running tests in watch mode.\033[0m"
@@ -41,7 +42,7 @@ main() {
 
   # Execute the test runner.
   set -o pipefail
-  DEBUG=false "${PROVA}" test/**/*.js ${PROVA_OPTIONS} | tee "${PROVA_OUTPUT_FILE}" || common::fail "Some tests failed"
+  DEBUG=false "${PROVA}" test/**/*.js ${PROVA_OPTIONS} | tee >("${TAP_XUNIT}" > "${XUNIT_OUTPUT_FILE}") || common::fail "Some tests failed"
   echo -e "\033[32m\033[1mPASS\033[0m"
 }
 
