@@ -25,11 +25,11 @@ main() {
   echo -e "\033[34m-Services are running\033[0m"
 
   cd "${VEYRON_ROOT}/veyron-browser"
-  local PROVA_OPTIONS="--browser --launch chrome --plugin proxyquireify/plugin --transform ./main-transform"
+  local PROVA_OPTIONS="--browser --includeFilenameAsPackage --launch chrome --plugin proxyquireify/plugin --transform ./main-transform"
   local -r PROVA="${VEYRON_ROOT}/veyron-browser/node_modules/.bin/prova"
   local -r TAP_XUNIT="${VEYRON_ROOT}/veyron-browser/node_modules/.bin/tap-xunit"
   local -r XUNIT_OUTPUT_FILE="${XUNIT_OUTPUT_FILE-${TMPDIR}/test_output.xml}"
-  local -r TAP_XUNIT_OPTIONS=" --package=namespace-browser --replaceWithUnicodeDot"
+  local -r TAP_XUNIT_OPTIONS=" --package=namespace-browser"
   if [[ "${PROVA_WATCH}" = false ]]; then
     PROVA_OPTIONS="${PROVA_OPTIONS} --headless --quit --progress --tap"
     PROVA_PORT=8891
