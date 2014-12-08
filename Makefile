@@ -43,7 +43,7 @@ public/bundle.html: web-component-dependencies.html node_modules bower_component
 # Install what we need from NPM.
 node_modules: package.json
 	:;npm prune
-	:;npm install
+	:;npm install --quiet
 	# TODO(aghassemi) Temporarily use local veyron.js add github/npm to package.json later
 	cd "$(VEYRON_ROOT)/veyron.js" && npm link
 	:;npm link veyron
@@ -55,7 +55,7 @@ node_modules: package.json
 # Install non-JS dependencies from bower.
 bower_components: bower.json node_modules
 	:;bower prune --config.interactive=false
-	:;bower install --config.interactive=false
+	:;bower install --config.interactive=false --quiet
 	touch bower_components
 
 # PHONY targets:
