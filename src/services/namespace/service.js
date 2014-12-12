@@ -7,6 +7,7 @@ var namespaceUtil = veyron.namespaceUtil;
 var veyronConfig = require('../../veyron-config');
 var itemFactory = require('./item');
 var freeze = require('../../lib/mercury/freeze');
+var adaptSignature = require('./signature-adapter');
 var log = require('../../lib/log')('services:namespace:service');
 
 module.exports = {
@@ -229,10 +230,11 @@ function getSignature(objectName) {
   return getRuntime().then(function bindToName(rt) {
     return rt.bindTo(objectName);
   }).then(function invokeSignatureMethod(service) {
-    return service.signature();
-  }).then(function cacheAndReturnSignature(sig) {
-    signatureCache.set(cacheKey, sig);
-    return sig;
+    return service._signature();
+  }).then(function cacheAndReturnSignature(signatures) {
+    var adaptedSignature = adaptSignature(signatures);
+    signatureCache.set(cacheKey, adaptedSignature);
+    return adaptedSignature;
   });
 }
 
@@ -244,7 +246,7 @@ function getSignature(objectName) {
  * Once available, add type info, streaming info, interface name, etc.
  */
 function hashSignature(signature) {
-  var cp = {};
+  var cp = adaptSignature([]);
   signature.forEach(function(method, methodName) {
     cp[methodName] = method.inArgs.length;
   });
@@ -301,6 +303,8 @@ function makeRPC(name, methodName, args) {
     return rt.bindTo(name);
   }).then(function callMethod(service) {
     log.debug('Calling', methodName, 'on', name, 'with', args);
+    var ctx = veyron.context.Context();
+    args.unshift(ctx);
     return service[methodName].apply(null, args);
   }).then(function returnResult(result) {
     return result;
@@ -353,7 +357,7 @@ function getServerInfo(objectName) {
     isAccessible = true;
     return getServerTypeInfo(sig);
   }, function failedToGetSignature(err) {
-    signature = new Map();
+    signature = adaptSignature([]);
     //TODO(aghassemi): We should at least be able to tell if inaccessible
     //because not authorized vs other reasons.
     isAccessible = false;

@@ -349,7 +349,7 @@ function getMethodSignature(state, args) {
     text += arg;
   }
   text += ')';
-  if (param.isStreaming) {
+  if (param.inStream || param.outStream) {
     text += ' - streaming';
   }
   return text;

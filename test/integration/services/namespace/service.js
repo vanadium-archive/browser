@@ -418,8 +418,7 @@ function testMakeRPCNoError(args, t) {
     t.pass('completed without error');
     t.end();
   }).catch(function(err) {
-    t.fail('should not have returned an error');
-    t.end();
+    t.end(err);
   });
 }
 
