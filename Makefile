@@ -18,6 +18,7 @@ PATH:=node_modules/.bin:$(PATH)
 ifndef TMPDIR
 	export TMPDIR:=/tmp
 endif
+TMPDIR:=$(TMPDIR)/vb
 
 # All JS and CSS files except build.js and third party.
 BROWSERIFY_FILES = $(shell find src -name "*.js" -o -name "*.css")
