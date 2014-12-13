@@ -45,7 +45,6 @@ node_modules: package.json
 	:;npm prune
 	:;npm install --quiet
 	# TODO(aghassemi) Temporarily use local veyron.js add github/npm to package.json later
-	cd "$(VEYRON_ROOT)/veyron.js" && make gen-vdl #TODO(aghassemi) this is so VDL files are generated, remove when #596 is fixed
 	cd "$(VEYRON_ROOT)/veyron.js" && npm link
 	:;npm link veyron
 	cd "$(VEYRON_ROOT)/veyron/javascript/vom" && npm link
