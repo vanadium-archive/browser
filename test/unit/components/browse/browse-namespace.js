@@ -118,29 +118,18 @@ test('Updates state.items', function(t) {
   var state = browseComponent().state;
   var events = browseComponent().events;
 
-  // The observ-array will callback each time we change state.items
-  // Here, we expect exactly 1 changeset to match.
-  // We cannot ask all of them to match, so t.deepEquals cannot be used.
-  state.items(function(items) {
-    if (items[0] === undefined) {
-      return;
-    }
-    var match = true;
-    for (var prop in mockItem) {
-      if (mockItem[prop] !== items[0][prop]) {
-        match = false;
-      }
-    }
-    if (match) {
-      t.pass();
-    }
-  });
-
-    // Should update the items to items returned by glob method call (async)
+  // Should update the items to items returned by glob method call (async)
   browseNamespace(state, events, {
     globQuery: '*',
     namespace: 'foo/bar'
   });
+
+  // Wait until next tick and assert the expected state change
+  process.nextTick( function() {
+    var items = state.items();
+    t.deepEqual(items, [mockItem]);
+  });
+
 });
 
 test('Updates state.items to empty on failure', function(t) {
@@ -152,16 +141,16 @@ test('Updates state.items to empty on failure', function(t) {
   // Give initial non-empty value
   state.items.push([mockItem]);
 
-  // The observ-array will callback each time we change state.items
-  // Here, we expect a single clear.
-  state.items(function(items) {
-    t.deepEqual(items, []);
-  });
-
   //Should reset the items to empty on failed glob method call (async)
   browseNamespaceWithFailure(state, events, {
     globQuery: '*',
     namespace: 'foo/bar'
+  });
+
+  // Wait until next tick and assert the expected state change
+  process.nextTick( function() {
+    var items = state.items();
+    t.deepEqual(items, []);
   });
 
 });
