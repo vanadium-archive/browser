@@ -9,7 +9,7 @@
 # TODO(aghassemi) This script is becoming too complicated and
 # big for shell scripting, switch to a JavaScript or Go implementation
 
-source "$(go list -f {{.Dir}} veyron.io/veyron/shell/lib)/shell.sh"
+source "$(veyron go list -f {{.Dir}} veyron.io/veyron/shell/lib)/shell.sh"
 
 trap 'terminate force' INT TERM
 trap 'terminate' EXIT
