@@ -3,23 +3,23 @@ package sample
 // Speaker allows clients to control the music being played.
 type Speaker interface {
  // Play starts or continues the current song.
- Play() (error)
+ Play() error
  // PlaySong plays back the given song title, if possible.
- PlaySong(songName string) (error)
+ PlaySong(songName string) error
  // PlayStream plays the given stream of music data.
- PlayStream() stream<[]byte, _> (error)
+ PlayStream() stream<[]byte, _> error
  // GetSong retrieves the title of the Speaker's current song, if any.
- GetSong() (string, error)
+ GetSong() (string | error)
  // Pause playback of the Speaker's current song.
- Pause() (error)
+ Pause() error
  // Stop playback of the Speaker's current song.
- Stop() (error)
+ Stop() error
  // Volume adjusts the Speaker's volume.
- Volume(volumeLevel uint16) (error)
+ Volume(volumeLevel uint16) error
  // GetVolume retrieves the Speaker's volume.
- GetVolume() (uint16, error)
+ GetVolume() (uint16 | error)
  // AddSongs adds the list of given songs to the song library.
- AddSongs(songs []string) (error)
+ AddSongs(songs []string) error
  // Delete removes the list of given songs from the song library.
- Delete(songs []string) (error)
+ Delete(songs []string) error
 }

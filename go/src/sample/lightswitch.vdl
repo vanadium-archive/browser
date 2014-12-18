@@ -3,7 +3,7 @@ package sample
 // LightSwitch allows clients to manipulate a virtual light switch.
 type LightSwitch interface {
  // Status indicates whether the light is on or off.
- Status() (string, error)
+ Status() (string | error)
  // FlipSwitch sets the light to on or off, depending on the input.
- FlipSwitch(toOn bool) (error)
+ FlipSwitch(toOn bool) error
 }
