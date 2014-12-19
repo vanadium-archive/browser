@@ -228,7 +228,8 @@ function getSignature(objectName) {
     return Promise.resolve(cacheHit);
   }
   return getRuntime().then(function bindToName(rt) {
-    return rt.bindTo(objectName);
+    var ctx = veyron.context.Context();
+    return rt.bindTo(ctx, objectName);
   }).then(function invokeSignatureMethod(service) {
     return service._signature();
   }).then(function cacheAndReturnSignature(signatures) {
@@ -300,7 +301,8 @@ function isGlobbable(objectName) {
  */
 function makeRPC(name, methodName, args) {
   return getRuntime().then(function bindToName(rt) {
-    return rt.bindTo(name);
+    var ctx = veyron.context.Context();
+    return rt.bindTo(ctx, name);
   }).then(function callMethod(service) {
     log.debug('Calling', methodName, 'on', name, 'with', args);
     var ctx = veyron.context.Context();
