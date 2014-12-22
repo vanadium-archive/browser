@@ -86,7 +86,7 @@ function glob(pattern) {
 
       globStream.on('data', function createItem(result) {
         // Create an item as glob results come in and add the item to result
-        var createItemPromise = createNamespaceItem(result.name, result.servers)
+        var createItemPromise = createNamespaceItem(result)
           .then(function(item) {
             // TODO(aghassemi) namespace glob can return duplicate results, this
             // temporary fix keeps the one that's a server. Is this correct?
@@ -318,21 +318,23 @@ function makeRPC(name, methodName, args) {
  * an item in the namespace.
  * @param {string} name The full hierarchical object name of the item e.g.
  * "bar/baz/foo"
- * @param {string} name The object name
+ * @param {MountEntry} mountEntry The mount entry from glob results.
  * @param {Array<string>} List of server addresses this name points to, if any.
  * @return {mercury.struct}
  */
-function createNamespaceItem(name, servers) {
+function createNamespaceItem(mountEntry) {
 
+  var name = mountEntry.name;
   // mounted name relative to parent
   var mountedName = namespaceUtil.basename(name);
+  var servers = mountEntry.servers;
 
   // Find out if the object referenced by name is globbable and get
   // server related information about it.
   var isServer = servers.length > 0;
   return Promise.all([
     (!isServer ? Promise.resolve(true) : isGlobbable(name)),
-    (isServer ? getServerInfo(name) : Promise.resolve(null))
+    (isServer ? getServerInfo(name, mountEntry) : Promise.resolve(null))
   ]).then(function(results) {
     return itemFactory.createItem({
       objectName: name,
@@ -349,15 +351,16 @@ function createNamespaceItem(name, servers) {
  * type information, signature, etc...
  * @see item.js for details.
  * @param {string} objectName Object name to get serverInfo for.
+ * @param {MountEntry} mountEntry mount entry to item to get serverInfo for.
  * @return {mercury.struct}
  */
-function getServerInfo(objectName) {
+function getServerInfo(objectName, mountEntry) {
   var signature;
   var isAccessible;
   return getSignature(objectName).then(function gotSignature(sig) {
     signature = sig;
     isAccessible = true;
-    return getServerTypeInfo(sig);
+    return getServerTypeInfo(sig, mountEntry);
   }, function failedToGetSignature(err) {
     signature = adaptSignature([]);
     //TODO(aghassemi): We should at least be able to tell if inaccessible
@@ -379,16 +382,19 @@ function getServerInfo(objectName) {
  * would have information such as a key, human readable name and description for
  * the type of server.
  * @see item.js for details.
- * @param {string} objectName Object name to get serverTypeInfo for.
+ * @param {Signature} signature signature to get serverTypeInfo for.
+ * @param {MountEntry} mountEntry mount entry to get serverTypeInfo for.
  * @return {mercury.struct}
  */
-function getServerTypeInfo(signature) {
-  // TODO(aghassemi) Ideally we want a .meta or maybe piggy backing on
-  // .meta/stats to get information about a server. For now we just understand
-  // mounttable and store. Everything else is unknown.
-  var isMounttable = (signature &&
-    signature.get('mount') &&
-    signature.get('unmount'));
+function getServerTypeInfo(signature, mountEntry) {
+  // Currently we only support detecting mounttables which is
+  // based on a "MT" flag that comes from the Glob API. Mounttables are special
+  // in a sense that we fundamentally "know" they are a mounttable.
+  // Later when we extend the support for other services, we need to do
+  // either duck typing and have a special __meta route that provides metadata
+  // information about a service.
+
+  var isMounttable = mountEntry.mT;
 
   if (isMounttable) {
     return itemFactory.createServerTypeInfo({
