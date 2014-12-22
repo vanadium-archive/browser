@@ -14,10 +14,11 @@ module.exports = {
   getChildren: getChildren,
   getNamespaceItem: getNamespaceItem,
   getSignature: getSignature,
+  getAccountName: getAccountName,
   hashSignature: hashSignature,
   makeRPC: makeRPC,
   search: search,
-  util: namespaceUtil
+  util: namespaceUtil,
 };
 
 /*
@@ -30,6 +31,16 @@ function getRuntime() {
     _runtimePromiseInstance = veyron.init(veyronConfig);
   }
   return _runtimePromiseInstance;
+}
+
+/*
+ * Returns the accountName for the currently logged in user of Namespace Browser
+ * @return {Promise.<string>}
+ */
+function getAccountName() {
+  return getRuntime().then(function(rt) {
+    return rt.accountName;
+  });
 }
 
 /*

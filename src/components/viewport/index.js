@@ -113,7 +113,13 @@ function renderMainToolbar(state, events) {
       'ev-click': mercury.event(events.viewport.openSidebar)
     }),
     h('h2.title', state.viewport.title),
-    mainContent.renderHeader(state,events)
+    mainContent.renderHeader(state,events),
+    h('core-tooltip.account-name', {
+      'label': new AttributeHook('You are logged in as:'),
+      'position': new AttributeHook('left')
+    },
+      h('span', state.userAccount.accountName)
+    )
   ]);
 }
 

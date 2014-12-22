@@ -8,6 +8,7 @@ var browse = require('./components/browse/index');
 var error = require('./components/error/index');
 var help = require('./components/help/index');
 var viewport = require('./components/viewport/index');
+var userAccount = require('./components/user-account/index');
 var errorRoute = require('./routes/error');
 
 onDocumentReady(function startApp() {
@@ -17,6 +18,7 @@ onDocumentReady(function startApp() {
   var debugComponent = debug();
   var helpComponent = help();
   var viewportComponent = viewport();
+  var userAccountComponent = userAccount();
 
   // Top level state
   var state = mercury.struct({
@@ -51,6 +53,11 @@ onDocumentReady(function startApp() {
      * State of the error component
      */
     error: errorComponent.state,
+
+    /*
+     * State for user account component
+     */
+    userAccount: userAccountComponent.state,
 
     /*
      * Internal debugging state

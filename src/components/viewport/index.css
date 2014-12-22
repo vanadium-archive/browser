@@ -27,6 +27,14 @@ body {
   color: var(--color-white);
 }
 
+.account-name {
+  position: absolute;
+  right: var(--size-space-xxsmall);
+  top: var(--size-space-xxsmall);
+  color: var(--color-text-secondary);
+  font-size: var(--size-font-xsmall);
+}
+
 /*
  * Wrap the paper-toast in a fixed div. This allows us to show multiple toasts.
  */
