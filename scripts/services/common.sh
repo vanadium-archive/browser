@@ -56,9 +56,9 @@ terminate() {
 
 # build is used to install binaries needed to run services.
 build() {
-  export GOPATH="${VEYRON_ROOT}/veyron-browser/go"
-  export VDLPATH="${VEYRON_ROOT}/veyron-browser/go"
-  export GOBIN="${VEYRON_ROOT}/veyron-browser/go/bin"
+  export GOPATH="${VANADIUM_ROOT}/veyron-browser/go"
+  export VDLPATH="${VANADIUM_ROOT}/veyron-browser/go"
+  export GOBIN="${VANADIUM_ROOT}/veyron-browser/go/bin"
 
   veyron go install veyron.io/veyron/veyron/services/mounttable/mounttabled
   veyron go install veyron.io/veyron/veyron/services/proxy/proxyd

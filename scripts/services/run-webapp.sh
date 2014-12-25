@@ -3,7 +3,7 @@
 # This script runs mounttables, proxy daemons, a http server and
 # a few sample servers to run and demo the Veyron Browser.
 
-source "${VEYRON_ROOT}/veyron-browser/scripts/services/common.sh"
+source "${VANADIUM_ROOT}/veyron-browser/scripts/services/common.sh"
 
 main() {
   local -r MOUNTTABLE_PORT=5167
@@ -17,8 +17,8 @@ main() {
 
   common::run "${MOUNTTABLE_PORT}" "${MOUNTTABLE_PORT_HOUSE}" "${MOUNTTABLE_PORT_COTTAGE}" "${WSPR_PORT}" "${PROXY_PORT}" "${VEYRON_IDENTITY_DIR}" "${SEEK_BLESSSING}"
 
-  local -r SERVE="${VEYRON_ROOT}/veyron-browser/node_modules/.bin/serve"
-  "${SERVE}" "${VEYRON_ROOT}"/veyron-browser/public/. --port "${HTTP_PORT}" --compress &
+  local -r SERVE="${VANADIUM_ROOT}/veyron-browser/node_modules/.bin/serve"
+  "${SERVE}" "${VANADIUM_ROOT}"/veyron-browser/public/. --port "${HTTP_PORT}" --compress &
 }
 
 main "$@"

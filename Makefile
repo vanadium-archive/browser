@@ -13,7 +13,7 @@
 # see http://stackoverflow.com/questions/21708839/problems-setting-path-in-makefile for details.
 ##
 
-PATH:=$(VEYRON_ROOT)/environment/cout/node/bin:$(PATH)
+PATH:=$(VANADIUM_ROOT)/environment/cout/node/bin:$(PATH)
 PATH:=node_modules/.bin:$(PATH)
 ifndef TMPDIR
 	export TMPDIR:=/tmp
@@ -45,9 +45,9 @@ node_modules: package.json
 	:;npm prune
 	:;npm install --quiet
 	# TODO(aghassemi) Temporarily use local veyron.js add github/npm to package.json later
-	cd "$(VEYRON_ROOT)/veyron.js" && npm link
+	cd "$(VANADIUM_ROOT)/veyron.js" && npm link
 	:;npm link veyron
-	cd "$(VEYRON_ROOT)/veyron/javascript/vom" && npm link
+	cd "$(VANADIUM_ROOT)/veyron/javascript/vom" && npm link
 	:;npm link vom
 
 	touch node_modules

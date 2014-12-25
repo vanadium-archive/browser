@@ -6,7 +6,7 @@
 # pass true as first argument to run the tests in watch mode
 # script will exit with code 0 if tests pass and with 1 if tests fail.
 
-source "${VEYRON_ROOT}/veyron-browser/scripts/services/common.sh"
+source "${VANADIUM_ROOT}/veyron-browser/scripts/services/common.sh"
 
 main() {
 
@@ -24,10 +24,10 @@ main() {
 
   echo -e "\033[34m-Services are running\033[0m"
 
-  cd "${VEYRON_ROOT}/veyron-browser"
+  cd "${VANADIUM_ROOT}/veyron-browser"
   local PROVA_OPTIONS="--browser --includeFilenameAsPackage --launch chrome --plugin proxyquireify/plugin --transform ./main-transform"
-  local -r PROVA="${VEYRON_ROOT}/veyron-browser/node_modules/.bin/prova"
-  local -r TAP_XUNIT="${VEYRON_ROOT}/veyron-browser/node_modules/.bin/tap-xunit"
+  local -r PROVA="${VANADIUM_ROOT}/veyron-browser/node_modules/.bin/prova"
+  local -r TAP_XUNIT="${VANADIUM_ROOT}/veyron-browser/node_modules/.bin/tap-xunit"
   local -r XUNIT_OUTPUT_FILE="${XUNIT_OUTPUT_FILE-${TMPDIR}/test_output.xml}"
   local -r TAP_XUNIT_OPTIONS=" --package=namespace-browser"
   if [[ "${PROVA_WATCH}" = false ]]; then
