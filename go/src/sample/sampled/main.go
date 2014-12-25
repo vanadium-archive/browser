@@ -7,12 +7,12 @@ import (
 	"sample"
 	"sample/mocks"
 
-	"veyron.io/veyron/veyron/lib/signals"
-	"veyron.io/veyron/veyron/profiles"
-	_ "veyron.io/veyron/veyron/profiles"
-	"veyron.io/veyron/veyron2/ipc"
-	"veyron.io/veyron/veyron2/rt"
-	"veyron.io/veyron/veyron2/security"
+	"v.io/veyron/veyron/lib/signals"
+	"v.io/veyron/veyron/profiles"
+	_ "v.io/veyron/veyron/profiles"
+	"v.io/veyron/veyron2/ipc"
+	"v.io/veyron/veyron2/rt"
+	"v.io/veyron/veyron2/security"
 )
 
 func makeServerAlarm() interface{} {
