@@ -2,7 +2,7 @@ package mocks
 
 import (
 	"time"
-	"v.io/veyron/veyron2/ipc"
+	"v.io/core/veyron2/ipc"
 )
 
 const (

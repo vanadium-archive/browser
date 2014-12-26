@@ -44,8 +44,8 @@ public/bundle.html: web-component-dependencies.html node_modules bower_component
 node_modules: package.json
 	:;npm prune
 	:;npm install --quiet
-	# TODO(aghassemi) Temporarily use local veyron.js add github/npm to package.json later
-	cd "$(VANADIUM_ROOT)/veyron.js" && npm link
+	# TODO(aghassemi) Temporarily use local release/javascript/core add github/npm to package.json later
+	cd "$(VANADIUM_ROOT)/release/javascript/core" && npm link
 	:;npm link veyron
 	cd "$(VANADIUM_ROOT)/veyron/javascript/vom" && npm link
 	:;npm link vom

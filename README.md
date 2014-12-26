@@ -13,7 +13,7 @@ make
 You must have the Veyron Extension installed to run this.
 
 Get it here:
-https://github.com/veyron/veyron.js/raw/master/extension/veyron.crx
+https://github.com/veyron/release/javascript/core/raw/master/extension/veyron.crx
 
 ## Running
 

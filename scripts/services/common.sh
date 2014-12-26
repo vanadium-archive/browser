@@ -60,11 +60,11 @@ build() {
   export VDLPATH="${VANADIUM_ROOT}/veyron-browser/go"
   export GOBIN="${VANADIUM_ROOT}/veyron-browser/go/bin"
 
-  veyron go install v.io/veyron/veyron/services/mounttable/mounttabled
-  veyron go install v.io/veyron/veyron/services/proxy/proxyd
-  veyron go install v.io/veyron/veyron/services/mgmt/binary/binaryd
-  veyron go install v.io/veyron/veyron/services/mgmt/build/buildd
-  veyron go install v.io/veyron/veyron/tools/principal
+  veyron go install v.io/core/veyron/services/mounttable/mounttabled
+  veyron go install v.io/core/veyron/services/proxy/proxyd
+  veyron go install v.io/core/veyron/services/mgmt/binary/binaryd
+  veyron go install v.io/core/veyron/services/mgmt/build/buildd
+  veyron go install v.io/core/veyron/tools/principal
   veyron go install v.io/wspr/veyron/services/wsprd
   veyron go install sample/sampled
 }
