@@ -1,5 +1,5 @@
 ##
-# Provides targets to build, test and run the Veyron Browser application.
+# Provides targets to build, test and run the Namespace Browser application.
 #
 # make  # Builds the project.
 # make test  # Runs unit and integration tests.
@@ -47,7 +47,7 @@ node_modules: package.json
 	# TODO(aghassemi) Temporarily use local release/javascript/core add github/npm to package.json later
 	cd "$(VANADIUM_ROOT)/release/javascript/core" && npm link
 	:;npm link veyron
-	cd "$(VANADIUM_ROOT)/veyron/javascript/vom" && npm link
+	cd "$(VANADIUM_ROOT)/release/javascript/vom" && npm link
 	:;npm link vom
 
 	touch node_modules
