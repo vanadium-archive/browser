@@ -9,7 +9,7 @@
 # TODO(aghassemi) This script is becoming too complicated and
 # big for shell scripting, switch to a JavaScript or Go implementation
 
-source "$(veyron go list -f {{.Dir}} v.io/core/shell/lib)/shell.sh"
+source "$(v23 go list -f {{.Dir}} v.io/core/shell/lib)/shell.sh"
 
 trap 'terminate force' INT TERM
 trap 'terminate' EXIT
@@ -56,17 +56,17 @@ terminate() {
 
 # build is used to install binaries needed to run services.
 build() {
-  export GOPATH="${VANADIUM_ROOT}/veyron-browser/go"
-  export VDLPATH="${VANADIUM_ROOT}/veyron-browser/go"
-  export GOBIN="${VANADIUM_ROOT}/veyron-browser/go/bin"
+  export GOPATH="${VANADIUM_ROOT}/release/projects/namespace_browser/go"
+  export VDLPATH="${VANADIUM_ROOT}/release/projects/namespace_browser/go"
+  export GOBIN="${VANADIUM_ROOT}/release/projects/namespace_browser/go/bin"
 
-  veyron go install v.io/core/veyron/services/mounttable/mounttabled
-  veyron go install v.io/core/veyron/services/proxy/proxyd
-  veyron go install v.io/core/veyron/services/mgmt/binary/binaryd
-  veyron go install v.io/core/veyron/services/mgmt/build/buildd
-  veyron go install v.io/core/veyron/tools/principal
-  veyron go install v.io/wspr/veyron/services/wsprd
-  veyron go install sample/sampled
+  v23 go install v.io/core/veyron/services/mounttable/mounttabled
+  v23 go install v.io/core/veyron/services/proxy/proxyd
+  v23 go install v.io/core/veyron/services/mgmt/binary/binaryd
+  v23 go install v.io/core/veyron/services/mgmt/build/buildd
+  v23 go install v.io/core/veyron/tools/principal
+  v23 go install v.io/wspr/veyron/services/wsprd
+  v23 go install sample/sampled
 }
 
 # common::fail will output a red FAILED message along with and optional message given
