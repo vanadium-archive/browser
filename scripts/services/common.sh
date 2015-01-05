@@ -150,7 +150,7 @@ common::run() {
   # or panics as it is running.
 
   # Allowed seconds for each service to start
-  local -r SRV_TIMEOUT=2
+  local -r SRV_TIMEOUT=3
   local -r TIMEDOUT_MSG="Timed out waiting for:"
 
   # Run mounttables.
