@@ -238,11 +238,10 @@ function getSignature(objectName) {
   if (cacheHit) {
     return Promise.resolve(cacheHit);
   }
-  return getRuntime().then(function bindToName(rt) {
+  return getRuntime().then(function invokeSignatureMethod(rt) {
     var ctx = veyron.context.Context();
-    return rt.bindTo(ctx, objectName);
-  }).then(function invokeSignatureMethod(service) {
-    return service._signature();
+    var client = rt.newClient();
+    return client.signature(ctx, objectName);
   }).then(function cacheAndReturnSignature(signatures) {
     var adaptedSignature = adaptSignature(signatures);
     signatureCache.set(cacheKey, adaptedSignature);
