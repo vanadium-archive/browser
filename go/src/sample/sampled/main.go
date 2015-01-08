@@ -10,7 +10,6 @@ import (
 	"v.io/core/veyron/lib/signals"
 	"v.io/core/veyron/profiles"
 	_ "v.io/core/veyron/profiles"
-	"v.io/core/veyron2/ipc"
 	"v.io/core/veyron2/rt"
 	"v.io/core/veyron2/security"
 )
@@ -70,7 +69,7 @@ func main() {
 		}
 
 		// Serve these services at the given name.
-		if err := s.ServeDispatcher(name, ipc.LeafDispatcher(server, openAuthorizer{})); err != nil {
+		if err := s.Serve(name, server, openAuthorizer{}); err != nil {
 			log.Fatal("error serving service: ", err)
 		}
 
