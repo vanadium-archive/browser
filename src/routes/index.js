@@ -7,7 +7,9 @@ module.exports = function(routes) {
 };
 
 function handleIndexRoute(state, events) {
-  var index = '/proxy.envyor.com:8101';
+  // TODO(aghassemi) What's the prod address?, do we even want to point to
+  // v.io by default?
+  var index = '/ns.dev.v.io:8101';
   store.getValue('index').then(function(storedIndex) {
     if (storedIndex) {
       index = storedIndex;
