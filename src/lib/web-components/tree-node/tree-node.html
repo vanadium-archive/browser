@@ -1,0 +1,82 @@
+<link rel="import" href="/bower_components/polymer/polymer.html">
+
+<!--
+tree-node elements are nested to create a tree menu
+  <tree-node label="" icon="" open highlight>
+
+Example:
+  <tree-node label="Location" id="root">
+    <tree-node label="California" highlight>
+  </tree-node>
+
+Attributes:
+  label: (string) displayed text of the tree node
+  icon: (string) optional Polymer icon name
+    (see https://www.polymer-project.org/components/core-icons/demo.html)
+  iconalt: (string) alt text for item icon
+  open: (Boolean) expand to display nested children
+  highlight: (Boolean) adds "highlight" CSS class to item
+
+Events:
+  Attach one event listener to the root (or above) or individual listeners to each node.
+  Don't forget to return false from the callback function to stop propagation.
+  @event activate node item was clicked or tapped
+  @event openchange node was expanded or collapsed
+  The listener functions take a single parameter:
+  @param {event} e the custom event object
+  For both, e.detail.node is the affected tree-node.
+  The single argument to the callback is the standard event object (e),
+  where e.detail.node is the tree-node that was tapped (for activate),
+  or the tree-node that was expanded or collapsed (for openchange).
+(see demo.html for an example)
+author: wmleler@
+-->
+
+<polymer-element name="tree-node" attributes="label icon iconalt open highlight">
+  <template>
+    <link rel="stylesheet" href="tree-node.css">
+    <div class="indent" aria-expanded="{{open}}"
+        aria-owns="{{isParent && open?'children':''}}">
+      <core-icon id="expander" on-tap="{{openme}}"
+          class="{{isParent?'':'notParent'}}"
+          icon="{{open?'arrow-drop-down-circle':'add-circle'}}"
+          alt="{{open?'collapse':'expand'}}">
+      </core-icon>
+      <span on-tap="{{activate}}" role="treeitem" aria-selected="{{highlight}}"
+          class="item{{highlight?' highlight':''}}">
+        <template if="{{icon}}">
+          <core-icon class="itemicon" icon="{{icon}}" alt="{{iconalt}}"></core-icon>
+        </template>
+        {{label}}
+      </span>
+      <template if="{{isParent && open}}">
+        <div id="children" role="group">
+          <content></content>
+        </div>
+      </template>
+    </div>
+  </template>
+
+  <script>
+  Polymer('tree-node', {
+    ready: function() {
+      if (this.iconalt === undefined) {
+        this.iconalt = 'item icon';
+      }
+      this.isParent = !!this.firstElementChild;
+      this.onMutation(this, this.childrenUpdated);
+    },
+    childrenUpdated: function(observer, mutations) {
+      this.isParent = !!this.firstElementChild;
+      this.onMutation(this, this.childrenUpdated);
+    },
+    openme: function(e, d, sender) {
+      this.open = !this.open;
+      this.fire('openchange', { node: this });
+    },
+    activate: function(event, detail, sender) {
+      this.fire('activate', { node: this });
+    }
+  });
+  </script>
+</polymer-element>
