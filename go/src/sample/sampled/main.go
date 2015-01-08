@@ -51,6 +51,8 @@ func main() {
 	}
 	defer r.Cleanup()
 
+	ctx := r.NewContext()
+
 	// Create new server and publish the given server under the given name
 	var listenAndServe = func(name string, server interface{}) func() {
 
@@ -101,5 +103,5 @@ func main() {
 	defer listenAndServe("cottage/lawn/master-sprinkler", makeServerSprinkler())()
 
 	// Wait forever.
-	<-signals.ShutdownOnSignals(r)
+	<-signals.ShutdownOnSignals(ctx)
 }
