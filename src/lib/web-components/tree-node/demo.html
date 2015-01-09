@@ -1,0 +1,87 @@
+
+<!DOCTYPE html>
+<html><head>
+  <title>Namespace tree menu</title>
+  <script src="/bower_components/webcomponentsjs/webcomponents.js"></script>
+  <link rel="import" href="/bower_components/core-icons/core-icons.html">
+  <link rel="import" href="tree-node.html">
+  <style>
+    body {
+      font-family: Roboto, sans-serif;
+    }
+  </style>
+</head>
+<body>
+
+  <section>
+    <h2>DOM Tree Menu</h2>
+    <p><input id="newlabel" />
+      <button id="nodeadd">Append To:</button>
+      <span id="treepath"></span>
+      <button id="nodedel">Delete</button>
+    </p>
+    <p id="status">&nbsp;</p>
+    <tree-node id="menu" label="root" icon="dns">
+      <tree-node label="lib" icon="label-outline"></tree-node>
+      <tree-node label="users" icon="folder-open">
+        <tree-node label="local" icon="dns" open="true">
+          <tree-node label="george" icon="label-outline"></tree-node>
+          <tree-node label="martha" icon="label-outline"></tree-node>
+        </tree-node>
+        <tree-node label="remote" icon="dns" highlight="true"></tree-node>
+      </tree-node>
+    </tree-node>
+  </section>
+
+<script>
+var activeNode; // element that is active and highlighted
+var nodeIndex = 0;  // for labeling nodes
+document.getElementById('menu').addEventListener('activate', function(e) {
+  // clear active highlight
+  var nodes = this.getElementsByTagName('tree-node');
+  for (var i = 0; i < nodes.length; i++) {
+    nodes[i].removeAttribute('highlight');
+  }
+  this.removeAttribute('highlight');  // remove from root of tree
+
+  // set active highlight
+  activeNode = e.detail.node; // save active node
+  activeNode.setAttribute('highlight', true); // highlight active node
+
+  // construct bread crumb path
+  var cn = activeNode;
+  var path = [cn.label];
+  while (cn !== this) {
+    cn = cn.parentElement;
+    path.unshift(cn.label);
+  }
+  document.getElementById('treepath').textContent = path.join(' > ');
+
+  return false; // stop propagation
+});
+document.getElementById('menu').addEventListener('openchange', function(e) {
+  document.getElementById('status').textContent = e.detail.node.label+
+      ' '+(e.detail.node.open?'expanded':'collapsed');
+});
+document.getElementById('nodeadd').addEventListener('click', function(e) {
+  if (!activeNode) { return; }
+  var node = document.createElement('tree-node');
+  var inel = document.getElementById('newlabel');
+  var label = inel.value || 'newchild-'+nodeIndex++;
+  inel.value = '';
+  node.setAttribute('label', label);
+  node.setAttribute('icon', ['dns', 'label-outline', 'folder-open'][Math.floor(Math.random()* 2.5)]);
+  activeNode.appendChild(node);
+  // activeNode.setAttribute('parent', true);
+  activeNode.setAttribute('open', true);  // open active node (optional)
+});
+document.getElementById('nodedel').addEventListener('click', function(e) {
+  if (!activeNode) { return; }
+  var parent = activeNode.parentElement;
+  parent.removeChild(activeNode);
+  activeNode = null;
+  document.getElementById('treepath').textContent = '';
+});
+</script>
+
+</body></html>
