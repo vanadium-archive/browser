@@ -216,6 +216,7 @@ function renderMethodOutput(state) {
 /*TODO(aghassemi) make a web component for this*/
 function renderFieldItem(label, content, tooltip) {
   var hlabel = h('h4', label);
+  content = h('span', content);
   if (tooltip) {
     // If there is a tooltip, wrap the content in it
     content = h('core-tooltip.tooltip', {

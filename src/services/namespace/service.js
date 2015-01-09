@@ -280,23 +280,18 @@ function hashSignature(signature) {
 function isGlobbable(objectName) {
   return getChildren(objectName).then(function(obs) {
     return new Promise(function(resolve, reject) {
-      var removeListeners = function() {
-        removeWatch();
-        obs.events.removeListener('end', onEndListener);
-      };
       var onEndListener = function() {
         // no children
         resolve(false);
-        removeListeners();
+        removeWatch();
       };
       // resolve as soon as we find one child
       var removeWatch = mercury.watch(obs, function(children) {
         if (children.length > 0) {
           resolve(true);
-          removeListeners();
         }
       });
-      obs.events.on('end', onEndListener);
+      obs.events.once('end', onEndListener);
     });
   }).catch(function() {
     return false;
@@ -405,7 +400,6 @@ function getServerTypeInfo(signature, mountEntry) {
   // information about a service.
 
   var isMounttable = mountEntry.mT;
-
   if (isMounttable) {
     return itemFactory.createServerTypeInfo({
       key: 'veyron-mounttable',

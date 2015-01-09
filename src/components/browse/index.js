@@ -269,7 +269,7 @@ function render(browseState, browseEvents, navEvents) {
   }
   if (browseState.isFinishedLoadingItems && browseState.items.length === 0) {
     mainView.push(h('div.empty',
-      (browseState.globQuery ? 'No search results' : 'No children'))
+      h('span',(browseState.globQuery ? 'No search results' : 'No children')))
     );
   } else {
     mainView.push(h('div.items-container', [
