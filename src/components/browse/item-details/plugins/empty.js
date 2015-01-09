@@ -1,3 +1,5 @@
+var h = require('mercury').h;
+
 module.exports = {
   'shouldFormat': shouldFormat,
   'format': format
@@ -15,5 +17,5 @@ function shouldFormat(input) {
  * Indicate that nothing was there.
  */
 function format(input) {
-  return '<no data>';
+  return h('span', '<no data>');
 }

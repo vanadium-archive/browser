@@ -17,7 +17,7 @@ function shouldFormat(input) {
  * Print the error with a dangerous-looking icon.
  */
 function format(input) {
-  return h('span', [
+  return h('div', [
     h('core-icon.error', {
       'icon': new AttributeHook('error')
     }),

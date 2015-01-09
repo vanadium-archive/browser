@@ -1,3 +1,5 @@
+var h = require('mercury').h;
+
 module.exports = {
   'shouldFormat': shouldFormat,
   'format': format
@@ -14,5 +16,5 @@ function shouldFormat(input) {
  * By default, the input is returned as prettified JSON.
  */
 function format(input) {
-  return JSON.stringify(input, null, 2);
+  return h('span', JSON.stringify(input, null, 2));
 }

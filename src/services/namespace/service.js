@@ -254,11 +254,11 @@ function getSignature(objectName) {
  * a service without containing unnecessary information.
  * TODO(alexfandrianto): This heuristic comes close, but it does not properly
  * distinguish services from each other.
- * Once available, add type info, streaming info, interface name, etc.
+ * The adapted signature now has type info, streaming info, interface name, etc.
  */
-function hashSignature(signature) {
-  var cp = adaptSignature([]);
-  signature.forEach(function(method, methodName) {
+function hashSignature(adaptedSignature) {
+  var cp = [];
+  adaptedSignature.forEach(function(method, methodName) {
     cp[methodName] = method.inArgs.length;
   });
   return jsonStableStringify(cp);

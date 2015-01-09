@@ -18,6 +18,10 @@
   overflow: hidden;
 }
 
+.tooltip.method-tooltip::shadow .core-tooltip {
+  width: 24em;
+}
+
 .method-input .label {
   align-items: center;
   overflow: hidden;
@@ -76,6 +80,10 @@ core-icon.star {
 
 core-icon.error {
   color: var(--color-error);
+}
+
+core-icon.info {
+  color: var(--color-dark);
 }
 
 /* Chrome, Safari, Opera */

@@ -148,7 +148,7 @@ function refreshInputSuggestions(state) {
     param.inArgs.map(function(inArg, i) {
       return smartService.predict(
         'learner-method-input',
-        _.assign({argName: inArg}, input)
+        _.assign({argName: inArg.name}, input)
       ).then(function(inputSuggestion) {
         state.inputSuggestions.put(i, inputSuggestion);
       });
@@ -287,7 +287,7 @@ function render(state, events) {
 
   // Return immediately if we don't need arguments or haven't expanded.
   if (state.args.length === 0 || !state.expanded) {
-    return h('div.method-input', methodNameHeader);
+    return makeMethodTooltip(state, h('div.method-input', methodNameHeader));
   }
 
   // Render the stars first, and if there's extra room, the recommendations.
@@ -305,7 +305,18 @@ function render(state, events) {
   var runButton = renderRPCRunButton(state, events);
 
   var footer = h('div.method-input-expanded', [argForm, starButton, runButton]);
-  return h('div.method-input', [methodNameHeader, recs, footer]);
+  return makeMethodTooltip(state,
+    h('div.method-input', [methodNameHeader, recs, footer]));
+}
+
+/*
+ * Wrap the method form with a tooltip.
+ */
+function makeMethodTooltip(state, child) {
+  return h('core-tooltip.tooltip.method-tooltip', {
+    'label': state.signature.get(state.methodName).doc || '<no description>',
+    'position': 'top'
+  }, child);
 }
 
 /*
@@ -316,9 +327,7 @@ function renderMethodHeader(state, events) {
     return renderInvocation(state, events);
   }
   var labelText = getMethodSignature(state);
-  var label = h('div.label', {
-    'title': labelText
-  }, labelText);
+  var label = makeMethodLabel(labelText);
 
   var expand = h('a.drill', {
     'href': 'javascript:;',
@@ -342,7 +351,12 @@ function getMethodSignature(state, args) {
   var param = state.signature.get(methodName);
   var text = methodName + '(';
   for (var i = 0; i < param.inArgs.length; i++) {
-    var arg = args !== undefined ? args[i] : param.inArgs[i];
+    var arg = '';
+    if (args !== undefined) {
+      arg = args[i];
+    } else {
+      arg = param.inArgs[i].name + ' ' + param.inArgs[i].type.toString();
+    }
     if (i > 0) {
       text += ',';
     }
@@ -394,9 +408,7 @@ function renderInvocation(state, events, argsStr) {
   var noArgs = argsStr === undefined;
   var args = noArgs ? [] : JSON.parse(argsStr);
   var labelText = getMethodSignature(state, args);
-  var label = h('div.label', {
-    'title': labelText
-  }, labelText);
+  var label = makeMethodLabel(labelText);
 
   var runButton = h('a.drill', {
     'href': 'javascript:;',
@@ -422,12 +434,21 @@ function renderInvocation(state, events, argsStr) {
 }
 
 /*
+ * Render a method label using labelText.
+ */
+function makeMethodLabel(labelText) {
+  return h('div.label', {
+    'title': labelText
+  }, labelText);
+}
+
+/*
  * Draws a single method argument input using the paper-autocomplete element.
  * Includes a placeholder and suggestions from the internal state.
  */
 function renderMethodInput(state, index) {
   var methodName = state.methodName;
-  var argName = state.signature.get(methodName).inArgs[index];
+  var argName = state.signature.get(methodName).inArgs[index].name;
   var inputSuggestions = state.inputSuggestions[index];
   var args = state.args;
 
@@ -466,10 +487,12 @@ function renderStarUserInputButton(state, events) {
       'raised': new AttributeHook('true'),
       'ev-click': mercury.event(events.starAction, {
         star: true
-      }),
-      'label': 'STAR'
+      })
     },
-    renderStarIcon(false)
+    [
+      renderStarIcon(false),
+      h('span', 'Star')
+    ]
   );
   return starButton;
 }
@@ -483,10 +506,12 @@ function renderRPCRunButton(state, events) {
     {
       'href': 'javascript:;',
       'raised': new AttributeHook('true'),
-      'ev-click': getRunEvent(state, events, state.args),
-      'label': 'RUN'
+      'ev-click': getRunEvent(state, events, state.args)
     },
-    renderPlayIcon()
+    [
+      renderPlayIcon(),
+      h('span', 'Run')
+    ]
   );
   return runButton;
 }

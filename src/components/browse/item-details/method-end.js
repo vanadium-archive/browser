@@ -1,3 +1,4 @@
+var h = require('mercury').h;
 var smartService = require('../../../services/smart/service');
 var log = require('../../../lib/log')(
   'components:browse:item-details:method-end');
@@ -31,9 +32,9 @@ function methodEnd(state, method, data) {
 
   // Do not process results we expect to be empty.
   // TODO(alexfandrianto): Streaming results are ignored with this logic.
-  var expectedOutArgs = sig.get(method).numOutArgs;
+  var expectedOutArgs = sig.get(method).outArgs.length;
   if (expectedOutArgs === 1) { // Error is the only possible out argument.
-    replaceResult(state, data.runID, '<ok>');
+    replaceResult(state, data.runID, h('span', '<ok>'));
     return;
   }
 

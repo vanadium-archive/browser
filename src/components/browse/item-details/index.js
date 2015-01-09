@@ -127,10 +127,40 @@ function renderDetailsContent(state, events) {
   } else {
     typeName = 'Intermediary Name';
   }
+
   var displayItems = [
     renderFieldItem('Name', (item.objectName || '<root>')),
     renderFieldItem('Type', typeName, typeDescription)
   ];
+
+  if (item.isServer) {
+    // Display each service description and show it.
+    var serviceDescs = [];
+    var descs = state.item.serverInfo.signature.pkgNameDescriptions;
+    Object.keys(descs).forEach(function(pkgName) {
+      var desc = descs[pkgName];
+
+      // Use an info icon whose tooltip reveals the description.
+      serviceDescs.push(h('div', [
+        h('core-tooltip.tooltip', {
+          'label': desc || '<no description>',
+          'position': 'right'
+        }, h('core-icon.icon.info', {
+          'icon': new AttributeHook('info')
+        })),
+        h('span.margin-left-xxsmall', pkgName)
+      ]));
+    });
+
+    if (serviceDescs.length > 0) {
+      displayItems.push(
+        renderFieldItem('Interfaces', h('div', {
+          'vertical': new AttributeHook(true),
+          'layout': new AttributeHook(true)
+        }, serviceDescs))
+      );
+    }
+  }
 
   return [
     h('div', displayItems)
@@ -155,7 +185,7 @@ function renderMethodsContent(state, events) {
 function renderMethodSignatures(state, events) {
   var sig = state.item.serverInfo.signature;
   if (!sig) {
-    return h('div', 'No method signature');
+    return h('div', h('span', 'No method signature'));
   }
 
   var methods = [];
@@ -184,7 +214,7 @@ function renderMethodSignatures(state, events) {
 function renderMethodOutput(state) {
   var outputs = state.methodOutputs[state.item.objectName];
   if (outputs === undefined) {
-    return h('div.method-output', 'No method output');
+    return h('div.method-output', h('span', 'No method output'));
   }
   var outputRows = [h('tr', [
     h('th', '#'),

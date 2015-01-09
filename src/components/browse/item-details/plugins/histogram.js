@@ -1,3 +1,4 @@
+var h = require('mercury').h;
 var histogram = require('bars');
 
 module.exports = {
@@ -23,5 +24,5 @@ function format(input) {
   input.buckets.forEach(function(obj) {
     histData[obj.lowBound] = obj.count;
   });
-  return histogram(histData, { bar: '*', width: 20 });
+  return h('span', histogram(histData, { bar: '*', width: 20 }));
 }

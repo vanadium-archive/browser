@@ -64,9 +64,24 @@ paper-progress::shadow #progressContainer {
 paper-button {
   background-color: var(--color-grey-light);
   margin: var(--size-space-xsmall);
-  max-height: 3em;
+}
+
+/*
+ * The paper-button looks better with reduced padding.
+ * Polymer defaults to 0.70em for padding-top and padding-bottom.
+ */
+paper-button::shadow .button-content {
+  padding-top: 0.35em;
+  padding-bottom: 0.35em;
 }
 
 paper-button > core-icon {
   margin-right: var(--size-space-xsmall);
+}
+
+/*
+ * Applies a tiny margin to the left of the element.
+ */
+.margin-left-xxsmall {
+  margin-left: var(--size-space-xxsmall);
 }
