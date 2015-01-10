@@ -21,14 +21,15 @@
       <button id="nodedel">Delete</button>
     </p>
     <p id="status">&nbsp;</p>
+
     <tree-node id="menu" label="root" icon="dns">
       <tree-node label="lib" icon="label-outline"></tree-node>
-      <tree-node label="users" icon="folder-open">
-        <tree-node label="local" icon="dns" open="true">
+      <tree-node label="users" title="intermediary name">
+        <tree-node label="local" icon="dns" open>
           <tree-node label="george" icon="label-outline"></tree-node>
           <tree-node label="martha" icon="label-outline"></tree-node>
         </tree-node>
-        <tree-node label="remote" icon="dns" highlight="true"></tree-node>
+        <tree-node label="remote" icon="dns" highlight></tree-node>
       </tree-node>
     </tree-node>
   </section>
@@ -37,16 +38,17 @@
 var activeNode; // element that is active and highlighted
 var nodeIndex = 0;  // for labeling nodes
 document.getElementById('menu').addEventListener('activate', function(e) {
-  // clear active highlight
-  var nodes = this.getElementsByTagName('tree-node');
-  for (var i = 0; i < nodes.length; i++) {
-    nodes[i].removeAttribute('highlight');
+  if (!e.detail.shiftKey) { // clear active highlight
+    var nodes = this.getElementsByTagName('tree-node');
+    for (var i = 0; i < nodes.length; i++) {
+      nodes[i].highlight = false;
+    }
+    this.highlight = false;  // remove from root of tree
   }
-  this.removeAttribute('highlight');  // remove from root of tree
 
   // set active highlight
   activeNode = e.detail.node; // save active node
-  activeNode.setAttribute('highlight', true); // highlight active node
+  activeNode.highlight = true; // highlight active node
 
   // construct bread crumb path
   var cn = activeNode;
@@ -60,8 +62,9 @@ document.getElementById('menu').addEventListener('activate', function(e) {
   return false; // stop propagation
 });
 document.getElementById('menu').addEventListener('openchange', function(e) {
-  document.getElementById('status').textContent = e.detail.node.label+
-      ' '+(e.detail.node.open?'expanded':'collapsed');
+  var n = e.detail.node;
+  document.getElementById('status').textContent = n.label+
+      ' '+(n.open?'expanded':'collapsed');
 });
 document.getElementById('nodeadd').addEventListener('click', function(e) {
   if (!activeNode) { return; }
@@ -72,8 +75,7 @@ document.getElementById('nodeadd').addEventListener('click', function(e) {
   node.setAttribute('label', label);
   node.setAttribute('icon', ['dns', 'label-outline', 'folder-open'][Math.floor(Math.random()* 2.5)]);
   activeNode.appendChild(node);
-  // activeNode.setAttribute('parent', true);
-  activeNode.setAttribute('open', true);  // open active node (optional)
+  activeNode.open = true;  // open active node (optional)
 });
 document.getElementById('nodedel').addEventListener('click', function(e) {
   if (!activeNode) { return; }

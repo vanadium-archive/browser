@@ -2,37 +2,39 @@
 
 <!--
 tree-node elements are nested to create a tree menu
-  <tree-node label="" icon="" open highlight>
+  <tree-node label="" icon="" iconalt="" title="" open highlight>
 
 Example:
-  <tree-node label="Location" id="root">
-    <tree-node label="California" highlight>
+  <tree-node id="root" label="Location">
+    <tree-node label="California" highlight></tree-node>
   </tree-node>
+  (see demo.html for a full example)
 
 Attributes:
   label: (string) displayed text of the tree node
-  icon: (string) optional Polymer icon name
-    (see https://www.polymer-project.org/components/core-icons/demo.html)
+  icon: (string) optional Polymer icon name; see
+    https://www.polymer-project.org/components/core-icons/demo.html)
   iconalt: (string) alt text for item icon
+  title: (string) title text for item
   open: (Boolean) expand to display nested children
   highlight: (Boolean) adds "highlight" CSS class to item
 
 Events:
-  Attach one event listener to the root (or above) or individual listeners to each node.
+  Attach one event listener to the root (or above),
+  or individual listeners to each node.
   Don't forget to return false from the callback function to stop propagation.
   @event activate node item was clicked or tapped
   @event openchange node was expanded or collapsed
   The listener functions take a single parameter:
   @param {event} e the custom event object
   For both, e.detail.node is the affected tree-node.
-  The single argument to the callback is the standard event object (e),
-  where e.detail.node is the tree-node that was tapped (for activate),
-  or the tree-node that was expanded or collapsed (for openchange).
-(see demo.html for an example)
+  For the activate event, e.shiftKey, e.altKey, e.ctrlKey, and e.metaKey
+  contain the state of those keyboard keys.
+
 author: wmleler@
 -->
 
-<polymer-element name="tree-node" attributes="label icon iconalt open highlight">
+<polymer-element name="tree-node" attributes="label icon title">
   <template>
     <link rel="stylesheet" href="tree-node.css">
     <div class="indent" aria-expanded="{{open}}"
@@ -43,7 +45,7 @@ author: wmleler@
           alt="{{open?'collapse':'expand'}}">
       </core-icon>
       <span on-tap="{{activate}}" role="treeitem" aria-selected="{{highlight}}"
-          class="item{{highlight?' highlight':''}}">
+          class="item{{highlight?' highlight':''}}" title="{{title}}">
         <template if="{{icon}}">
           <core-icon class="itemicon" icon="{{icon}}" alt="{{iconalt}}"></core-icon>
         </template>
@@ -59,10 +61,12 @@ author: wmleler@
 
   <script>
   Polymer('tree-node', {
+    publish: {
+      iconalt: 'item icon',
+      open: false,
+      highlight: false
+    },
     ready: function() {
-      if (this.iconalt === undefined) {
-        this.iconalt = 'item icon';
-      }
       this.isParent = !!this.firstElementChild;
       this.onMutation(this, this.childrenUpdated);
     },
@@ -75,7 +79,9 @@ author: wmleler@
       this.fire('openchange', { node: this });
     },
     activate: function(event, detail, sender) {
-      this.fire('activate', { node: this });
+      this.fire('activate', { node: this,
+          shiftKey: event.shiftKey, altKey: event.altKey,
+          ctrlKey: event.ctrlKey, metaKey: event.metaKey });
     }
   });
   </script>
