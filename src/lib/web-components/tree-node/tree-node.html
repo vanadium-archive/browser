@@ -1,8 +1,6 @@
-<link rel="import" href="/bower_components/polymer/polymer.html">
-
 <!--
 tree-node elements are nested to create a tree menu
-  <tree-node label="" icon="" iconalt="" title="" open highlight>
+  <tree-node label="" icon="" iconalt="" itemtitle="" open highlight>
 
 Example:
   <tree-node id="root" label="Location">
@@ -15,7 +13,7 @@ Attributes:
   icon: (string) optional Polymer icon name; see
     https://www.polymer-project.org/components/core-icons/demo.html)
   iconalt: (string) alt text for item icon
-  title: (string) title text for item
+  itemtitle: (string) title text for item
   open: (Boolean) expand to display nested children
   highlight: (Boolean) adds "highlight" CSS class to item
 
@@ -34,7 +32,7 @@ Events:
 author: wmleler@
 -->
 
-<polymer-element name="tree-node" attributes="label icon title">
+<polymer-element name="tree-node" attributes="label icon">
   <template>
     <link rel="stylesheet" href="tree-node.css">
     <div class="indent" aria-expanded="{{open}}"
@@ -45,7 +43,7 @@ author: wmleler@
           alt="{{open?'collapse':'expand'}}">
       </core-icon>
       <span on-tap="{{activate}}" role="treeitem" aria-selected="{{highlight}}"
-          class="item{{highlight?' highlight':''}}" title="{{title}}">
+          class="item{{highlight?' highlight':''}}" title="{{itemtitle}}">
         <template if="{{icon}}">
           <core-icon class="itemicon" icon="{{icon}}" alt="{{iconalt}}"></core-icon>
         </template>
@@ -63,6 +61,7 @@ author: wmleler@
   Polymer('tree-node', {
     publish: {
       iconalt: 'item icon',
+      itemtitle: 'item',
       open: false,
       highlight: false
     },
