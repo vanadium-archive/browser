@@ -10,6 +10,7 @@ import (
 	"v.io/core/veyron/lib/signals"
 	"v.io/core/veyron/profiles"
 	_ "v.io/core/veyron/profiles"
+	"v.io/core/veyron2"
 	"v.io/core/veyron2/rt"
 	"v.io/core/veyron2/security"
 )
@@ -56,7 +57,7 @@ func main() {
 	var listenAndServe = func(name string, server interface{}) func() {
 
 		// Create a new server instance.
-		s, err := r.NewServer()
+		s, err := veyron2.NewServer(ctx)
 		if err != nil {
 			log.Fatal("failure creating server: ", err)
 		}
