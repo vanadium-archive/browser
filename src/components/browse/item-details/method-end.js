@@ -74,7 +74,7 @@ function replaceResult(state, runID, newResult) {
 function learnMethodInput(state, method, args) {
   var sig = state.item().serverInfo.signature;
   args.forEach(function(value, i) {
-    var argName = sig.get(method).inArgs[i];
+    var argName = sig.get(method).inArgs[i].name;
     var input = {
       argName: argName,
       methodName: method,
