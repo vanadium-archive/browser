@@ -1,8 +1,12 @@
 var mercury = require('mercury');
 var insertCss = require('insert-css');
+
 var AttributeHook = require('../../lib/mercury/attribute-hook');
-var sidebar = require('../sidebar/index');
-var mainContent = require('../main-content/index');
+
+var Sidebar = require('../sidebar/index');
+var MainContent = require('../main-content/index');
+var ReportBug = require('../bug-report/index');
+
 var css = require('./index.css');
 
 var h = mercury.h;
@@ -81,14 +85,15 @@ function render(state, events) {
       'drawer': new AttributeHook(true)
     }, [
       renderSideToolbar(state, events),
-      sidebar.render(state, events)
+      Sidebar.render(state, events)
     ]),
     h('core-header-panel.main', {
       'main': new AttributeHook(true)
     }, [
       renderMainToolbar(state, events),
-      mainContent.render(state, events),
-      renderToasts(state, events)
+      MainContent.render(state, events),
+      renderToasts(state, events),
+      ReportBug.render()
     ])
   ]);
 }
@@ -113,7 +118,7 @@ function renderMainToolbar(state, events) {
       'ev-click': mercury.event(events.viewport.openSidebar)
     }),
     h('h2.title', state.viewport.title),
-    mainContent.renderHeader(state,events),
+    MainContent.renderHeader(state,events),
     h('core-tooltip.account-name', {
       'label': new AttributeHook('You are logged in as:'),
       'position': new AttributeHook('left')

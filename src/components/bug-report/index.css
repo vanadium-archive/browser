@@ -1,0 +1,18 @@
+@import "common-style/theme.css";
+@import "common-style/sizes.css";
+
+.bug-reporter {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+}
+
+.bug-reporter .icon {
+  opacity: 0.75;
+  color: var(--color-text-secondary);
+}
+
+.bug-reporter .icon::shadow #icon {
+  width: 16px;
+  height: 16px;
+}
