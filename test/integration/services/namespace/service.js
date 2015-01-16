@@ -284,8 +284,8 @@ _.forOwn(badRPCs, function run(params, inputType) {
 // Make RPC: outputs have the expected # of outputs
 test('makeRPC returns output properly', function(t) {
   namespaceService.makeRPC('cottage/alarm', 'panic', []).then(
-    function got0Outputs(res) { // 0 outputs: has [] as a result.
-      t.ok(res instanceof Array && res.length === 0, '0 outputs => []');
+    function got0Outputs(res) { // 0 outputs: has no result.
+      t.ok(res === undefined, '0 outputs => is undefined');
 
       return namespaceService.makeRPC('house/alarm', 'status', []);
     }
