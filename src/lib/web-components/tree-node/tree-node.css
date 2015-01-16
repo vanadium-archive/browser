@@ -1,6 +1,7 @@
 .indent {
   padding: 0;
   margin: 7px 0 0 20px;
+  white-space: nowrap;
 }
 #expander {
   width: 25px;
