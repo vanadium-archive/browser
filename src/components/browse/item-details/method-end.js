@@ -1,8 +1,11 @@
-var h = require('mercury').h;
+var formatDetail = require('./format-detail');
+
 var smartService = require('../../../services/smart/service');
+
 var log = require('../../../lib/log')(
   'components:browse:item-details:method-end');
-var formatDetail = require('./format-detail');
+
+var h = require('mercury').h;
 
 module.exports = methodEnd;
 

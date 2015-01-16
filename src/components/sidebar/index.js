@@ -2,7 +2,6 @@ var mercury = require('mercury');
 var insertCss = require('insert-css');
 var browseRoute = require('../../routes/browse');
 var helpRoute = require('../../routes/help');
-var visualizeRoute = require('../../routes/visualize');
 var css = require('./index.css');
 
 var h = mercury.h;
@@ -28,25 +27,9 @@ function render(state, events) {
   function renderNavigationItems() {
     var navigationItems = [{
       key: 'browse',
-      label: 'Iconview',
-      icon: 'apps',
-      href: browseRoute.createUrl(
-        state.browse.namespace,
-        state.browse.globQuery
-      )
-    }, {
-      key: 'tree',
-      label: 'Treeview',
-      icon: 'chevron-left',
-      href: browseRoute.createUrl(
-        state.browse.namespace,
-        state.browse.globQuery
-      )
-    }, {
-      key: 'visualize',
-      label: 'Visualize',
-      icon: 'social:circles-extended',
-      href: visualizeRoute.createUrl()
+      label: 'Browse',
+      icon: 'explore',
+      href: browseRoute.createUrl(state.browse)
     }, {
       key: 'help',
       label: 'Help',

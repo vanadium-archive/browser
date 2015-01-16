@@ -1,5 +1,6 @@
 @import "common-style/sizes.css";
 @import "common-style/theme.css";
+@import "common-style/card.css";
 
 .field {
   font-size: var(--size-font-small);
@@ -11,6 +12,17 @@
   color: var(--color-text-secondary);
 }
 
+paper-icon-button.bookmarked {
+  color: var(--color-bright);
+}
+
+.item-actions {
+  margin: var(--size-space-xxsmall) -var(--size-space-xsmall);
+  margin-top: -var(--size-space-xxsmall);
+  padding: var(--size-space-xxsmall) 0;
+  border-bottom: var(--border);
+}
+
 .method-input {
   display: inline-block;
   vertical-align: top;
@@ -18,8 +30,18 @@
   overflow: hidden;
 }
 
-.tooltip.method-tooltip::shadow .core-tooltip {
+.tooltip.field-tooltip::shadow .core-tooltip, .tooltip.method-tooltip::shadow .core-tooltip {
+  line-height: 0.9em; /* overrides Polymer's 6px line-height */
+  white-space: pre-wrap;
+  font-size: var(--size-font-xsmall);
+}
+
+.tooltip.field-tooltip::shadow .core-tooltip {
   width: 24em;
+}
+
+.tooltip.field-tooltip::shadow .core-tooltip {
+  width: 36em;
 }
 
 .method-input .label {

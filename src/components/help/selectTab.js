@@ -9,8 +9,7 @@ module.exports = selectTab;
 function selectTab(state, events, tabKey) {
   // If the tab is invalid, go to the error page.
   if (sections.get(tabKey) === undefined) {
-    // TODO(aghassemi): Add 404 error.
-    // events.error(type.404);
+    //TODO(aghassemi) Needs to be 404 error when we have support for 404
     events.error(new Error('Invalid help page: ' + tabKey));
   } else {
     // Since the tabKey is valid, the selectedTab can be updated.

@@ -18,7 +18,7 @@ function router(state, events) {
     var path = normalizePath(data.path);
     var route = routes.match(path);
     if (!route) {
-      //TOOD(aghassemi) redirect to 404 error view?
+      //TODO(aghassemi) Needs to be 404 error when we have support for 404
       return;
     }
     if (!data.skipHistoryPush) {

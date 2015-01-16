@@ -1,6 +1,7 @@
 var browseRoute = require('./browse');
-var log = require('../lib/log');
 var store = require('../lib/store');
+
+var log = require('../lib/log')('routes:index');
 
 module.exports = function(routes) {
   routes.addRoute('/', handleIndexRoute);
@@ -17,14 +18,18 @@ function handleIndexRoute(state, events) {
 
     // Redirect to browse
     events.navigation.navigate({
-      path: browseRoute.createUrl(index)
+      path: browseRoute.createUrl(state.browse, {
+        namespace: index
+      })
     });
   }).catch(function(err) {
     log.warn('Unable to access stored index', err);
 
     // Redirect to browse
     events.navigation.navigate({
-      path: browseRoute.createUrl(index)
+      path: browseRoute.createUrl(state.browse, {
+        namespace: index
+      })
     });
   });
 }

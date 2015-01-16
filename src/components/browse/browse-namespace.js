@@ -1,12 +1,16 @@
-var mercury = require('mercury');
-var guid = require('guid');
-var handleShortcuts = require('./handle-shortcuts');
-var recommendShortcuts = require('./recommend-shortcuts');
-var exists = require('../../lib/exists');
+var extend = require('extend');
+
+var Bookmarks = require('./bookmarks/index.js');
+var Recommendations = require('./recommendations/index.js');
+var Items = require('./items/index.js');
+
 var log = require('../../lib/log')('components:browse:browse-namespace');
-var namespaceService = require('../../services/namespace/service');
 
 module.exports = browseNamespace;
+
+// We keep track of previous namespace that was browsed to so we can
+// know when navigating to a different namespace happens.
+var previousNamespace;
 
 /*
  * Default event handler for the browseNamespace event.
@@ -18,75 +22,81 @@ module.exports = browseNamespace;
  * }
  */
 function browseNamespace(browseState, browseEvents, data) {
-  if (exists(data.namespace)) {
-    browseState.namespace.set(data.namespace);
+
+  var defaults = {
+    namespace: '',
+    globQuery: '',
+    subPage: 'items',
+    viewType: 'grid'
+  };
+
+  data = extend(defaults, data);
+
+  if (!Items.trySetViewType(browseState.items, data.viewType)) {
+    error404('Invalid view type: ' + data.viewType);
+    return;
   }
 
-  if (exists(data.globQuery)) {
-    browseState.globQuery.set(data.globQuery);
-  }
+  browseState.namespace.set(data.namespace);
+  browseState.globQuery.set(data.globQuery);
+  browseState.subPage.set(data.subPage);
 
   var namespace = browseState.namespace();
-
-  // Search the namespace and update the browseState's items.
-  var requestId = guid.create().value;
-  browseState.isFinishedLoadingItems.set(false);
-  browseState.currentRequestId.set(requestId);
-  browseState.put('items', mercury.array([]));
-
   var globQuery = browseState.globQuery() || '*';
-  namespaceService.search(namespace, globQuery).
-  then(function globResultsReceived(items) {
-    if (!isCurrentRequest()) {
-      return;
-    }
-    browseState.put('items', items);
-    items.events.on('end', searchFinished);
-    items.events.on('streamError', searchFinished);
-  }).catch(function(err) {
-    searchFinished();
-    browseEvents.error(err);
-    log.error(err);
-  });
+  var subPage = browseState.subPage();
 
-  // Reload the user's shortcuts.
-  handleShortcuts.load(browseState).catch(function(err) {
+  // When navigating to a different namespace, reset the currently selected item
+  if (previousNamespace !== namespace) {
+    browseState.selectedItemName.set(namespace);
+  }
+  previousNamespace = namespace;
+
+  browseState.isFinishedLoadingItems.set(false);
+
+  switch (subPage) {
+    case 'items':
+      Items.load(browseState.items, namespace, globQuery)
+        .then(loadingFinished)
+        .catch(onError.bind(null, 'items'));
+      break;
+    case 'bookmarks':
+      Bookmarks.load(browseState.bookmarks)
+        .then(loadingFinished)
+        .catch(onError.bind(null, 'bookmarks'));
+      break;
+    case 'recommendations':
+      Recommendations.load(browseState.recommendations)
+        .then(loadingFinished)
+        .catch(onError.bind(null, 'recommendations'));
+      break;
+    default:
+      browseState.subPage.set(defaults.subPage);
+      error404('Invalid page: ' + browseState.subPage());
+      return;
+  }
+
+  function onError(subject, err) {
+    var message = 'Could not load ' + subject;
     browseEvents.toast({
-      text: 'Could not load shortcuts',
+      text: message,
       type: 'error'
     });
-    // TODO(alexfandrianto): I'd like to toast here, but our toasting mechanism
-    // would only allow for 1 toast. The toast below would override this one.
-    // Perhaps we should allow an array of toasts to be set?
-    log.error('Could not load user shortcuts', err);
-  });
+    log.error(message, err);
+    loadingFinished();
+  }
 
-  // Update our shortcuts, as they may have changed.
-  recommendShortcuts(browseState);
+  function error404(errMessage) {
+    log.error(errMessage);
+    //TODO(aghassemi) Needs to be 404 error when we have support for 404
+    browseEvents.error(new Error(errMessage));
+  }
 
-  // Trigger display items event
-  browseEvents.selectedItemDetails.displayItemDetails({
-    name: data.namespace
-  });
-
-  // TODO(alexfandrianto): Example toast. Consider removing.
-  browseEvents.toast({
-    text: 'Browsing ' + data.namespace,
-    action: browseNamespace.bind(null, browseState, browseEvents, data),
-    actionText: 'REFRESH'
-  });
-
-  function searchFinished() {
-    if (!isCurrentRequest()) {
-      return;
-    }
+  function loadingFinished() {
     browseState.isFinishedLoadingItems.set(true);
   }
 
-  // Whether were are still the current request. This is used to ignore out of
-  // order return of async calls where user has moved on to another item
-  // by the time previous requests result comes back.
-  function isCurrentRequest() {
-    return browseState.currentRequestId() === requestId;
-  }
+  // Update the right side
+  browseEvents.selectedItemDetails.displayItemDetails({
+    name: browseState.selectedItemName()
+  });
 }

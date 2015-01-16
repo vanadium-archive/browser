@@ -9,12 +9,14 @@
   --size-font-xlarge: 1.2em;
 
   /* margin and padding size */
-  --size-space-xxsmall: 0.25em;
+  --size-space-xxsmall: 0.2em;
   --size-space-xsmall: 0.5em;
   --size-space-small: 0.75em;
   --size-space-normal: 1em;
   --size-space-large: 1.25em;
   --size-space-xlarge: 1.5em;
+  --size-space-xxlarge: 3em;
 
   --size-input-width-normal: 16em;
+  --size-input-width-small: 8em;
 }

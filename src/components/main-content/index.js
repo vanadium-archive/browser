@@ -3,7 +3,6 @@ var insertCss = require('insert-css');
 var Browse = require('../browse/index');
 var Help = require('../help/index');
 var ErrorPage = require('../error/index');
-var Visualize = require('../visualize/index');
 var css = require('./index.css');
 
 var h = mercury.h;
@@ -47,8 +46,6 @@ function renderContent(state, events) {
       return Help.render(state.help, events.help);
     case 'error':
       return ErrorPage.render(state.error);
-    case 'visualize':
-      return Visualize.render(state.browse);
     default:
       // We shouldn't get here with proper route handlers, so it's an error(bug)
       throw new Error('Could not find page ' + pageKey);

@@ -1,13 +1,18 @@
 var mercury = require('mercury');
-var namespaceService = require('../../../services/namespace/service');
-var smartService = require('../../../services/smart/service');
+
 var methodNameToVarHashKey = require('./methodNameToVarHashKey');
+var methodStart = require('./method-start.js');
+var methodEnd = require('./method-end.js');
+
+var methodForm = require('./method-form/index.js');
+
+var namespaceService = require('../../../services/namespace/service');
+var bookmarkService = require('../../../services/bookmarks/service');
+var smartService = require('../../../services/smart/service');
+
 var log = require('../../../lib/log')(
   'components:browse:item-details:display-item-details'
 );
-var methodForm = require('./method-form/index.js');
-var methodStart = require('./method-start.js');
-var methodEnd = require('./method-end.js');
 
 module.exports = displayItemDetails;
 
@@ -40,8 +45,12 @@ function displayItemDetails(state, events, data) {
     state.showLoadingIndicator.set(true);
   }, SHOW_LOADING_THRESHOLD);
 
-  namespaceService.getNamespaceItem(name).then(function(itemObs) {
+  var resultsPromise = Promise.all([
+    bookmarkService.isBookmarked(name),
+    namespaceService.getNamespaceItem(name)
+  ]);
 
+  resultsPromise.then(function(results) {
     /*
      * Since async call, by the time we are here, a different name
      * might be selected.
@@ -51,10 +60,15 @@ function displayItemDetails(state, events, data) {
       return;
     }
 
+    var isBookmarked = results[0];
+    var itemObs = results[1];
+
     // Indicate we finished loading
     setIsLoaded();
 
     state.put('item', itemObs);
+
+    state.isBookmarked.set(isBookmarked);
 
     mercury.watch(itemObs, function(item) {
       if (!item.isServer) {

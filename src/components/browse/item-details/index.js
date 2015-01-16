@@ -1,11 +1,17 @@
 var mercury = require('mercury');
-var AttributeHook = require('../../../lib/mercury/attribute-hook');
 var insertCss = require('insert-css');
-var displayItemDetails = require('./display-item-details');
-var h = mercury.h;
-var css = require('./index.css');
+
+var AttributeHook = require('../../../lib/mercury/attribute-hook');
+
 var methodNameToVarHashKey = require('./methodNameToVarHashKey.js');
+
+var displayItemDetails = require('./display-item-details');
+var bookmark = require('./bookmark');
+
 var methodForm = require('./method-form/index.js');
+
+var css = require('./index.css');
+var h = mercury.h;
 
 module.exports = create;
 module.exports.render = render;
@@ -52,10 +58,17 @@ function create() {
      * Whether a loading indicator should be displayed instead of content
      * @type {mercury.value<boolean>}
      */
-    showLoadingIndicator: mercury.value(false)
+    showLoadingIndicator: mercury.value(false),
+
+    /*
+     * Whether item is bookmarked
+     * @type {mercury.value<boolean>}
+     */
+    isBookmarked: mercury.value(false)
   });
 
   var events = mercury.input([
+    'bookmark',
     'displayItemDetails',
     'tabSelected',
     'methodForm',
@@ -79,12 +92,12 @@ function render(state, events) {
 
   var tabContent;
 
-  if(state.showLoadingIndicator) {
+  if (state.showLoadingIndicator) {
     tabContent = h('paper-spinner', {
       'active': new AttributeHook(true),
       'aria-label': new AttributeHook('Loading')
     });
-  } else if(state.item) {
+  } else if (state.item) {
     var detailsContent = renderDetailsContent(state, events);
 
     var methodsContent;
@@ -114,6 +127,33 @@ function render(state, events) {
 }
 
 /*
+ * Renders an action bar on top of the details panel page.
+ */
+function renderActions(state, events) {
+  var item = state.item;
+
+  // Bookmark action
+  var isBookmarked = state.isBookmarked;
+  var bookmarkIcon = 'bookmark' + (!isBookmarked ? '-outline' : '');
+  var bookmarkTitle = (isBookmarked ? 'Remove bookmark ' : 'Bookmark');
+  var bookmarkAction = h('core-tooltip', {
+      'label': new AttributeHook(bookmarkTitle),
+      'position': new AttributeHook('right'),
+    },
+    h('paper-icon-button' + (isBookmarked ? '.bookmarked' : ''), {
+      'icon': new AttributeHook(bookmarkIcon),
+      'alt': new AttributeHook(bookmarkTitle),
+      'ev-click': mercury.event(events.bookmark, {
+        bookmark: !isBookmarked,
+        name: item.objectName
+      })
+    })
+  );
+
+  return h('div.icon-group.item-actions', [bookmarkAction]);
+}
+
+/*
  * Renders details about the current service object.
  * Note: Currently renders in the same tab as renderMethodsContent.
  */
@@ -128,7 +168,10 @@ function renderDetailsContent(state, events) {
     typeName = 'Intermediary Name';
   }
 
+  var actions = renderActions(state, events);
+
   var displayItems = [
+    actions,
     renderFieldItem('Name', (item.objectName || '<root>')),
     renderFieldItem('Type', typeName, typeDescription)
   ];
@@ -142,7 +185,7 @@ function renderDetailsContent(state, events) {
 
       // Use an info icon whose tooltip reveals the description.
       serviceDescs.push(h('div', [
-        h('core-tooltip.tooltip', {
+        h('core-tooltip.tooltip.field-tooltip', {
           'label': desc || '<no description>',
           'position': 'right'
         }, h('core-icon.icon.info', {
@@ -199,9 +242,9 @@ function renderMethodSignatures(state, events) {
   methodNames.sort().forEach(function(methodName) {
     var methodKey = methodNameToVarHashKey(methodName);
     methods.push(methodForm.render(
-        state.methodForm[methodKey],
-        events.methodForm[methodKey]
-      ));
+      state.methodForm[methodKey],
+      events.methodForm[methodKey]
+    ));
   });
 
   return h('div', methods); // Note: allows 0 method signatures
@@ -249,7 +292,7 @@ function renderFieldItem(label, content, tooltip) {
   content = h('span', content);
   if (tooltip) {
     // If there is a tooltip, wrap the content in it
-    content = h('core-tooltip.tooltip', {
+    content = h('core-tooltip.tooltip.field-tooltip', {
       'label': new AttributeHook(tooltip),
       'position': 'right'
     }, content);
@@ -267,4 +310,5 @@ function wireUpEvents(state, events) {
   events.tabSelected(function(data) {
     state.selectedTabIndex.set(data.index);
   });
+  events.bookmark(bookmark.bind(null, state, events));
 }
