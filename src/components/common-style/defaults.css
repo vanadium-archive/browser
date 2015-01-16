@@ -36,7 +36,7 @@ paper-spinner {
 
 paper-progress {
   width: 100%;
-  height: 2px;
+  height: 4px;
 }
 
 /*
@@ -77,6 +77,13 @@ paper-button::shadow .button-content {
 
 paper-button > core-icon {
   margin-right: var(--size-space-xsmall);
+}
+
+.empty {
+  width: 100%;
+  padding: 1em;
+  text-align: center;
+  color: var(--color-text-secondary);
 }
 
 /*

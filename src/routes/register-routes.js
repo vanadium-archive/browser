@@ -8,5 +8,6 @@ function registerRoutes(routes) {
   require('./help')(routes);
   require('./browse')(routes);
   require('./error')(routes);
-  require('./visualize')(routes);
+  require('./recommendations')(routes);
+  require('./bookmarks')(routes);
 }

@@ -1,0 +1,53 @@
+@import "common-style/theme.css";
+@import "common-style/sizes.css";
+
+.item.card {
+  box-sizing: border-box;
+  background-color: var(--color-white);
+  display: flex;
+  flex-shrink: 0;
+  flex-grow: 0;
+  height: 2.5em;
+  min-width: 8em;
+  margin: 0.75em;
+  border-radius: 3px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: var(--shadow-all-around);
+  border: var(--border);
+}
+.item .label, .item .drill {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 0.5em;
+}
+.item .label {
+  text-decoration: none;
+  flex: 1;
+  overflow: hidden;
+  white-space: nowrap;
+}
+.item .drill {
+  width: 1.5em;
+  background-color: var(--color-grey-light);
+  border-left: var(--border);
+}
+
+.item.selected .drill {
+  background-color: var(--color-bright);
+}
+
+.item a:hover, .item a:focus{
+  opacity: 0.7;
+}
+
+.item.card .icon {
+  align-self: center;
+  padding-right: 0.5em;
+}
+
+.item.selected.card {
+  background-color: var(--color-bright);
+  color: var(--color-text-primary-invert);
+}

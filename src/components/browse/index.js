@@ -1,19 +1,29 @@
 var mercury = require('mercury');
 var insertCss = require('insert-css');
+
 var AttributeHook = require('../../lib/mercury/attribute-hook');
 var PropertyValueEvent = require('../../lib/mercury/property-value-event');
+
 var exists = require('../../lib/exists');
-var log = require('../../lib/log')('components:browse');
-var browseRoute = require('../../routes/browse');
-var browseNamespace = require('./browse-namespace');
-var getNamespaceSuggestions = require('./get-namespace-suggestions');
-var getServiceIcon = require('./get-service-icon');
-var handleShortcuts = require('./handle-shortcuts');
-var itemDetailsComponent = require('./item-details/index');
+
 var namespaceService = require('../../services/namespace/service');
 var smartService = require('../../services/smart/service');
-var css = require('./index.css');
 
+var browseRoute = require('../../routes/browse');
+var bookmarksRoute = require('../../routes/bookmarks');
+var recommendationsRoute = require('../../routes/recommendations');
+
+var ItemDetails = require('./item-details/index');
+var Items = require('./items/index');
+var Bookmarks = require('./bookmarks/index');
+var Recommendations = require('./recommendations/index');
+
+var browseNamespace = require('./browse-namespace');
+var getNamespaceSuggestions = require('./get-namespace-suggestions');
+
+var log = require('../../lib/log')('components:browse');
+
+var css = require('./index.css');
 var h = mercury.h;
 
 module.exports = create;
@@ -26,14 +36,17 @@ module.exports.renderHeader = renderHeader;
 function create() {
   loadLearners();
 
-  var selectedItemDetails = itemDetailsComponent();
+  var selectedItemDetails = new ItemDetails();
+  var bookmarks = new Bookmarks();
+  var recommendations = new Recommendations();
+  var items = new Items();
 
   var state = mercury.varhash({
     /*
      * Veyron namespace being displayed and queried
      * @type {string}
      */
-    namespace: mercury.value(''), //TODO(aghassemi) temp
+    namespace: mercury.value(''),
 
     /*
      * Glob query applied to the Veyron namespace
@@ -60,38 +73,19 @@ function create() {
     namespacePrefix: mercury.value(''),
 
     /*
-     * List of namespace items to display
-     * @see services/namespace/item
-     * @type {Array<namespaceitem>}
+     * State of the bookmarks component
      */
-    items: mercury.array([]),
+    bookmarks: bookmarks.state,
 
     /*
-     * Whether loading items has finished.
-     * @type {Boolean}
+     * State of the recommendation component
      */
-    isFinishedLoadingItems: mercury.value(false),
+    recommendations: recommendations.state,
 
     /*
-     * uuid for the current browse-namespace request.
-     * Needed to handle out-of-order return of async calls.
-     * @type {String}
+     * State of the items component
      */
-    currentRequestId: mercury.value(''),
-
-    /*
-     * List of user-specified shortcuts to display
-     * @see services/namespace/item
-     * @type {Array<namespaceitem>}
-     */
-    userShortcuts: mercury.array([]),
-
-    /*
-     * List of recommended shortcuts to display
-     * @see services/namespace/item
-     * @type {Array<namespaceitem>}
-     */
-    recShortcuts: mercury.array([]),
+    items: items.state,
 
     /*
      * State of the selected item-details component
@@ -101,7 +95,19 @@ function create() {
     /*
      * Name of currently selected item
      */
-    selectedItemName:  mercury.value(''),
+    selectedItemName: mercury.value(''),
+
+    /*
+     * Whether loading items has finished.
+     * @type {Boolean}
+     */
+    isFinishedLoadingItems: mercury.value(false),
+
+    /*
+     * Specifies what sub page is currently displayed.
+     * One of: items, bookmarks, recommendations
+     */
+    subPage: mercury.value('items')
 
   });
 
@@ -110,7 +116,7 @@ function create() {
      * Indicates a request to browse the Veyron namespace
      * Data of form:
      * {
-     *   namespace: '/veyron/name/space',
+     *   namespace: '/namespace-root:8881/name/space',
      *   globQuery: '*',
      * }
      * is expected as data for the event
@@ -123,16 +129,35 @@ function create() {
     'getNamespaceSuggestions',
 
     /*
-     * Indicates that the user is setting/removing a shortcut.
+     * Selects an items.
+     * Data of form:
+     * {
+     *    name: 'object/name'
+     * }
      */
-    'setShortcut',
-
-    'selectedItemDetails',
-
     'selectItem',
 
+    /*
+     * Events for the ItemDetails component
+     */
+    'selectedItemDetails',
+
+    /*
+     * Displays an error
+     * Data of should be an Error object.
+     */
     'error',
 
+    /*
+     * Displays a toast
+     * Data of form:
+     * {
+          text: 'Saved',
+          type: 'error',
+          action: function undo(){ // },
+          actionText: 'UNDO'
+     * }
+     */
     'toast'
   ]);
 
@@ -148,16 +173,10 @@ function create() {
 
 /*
  * Loads the learners into the smart service upon creation of this component.
+ * TODO(aghassemi), TODO(alexfandrianto) Move this into service layers, similar
+ * to how `learner-shortcut` is now loaded in the recommendations service.
  */
 function loadLearners() {
-  smartService.loadOrCreate(
-    'learner-shortcut',
-    smartService.constants.LEARNER_SHORTCUT, {
-      k: 3
-    }
-  ).catch(function(err) {
-    log.error(err);
-  });
   smartService.loadOrCreate(
     'learner-method-input',
     smartService.constants.LEARNER_METHOD_INPUT, {
@@ -183,6 +202,102 @@ function loadLearners() {
  * namespace root.
  */
 function renderHeader(browseState, browseEvents, navEvents) {
+  return h('div', [
+    renderNamespaceBox(browseState, browseEvents, navEvents)
+  ]);
+}
+
+/*
+ * Renders the main body of the namespace browser.
+ * A toolbar is rendered on top of the mainView and sideView showing the current
+ * position in the namespace as well as a globquery searchbox.
+ * The mainView contains the shortcuts and names at this point in the namespace.
+ * The sideView displays the detail information of the selected name.
+ */
+function render(browseState, browseEvents, navEvents) {
+  insertCss(css);
+
+  var sideView = [
+    ItemDetails.render(
+      browseState.selectedItemDetails,
+      browseEvents.selectedItemDetails
+    )
+  ];
+
+  var mainView;
+  switch (browseState.subPage) {
+    case 'items':
+      mainView = Items.render(browseState.items, browseState,
+        browseEvents, navEvents);
+      break;
+    case 'bookmarks':
+      mainView = Bookmarks.render(browseState.bookmarks,
+        browseState, browseEvents, navEvents);
+      break;
+    case 'recommendations':
+      mainView = Recommendations.render(browseState.recommendations,
+        browseState, browseEvents, navEvents);
+      break;
+    default:
+      log.error('Unsupported subPage ' + browseState.subPage);
+  }
+
+  // add progressbar and wrap in a container
+  var progressbar;
+  if (!browseState.isFinishedLoadingItems) {
+    progressbar = h('core-tooltip.progress-tooltip', {
+      'label': new AttributeHook('Loading items...'),
+      'position': new AttributeHook('bottom')
+    }, h('paper-progress.delayed', {
+      'indeterminate': new AttributeHook(true),
+      'aria-label': new AttributeHook('Loading items')
+    }));
+  }
+
+  mainView = h('div.browse-main-wrapper', [
+    progressbar,
+    mainView
+  ]);
+
+  var sideViewWidth = '50%';
+  var view = [
+    h('core-toolbar.browse-toolbar', [
+      renderBreadcrumbs(browseState, navEvents),
+      renderViewActions(browseState, navEvents)
+    ]),
+    h('core-drawer-panel', {
+      'rightDrawer': new AttributeHook(true),
+      'drawerWidth': new AttributeHook(sideViewWidth),
+      'responsiveWidth': new AttributeHook('0px')
+    }, [
+      h('core-header-panel.browse-main-panel', {
+        'main': new AttributeHook(true)
+      }, [
+        mainView
+      ]),
+      h('core-header-panel.browse-details-sidebar', {
+        'drawer': new AttributeHook(true)
+      }, [
+        sideView
+      ])
+    ])
+  ];
+
+  return h('core-drawer-panel', {
+    'drawerWidth': new AttributeHook('0px')
+  }, [
+    h('core-header-panel', {
+      'main': new AttributeHook(true)
+    }, [
+      view
+    ])
+  ]);
+}
+
+/*
+ * Renders the addressbar for entering namespace
+ */
+function renderNamespaceBox(browseState, browseEvents, navEvents) {
   // Trigger an actual navigation event when value of the inputs change
   var changeEvent = new PropertyValueEvent(function(val) {
     var namespace = browseState.namespace;
@@ -190,7 +305,9 @@ function renderHeader(browseState, browseEvents, navEvents) {
       namespace = val;
     }
     navEvents.navigate({
-      path: browseRoute.createUrl(namespace)
+      path: browseRoute.createUrl(browseState, {
+        namespace: namespace
+      })
     });
   }, 'value', true);
 
@@ -231,86 +348,65 @@ function renderHeader(browseState, browseEvents, navEvents) {
   );
 }
 
+function createActionIcon(tooltip, icon, href) {
+  var view = h('core-tooltip', {
+      'label': tooltip,
+      'position': 'bottom'
+    },
+    h('a', {
+      'href': new AttributeHook(href)
+    }, h('paper-icon-button.icon', {
+      'icon': new AttributeHook(icon)
+    }))
+  );
+
+  return view;
+}
+
 /*
- * Renders the main body of the namespace browser.
- * A toolbar is rendered on top of the mainView and sideView showing the current
- * position in the namespace as well as a globquery searchbox.
- * The mainView contains the shortcuts and names at this point in the namespace.
- * The sideView displays the detail information of the selected name.
+ * Renders the view switchers for different views and bookmarks, recommendations
  */
-function render(browseState, browseEvents, navEvents) {
-  insertCss(css);
+function renderViewActions(browseState, navEvents) {
 
-  var sideView = [
-    itemDetailsComponent.render(
-      browseState.selectedItemDetails,
-      browseEvents.selectedItemDetails
+  var switchGroup = h('div.icon-group', [
+    createActionIcon('Grid view', 'apps',
+      browseRoute.createUrl(browseState, {
+        viewType: 'grid'
+      })
+    ),
+    createActionIcon('Tree view', 'list',
+      browseRoute.createUrl(browseState, {
+        viewType: 'tree'
+      })
+    ),
+    createActionIcon('Visualize view', 'social:circles-extended',
+      browseRoute.createUrl(browseState, {
+        viewType: 'visualize'
+      })
     )
-  ];
-
-  var mainView = [
-    h('div.items-container', [
-      h('h2', 'Bookmarks'),
-      renderUserShortcuts(browseState, browseEvents, navEvents)
-    ]),
-    h('div.items-container', [
-      h('h2', 'Top Recommendations'),
-      renderRecommendedShortcuts(browseState, browseEvents, navEvents)
-    ])
-  ];
-
-  var sideViewWidth = '50%';
-  var progressbar;
-  if( !browseState.isFinishedLoadingItems ) {
-    progressbar = h('paper-progress.delayed', {
-      'indeterminate': new AttributeHook(true),
-      'aria-label': new AttributeHook('Loading namespace items')
-    });
-  }
-  if (browseState.isFinishedLoadingItems && browseState.items.length === 0) {
-    mainView.push(h('div.empty',
-      h('span',(browseState.globQuery ? 'No search results' : 'No children')))
-    );
-  } else {
-    mainView.push(h('div.items-container', [
-      progressbar,
-      h('h2', (browseState.globQuery ? 'Search results' : 'Children')),
-      renderItems(browseState, browseEvents, navEvents)
-    ]));
-  }
-
-  var view = [
-    h('core-toolbar.browse-toolbar', [
-      renderBreadcrumbs(browseState, navEvents),
-      renderSearch(browseState, navEvents)
-    ]),
-    h('core-drawer-panel', {
-      'rightDrawer': new AttributeHook(true),
-      'drawerWidth': new AttributeHook(sideViewWidth),
-      'responsiveWidth': new AttributeHook('0px')
-    }, [
-      h('core-header-panel.browse-main-panel', {
-        'main': new AttributeHook(true)
-      }, [
-        mainView
-      ]),
-      h('core-header-panel.browse-details-sidebar', {
-        'drawer': new AttributeHook(true)
-      }, [
-        sideView
-      ])
-    ])
-  ];
-
-  return h('core-drawer-panel', {
-    'drawerWidth': new AttributeHook('0px')
-  }, [
-    h('core-header-panel', {
-      'main': new AttributeHook(true)
-    }, [
-      view
-    ])
   ]);
+  var ruler = h('div.vertical-ruler');
+  var bookmarkGroup = h('div.icon-group', [
+    createActionIcon('Bookmarks', 'bookmark-outline',
+      bookmarksRoute.createUrl()
+    ),
+    createActionIcon('Recommendations', 'social:whatshot',
+      recommendationsRoute.createUrl()
+    )
+  ]);
+  var searchGroup = renderSearch(browseState, navEvents);
+  var view = h('div', {
+    'layout': new AttributeHook('true'),
+    'horizontal': new AttributeHook('true')
+  }, [
+    switchGroup,
+    ruler,
+    bookmarkGroup,
+    ruler,
+    searchGroup
+  ]);
+
+  return view;
 }
 
 /*
@@ -319,22 +415,23 @@ function render(browseState, browseEvents, navEvents) {
 function renderSearch(browseState, navEvents) {
   // Trigger an actual navigation event when value of the inputs change
   var changeEvent = new PropertyValueEvent(function(val) {
-    var globQuery = browseState.globQuery;
-    if (exists(val)) {
-      globQuery = val;
-    }
     navEvents.navigate({
-      path: browseRoute.createUrl(browseState.namespace, globQuery)
+      path: browseRoute.createUrl(browseState, {
+        globQuery: val,
+        //TODO(aghassemi) We only supprt grid view for search, we could
+        //potentially support other views such as tree too but it's tricky.
+        viewType: 'grid'
+      })
     });
   }, 'value', true);
 
   var clearSearch;
-  if(browseState.globQuery) {
+  if (browseState.globQuery) {
     clearSearch = h('paper-icon-button.icon.clear-search', {
       'icon': new AttributeHook('clear'),
       'label': new AttributeHook('Clear search'),
       'ev-click': mercury.event(navEvents.navigate, {
-        path: browseRoute.createUrl(browseState.namespace)
+        path: browseRoute.createUrl(browseState)
       })
     });
   }
@@ -343,7 +440,7 @@ function renderSearch(browseState, navEvents) {
         'label': new AttributeHook(
           'Enter Glob query for searching, e.g. */*/a*'
         ),
-        'position': 'left'
+        'position': 'bottom'
       },
       h('div', {
         'layout': new AttributeHook('true'),
@@ -356,7 +453,8 @@ function renderSearch(browseState, navEvents) {
           'flex': new AttributeHook('true'),
           'name': 'globQuery',
           'value': browseState.globQuery,
-          'ev-change': changeEvent
+          'ev-change': changeEvent,
+          'label': new AttributeHook('Glob Search')
         }),
         clearSearch
       ])
@@ -365,117 +463,18 @@ function renderSearch(browseState, navEvents) {
 }
 
 /*
- * The shortcuts chosen by the user are rendered with renderItem.
- */
-function renderUserShortcuts(browseState, browseEvents, navEvents) {
-  return browseState.userShortcuts.map(function(shortcut) {
-    return renderItem(browseState, browseEvents, navEvents, shortcut, true);
-  });
-}
-
-/*
- * The shortcuts recommended by the smartService are rendered with renderItem.
- * A shortcut is no longer recommended if it is already a user shortcut.
- * TODO(alexfandrianto): Should we really filter out these repeats?
- */
-function renderRecommendedShortcuts(browseState, browseEvents, navEvents) {
-  return browseState.recShortcuts.filter(function(shortcut) {
-    return shortcut !== undefined &&
-      handleShortcuts.find(browseState, shortcut) === -1;
-  }).map(function(shortcut) {
-    return renderItem(browseState, browseEvents, navEvents, shortcut, false);
-  });
-}
-
-/*
- * The items (obtained by globbing) are rendered with renderItem.
- */
-function renderItems(browseState, browseEvents, navEvents) {
-  return browseState.items.map(function(item) {
-    var isShortcut = handleShortcuts.find(browseState, item) !== -1;
-    return renderItem(browseState, browseEvents, navEvents, item, isShortcut);
-  });
-}
-
-/*
- * Render a browse item card. The card consists of a service icon, a mounted
- * name, and if globbable, a drill icon.
- */
-function renderItem(browseState, browseEvents, navEvents, item, isShortcut) {
-  var selected = false;
-
-  if (browseState.selectedItemName === item.objectName) {
-    selected = true;
-  }
-
-  // Prepare the drill if this item happens to be globbable.
-  var expandAction = null;
-  if (item.isGlobbable) {
-    expandAction = h('a.drill', {
-      'href': browseRoute.createUrl(item.objectName),
-      'ev-click': mercury.event(navEvents.navigate, {
-        path: browseRoute.createUrl(item.objectName)
-      })
-    }, h('core-icon.icon', {
-      'icon': new AttributeHook('chevron-right')
-    }));
-  }
-
-  // Prepare tooltip and service icon information for the item.
-  var isAccessible = true;
-  var itemTooltip = item.objectName;
-  var iconCssClass = '.service-type-icon' + (isShortcut ? '.shortcut' : '');
-  var iconAttributes = {
-    'ev-click': mercury.event(browseEvents.setShortcut, {
-      'item': item,
-      'save': !isShortcut,
-    })
-  };
-
-  if (item.isServer) {
-    isAccessible = item.serverInfo.isAccessible;
-    if (!isAccessible) {
-      itemTooltip += ' - Service seems to be offline or inaccessible';
-    }
-    iconAttributes.title = new AttributeHook(item.serverInfo.typeInfo.typeName);
-    iconAttributes.icon = new AttributeHook(
-      getServiceIcon(item.serverInfo.typeInfo.key, isShortcut)
-    );
-  } else {
-    iconAttributes.title = new AttributeHook('Intermediary Name');
-    iconAttributes.icon = new AttributeHook(getServiceIcon('', isShortcut));
-  }
-
-  // Construct the service icon.
-  var iconNode = h('core-icon' + iconCssClass, iconAttributes);
-
-  // Put the item card's pieces together.
-  var itemClassNames = 'item.card' +
-    (selected ? '.selected' : '') +
-    (!isAccessible ? '.inaccessible' : '');
-
-  return h('div.' + itemClassNames, {
-    'title': itemTooltip
-  }, [
-    h('a.label', {
-      'href': 'javascript:;',
-      'ev-click': mercury.event(
-        browseEvents.selectItem, {
-          name: item.objectName
-        })
-    }, [
-      iconNode,
-      h('span', item.mountedName)
-    ]),
-    expandAction
-  ]);
-}
-
-/*
  * Renders the current name being browsed, split into parts.
  * Each name part is a link to a parent.
  */
 function renderBreadcrumbs(browseState, navEvents) {
+
+  // only render the breadcrumbs for items and not bookmarks/recommendations
+  if (browseState.subPage !== 'items') {
+    // use a flex div to leave white-space inplace of breadcrumbs
+    return h('div', {
+      'flex': new AttributeHook('true')
+    });
+  }
 
   var isRooted = namespaceService.util.isRooted(browseState.namespace);
   var namespaceParts = browseState.namespace.split('/').filter(
@@ -485,12 +484,16 @@ function renderBreadcrumbs(browseState, navEvents) {
   );
   var breadCrumbs = [];
   if (!isRooted) {
+    // Add a relative root (empty namespace)
+    var rootUrl = browseRoute.createUrl(browseState, {
+      namespace: ''
+    });
     breadCrumbs.push(h('li.breadcrumb-item', [
       //TODO(aghassemi) refactor link generation code
       h('a', {
-        'href': browseRoute.createUrl(),
+        'href': rootUrl,
         'ev-click': mercury.event(navEvents.navigate, {
-          path: browseRoute.createUrl()
+          path: rootUrl
         })
       }, 'Home')
     ]));
@@ -501,11 +504,15 @@ function renderBreadcrumbs(browseState, navEvents) {
     var fullName = (isRooted ? '/' : '') +
       namespaceService.util.join(namespaceParts.slice(0, i + 1));
 
+    var url = browseRoute.createUrl(browseState, {
+      namespace: fullName
+    });
+
     var listItem = h('li.breadcrumb-item', [
       h('a', {
-        'href': browseRoute.createUrl(fullName),
+        'href': url,
         'ev-click': mercury.event(navEvents.navigate, {
-          path: browseRoute.createUrl(fullName)
+          path: url
         })
       }, namePart)
     ]);
@@ -513,14 +520,15 @@ function renderBreadcrumbs(browseState, navEvents) {
     breadCrumbs.push(listItem);
   }
 
-  return h('ul.breadcrumbs', breadCrumbs);
+  return h('ul.breadcrumbs', {
+    'flex': new AttributeHook('true')
+  }, breadCrumbs);
 }
 
 // Wire up events that we know how to handle
 function wireUpEvents(state, events) {
   events.browseNamespace(browseNamespace.bind(null, state, events));
   events.getNamespaceSuggestions(getNamespaceSuggestions.bind(null, state));
-  events.setShortcut(handleShortcuts.set.bind(null, state, events));
   events.selectItem(function(data) {
     state.selectedItemName.set(data.name);
     events.selectedItemDetails.displayItemDetails(data);

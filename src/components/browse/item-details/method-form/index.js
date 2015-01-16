@@ -1,19 +1,26 @@
 var mercury = require('mercury');
-var h = mercury.h;
 var _ = require('lodash');
 var guid = require('guid');
+
+var makeRPC = require('./make-rpc.js');
+
 var arraySet = require('../../../../lib/arraySet');
 var setMercuryArray = require('../../../../lib/mercury/setMercuryArray');
 var AttributeHook = require('../../../../lib/mercury/attribute-hook');
 var PropertyValueEvent =
   require('../../../../lib/mercury/property-value-event');
+
 var store = require('../../../../lib/store');
-var log = require('../../../../lib/log')(
-  'components:browse:item-details:method-form');
+
 var smartService = require('../../../../services/smart/service');
 var hashSignature =
   require('../../../../services/namespace/service').hashSignature;
-var makeRPC = require('./make-rpc.js');
+
+var log = require('../../../../lib/log')(
+  'components:browse:item-details:method-form');
+
+var h = mercury.h;
+
 
 module.exports = create;
 module.exports.render = render;

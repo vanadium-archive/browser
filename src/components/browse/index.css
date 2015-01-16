@@ -32,86 +32,27 @@
   background-color: var(--color-grey-very-light);
   border-left: solid 1px var(--color-divider);
 }
-.items-container {
-  display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-  border-bottom: var(--border);
-  padding-bottom: 0.5em;
+
+.browse-main-wrapper paper-progress {
+  position: absolute;
+  z-index: 500;
+  opacity: 0.6;
 }
-.items-container:last-child {
-  border-bottom: none;
-}
-.items-container paper-progress{
+
+.browse-main-wrapper core-tooltip {
   position: absolute;
 }
-.items-container h2 {
+
+.browse-main-wrapper h2 {
   width: 100%;
   font-size: var(--size-font-large);
   color: var(--color-text-heading);
   padding: 0.5em 0em 0em 0.75em;
   text-decoration: none;
 }
-.item.card {
-  box-sizing: border-box;
-  background-color: var(--color-white);
-  display: flex;
-  flex-shrink: 0;
-  flex-grow: 0;
-  height: 2.5em;
-  min-width: 8em;
-  margin: 0.75em;
-  border-radius: 3px;
-  overflow: hidden;
-  position: relative;
-  box-shadow: var(--shadow-all-around);
-  border: var(--border);
-}
-.item .label, .item .drill {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  padding: 0.5em;
-}
-.item .label {
-  text-decoration: none;
-  flex: 1;
-  overflow: hidden;
-  white-space: nowrap;
-}
-.item .drill {
-  width: 1.5em;
-  background-color: var(--color-grey-light);
-  border-left: var(--border);
-}
 
-.item.selected .drill {
-  background-color: var(--color-bright);
-}
-
-.item a:hover, .item a:focus{
-  opacity: 0.7;
-}
-
-.item.card .icon {
-  align-self: center;
-  padding-right: 0.5em;
-}
-
-.item.inaccessible {
-  opacity: 0.5;
-}
-
-.item.selected.card {
-  background-color: var(--color-bright);
-  color: var(--color-text-primary-invert);
-}
-
-.tooltip::shadow .core-tooltip {
-  width: 36em;
-  line-height: 0.9em; /* overrides Polymer's 6px line-height */
-  white-space: pre-wrap;
-  font-size: var(--size-font-xsmall);
+.progress-tooltip {
+  width: 100%;
 }
 
 .breadcrumbs {
@@ -124,6 +65,7 @@
 }
 
 .breadcrumb-item {
+  font-size: var(--size-font-small);
   overflow: hidden;
   flex-shrink: 1;
   flex-grow: 0;
@@ -144,27 +86,21 @@
 .breadcrumb-item:before
 {
   content: '/';
-  padding:0 0.5em;
+  padding:0 var(--size-space-xxsmall);
   display: inline-block;
   color: var(--color-text-secondary);
 }
+
 .breadcrumb-item:first-child:before
 {
   content: ' ';
 }
 
-.empty {
-  padding: 1em;
-  text-align: center;
-  color: var(--color-text-secondary);
-}
-
 .namespace-box {
   background: var(--color-white-transparent);
   font-size: var(--size-font-xsmall);
-  height: 2.7em;
-  padding: 0 0.8em;
-  margin-left: 3em !important;
+  padding: var(--size-space-xxsmall) var(--size-space-small);
+  margin-left: var(--size-space-xxlarge) !important;
   border-radius: 1px;
 }
 
@@ -172,20 +108,43 @@
   color: inherit
 }
 
+.icon-group {
+  white-space: nowrap;
+}
+
+.vertical-ruler {
+  display: inline-block;
+  width: 1px;
+  background-color: var(--color-divider);
+  margin:0 var(--size-space-xxsmall);
+}
+
+.icon-group paper-icon-button {
+  vertical-align: middle;
+  color: var(--color-text-secondary);
+  padding: var(--size-space-xxsmall);
+  margin:0 var(--size-space-xxsmall);
+}
+
+.icon-group paper-icon-button:hover, .icon-group paper-icon-button:focus {
+  background: #eee;
+  border-radius: 50%;
+}
+
 .search-box {
   white-space: nowrap;
-  width: var(--size-input-width-normal);
+  width: var(--size-input-width-small);
+  margin-left: var(--size-space-xxsmall);
 }
 
 .search-box core-tooltip {
   width: 100%;
-  font-size: var(--size-font-xsmall);
 }
 
 .search-box .icon, .namespace-box .icon {
   align-self: flex-end;
-  margin-right: 0.5em;
   color: var(--color-text-secondary);
+  margin-right: var(--size-space-xxsmall);
 }
 
 .search-box .input {
@@ -203,21 +162,6 @@
 .service-type-icon {
   transform: scale(0.7);
   padding-right: 0.75em;
-}
-/* The service icon is colored brightly if active. */
-.service-type-icon:hover,
-.service-type-icon.shortcut {
-  color: var(--color-bright);
-}
-/* If the service item is selected and is also active, make the icon's colors deeper. */
-.item.selected.card .service-type-icon:hover,
-.item.selected.card .service-type-icon.shortcut {
-  color: var(--color-bright-deep);
-}
-/* If hovering over a shortcut, use the parent's color. */
-.service-type-icon.shortcut:hover,
-.item.selected.card .service-type-icon.shortcut:hover {
-  color: inherit;
 }
 
 paper-autocomplete {

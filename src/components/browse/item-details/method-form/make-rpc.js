@@ -1,4 +1,5 @@
 var namespaceService = require('../../../../services/namespace/service');
+
 var log = require('../../../../lib/log')(
   'components:browse:item-details:method-form:make-rpc'
 );

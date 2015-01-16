@@ -1,34 +1,39 @@
 var mercury = require('mercury');
 var insertCss = require('insert-css');
 var vis = require('vis');
+
+var namespaceService = require('../../../../services/namespace/service');
+
+var log = require('../../../../lib/log')('components:browse:items:tree-view');
+
 var css = require('./index.css');
-var namespaceService = require('../../services/namespace/service');
-var log = require('../../lib/log')('components:visualize');
+var h = mercury.h;
 
 module.exports = create;
 module.exports.render = render;
 
-// Maximum number of levels that are automatically shown
-var MAX_AUTO_LOAD_DEPTH = 3;
-
-/*
- * Visualize view
- */
 function create() {}
 
-function render(browseState) {
+function render(itemsState, browseState, browseEvents, navEvents) {
+
   insertCss(css);
+
   return [
-    new TreeWidget(browseState)
+    h('h2', 'Visualize View'),
+    new TreeWidget(browseState, browseEvents)
   ];
 }
 
-function TreeWidget(browseState) {
+// Maximum number of levels that are automatically shown
+var MAX_AUTO_LOAD_DEPTH = 3;
+
+function TreeWidget(browseState, browseEvents) {
   if (!(this instanceof TreeWidget)) {
     return new TreeWidget(browseState);
   }
 
   this.browseState = browseState;
+  this.browseEvents = browseEvents;
   this.nodes = new vis.DataSet();
   this.edges = new vis.DataSet();
 }
@@ -62,7 +67,7 @@ TreeWidget.prototype.initNetwork = function(elem) {
   var options = {
     hover: false,
     selectable: true, // Need this or nodes won't be click-able
-    smoothCurves: true,
+    smoothCurves: false,
     stabilize: false,
     edges: {
       width: 1
@@ -87,6 +92,19 @@ TreeWidget.prototype.initNetwork = function(elem) {
 
   // Event listeners.
   network.on('click', function onClick(data) {
+    // refresh side view
+    var nodeId = data.nodes[0];
+    var node = network.nodes[nodeId];
+
+    if (node) {
+      self.browseEvents.selectItem({
+        name: nodeId
+      });
+    }
+  });
+
+  network.on('doubleClick', function onClick(data) {
+    // drill
     var nodeId = data.nodes[0];
     var node = network.nodes[nodeId];
 
@@ -94,7 +112,6 @@ TreeWidget.prototype.initNetwork = function(elem) {
       self.loadSubNodes(node);
     }
   });
-
   return network;
 };
 
@@ -144,7 +161,7 @@ TreeWidget.prototype.loadSubNodes = function(node) {
         if (item.level - self.rootNode.level < MAX_AUTO_LOAD_DEPTH) {
           self.loadSubNodes(item);
         } else {
-          item.title = 'Click to expand';
+          item.title = 'Double-click to expand';
         }
       });
       self.nodes.add(newNodes);

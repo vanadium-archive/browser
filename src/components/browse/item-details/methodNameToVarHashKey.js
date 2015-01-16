@@ -1,4 +1,3 @@
-
 /*
  * Mercury VarHash has an issue where reserved keywords like 'delete', 'put'
  * can not be used a hash keys :`(

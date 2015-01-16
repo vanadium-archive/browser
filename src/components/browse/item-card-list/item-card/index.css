@@ -1,0 +1,5 @@
+@import "common-style/card.css";
+
+.item.inaccessible {
+  opacity: 0.5;
+}

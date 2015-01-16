@@ -17,7 +17,7 @@
  *  as DeLogger? DeLog is taken :(
  */
 var debug = require('debug');
-var extend = require('xtend');
+var extend = require('extend');
 
 module.exports = log;
 module.exports.disable = disable;

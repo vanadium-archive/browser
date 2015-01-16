@@ -1,0 +1,13 @@
+@import "common-style/theme.css";
+
+.items-container {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  border-bottom: var(--border);
+  padding-bottom: 0.5em;
+}
+
+.items-container:last-child {
+  border-bottom: none;
+}
