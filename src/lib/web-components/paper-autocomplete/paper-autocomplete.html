@@ -25,7 +25,7 @@ New Events:
 
 -->
 
-<polymer-element name="paper-autocomplete" extends="paper-input" attributes="maxItems caseSensitive delimiter">
+<polymer-element name="paper-autocomplete" extends="paper-input" attributes="maxItems caseSensitive delimiter allowWhitespace">
   <template>
     <link href="paper-autocomplete.css" rel="stylesheet">
     <div id="frame">
@@ -209,19 +209,11 @@ New Events:
       /**
        * On the hidden input's 'input' event, the fact that data changed means
        * that the user is editing. Re-render the suggestions.
-       * Note: Fires this element's 'input' event.
        */
       inputAction: function(e) {
         this.closing = false;
         this.editing = true;
         this.filterSuggestions();
-
-        // Convert a standard Event into the Custom Event for consistency.
-        if (!(e instanceof CustomEvent)) {
-          e.stopPropagation();
-
-          this.fireInput();
-        }
       },
 
       /**

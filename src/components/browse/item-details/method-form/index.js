@@ -358,7 +358,7 @@ function getMethodSignature(state, args) {
       arg = param.inArgs[i].name + ' ' + param.inArgs[i].type.toString();
     }
     if (i > 0) {
-      text += ',';
+      text += ', ';
     }
     text += arg;
   }

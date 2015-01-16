@@ -1,0 +1,225 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Paper Autocomplete</title>
+  <script src="/bower_components/webcomponentsjs/webcomponents.js"></script>
+  <link rel="import" href="/bower_components/polymer/polymer.html">
+  <link rel="import" href="/bower_components/paper-item/paper-item.html">
+  <link rel="import" href="/bower_components/core-item/core-item.html">
+  <link rel="import" href="/bower_components/paper-input/paper-input.html">
+  <link rel="import" href="/bower_components/core-selector/core-selector.html">
+  <link rel="import" href="paper-autocomplete.html">
+  <style>
+    body {
+      font-family: Roboto, sans-serif;
+    }
+    paper-autocomplete.styled {
+      width: 200px;
+    }
+    paper-autocomplete.styled core-item:hover {
+      background-color: red;
+    }
+    paper-autocomplete.styled core-item.highlighted {
+      background-color: yellow;
+    }
+  </style>
+</head>
+<body>
+  <section>
+    <h2>Simple Autocomplete</h2>
+    <paper-autocomplete label="Country" maxItems=5>
+      <core-item label="Canada"></core-item>
+      <core-item label="China"></core-item>
+      <core-item label="France"></core-item>
+      <core-item label="Germany"></core-item>
+      <core-item label="Japan"></core-item>
+      <core-item label="Mexico"></core-item>
+      <core-item label="South Korea"></core-item>
+      <core-item label="Spain"></core-item>
+      <core-item label="Switzerland"></core-item>
+      <core-item label="United States"></core-item>
+    </paper-autocomplete>
+  </section>
+  <section>
+    <h2>Styled Autocomplete</h2>
+    <paper-autocomplete label="Country" class="styled" maxItems=5>
+      <core-item label="Canada"></core-item>
+      <core-item label="China"></core-item>
+      <core-item label="France"></core-item>
+      <core-item label="Germany"></core-item>
+      <core-item label="Japan"></core-item>
+      <core-item label="Mexico"></core-item>
+      <core-item label="South Korea"></core-item>
+      <core-item label="Spain"></core-item>
+      <core-item label="Switzerland"></core-item>
+      <core-item label="United States"></core-item>
+    </paper-autocomplete>
+  </section>
+  <section>
+    <h2>CSV-style list</h2>
+    <paper-autocomplete label="Fruits" delimiter=", ">
+      <core-item label="apple"></core-item>
+      <core-item label="orange"></core-item>
+      <core-item label="banana"></core-item>
+      <core-item label="kiwi"></core-item>
+      <core-item label="blueberry"></core-item>
+      <core-item label="plum"></core-item>
+    </paper-autocomplete>
+  </section>
+  <section>
+    <h2>CSV-style list (allows excess whitespace)</h2>
+    <paper-autocomplete label="Fruits" delimiter=", " allowWhitespace=true>
+      <core-item label="apple"></core-item>
+      <core-item label="orange"></core-item>
+      <core-item label="banana"></core-item>
+      <core-item label="kiwi"></core-item>
+      <core-item label="blueberry"></core-item>
+      <core-item label="plum"></core-item>
+    </paper-autocomplete>
+  </section>
+  <section>
+    <h2>Dynamic Child Addition</h2>
+    <p>
+      Every input to the autocomplete component will fire the input event.
+      An event listener on this component adds an extra child on each input.
+      This example demonstrates the component's responsiveness to addition or
+      removal of DOM children.
+    </p>
+    <paper-autocomplete label="Number Picker" id="number-picker" maxItems=5
+      oninput="addChild()">
+      <core-item label="0"></core-item>
+    </paper-autocomplete>
+  </section>
+  <section>
+    <h2>Filepath (dynamic, case-sensitive)</h2>
+    <p>
+      This simple filesystem can be browsed with the autocomplete component.
+      The contents of the filesystem are reproduced below.
+    </p>
+    <paper-autocomplete label="Filepath" delimiter="/" id="filesystem"
+      oninput="changeChildren()" caseSensitive=true>
+      <paper-item>Home</paper-item>
+    </paper-autocomplete>
+    <div id='filesystem-tree'></div>
+  </section>
+
+  <!-- JavaScript used by the above examples -->
+  <script type="text/javascript">
+    var doubleUp = 1;
+    function addChild() {
+      var numberPicker = document.getElementById("number-picker");
+      var newChild = document.createElement("core-item");
+      newChild.setAttribute("label", "" + doubleUp);
+      numberPicker.appendChild(newChild);
+      doubleUp *= 2;
+    }
+
+    var filesystemData = {
+      name: 'Home',
+      children: [
+        {
+          name: 'Pictures',
+          children: [
+            {
+              name: 'cat1'
+            },
+            {
+              name: 'cat2'
+            },
+            {
+              name: 'funny_gif'
+            }
+          ]
+        },
+        {
+          name: 'Documents',
+          children: [
+            {
+              name: 'work'
+            },
+            {
+              name: 'personal'
+            },
+            {
+              name: 'shared'
+            },
+            {
+              name: 'archive'
+            }
+          ]
+        }
+      ]
+    };
+
+    var root = buildTree(filesystemData);
+    function buildTree(data) {
+      var list = document.createElement("ul");
+      var elem = document.createElement("li");
+      elem.appendChild(document.createTextNode(data.name));
+      if (data.children !== undefined) {
+        data.children.forEach(function(child) {
+          elem.appendChild(buildTree(child));
+        });
+      }
+      list.appendChild(elem);
+      return list;
+    }
+
+    var filesystemTree = document.getElementById('filesystem-tree');
+    filesystemTree.appendChild(root);
+
+
+    function ls(pathParts) {
+      return lsHelp(pathParts, 0, [filesystemData]);
+    }
+    function lsHelp(pathParts, index, children) {
+      // No more children
+      if (children === undefined) {
+        return [];
+      }
+
+      // Return all children
+      if (index === pathParts.length) {
+        var ret = [];
+        children.forEach(function(child) {
+          ret.push(child.name);
+        });
+        return ret;
+      }
+
+      // Has children to match against
+      for (var j = 0; j < children.length; j++) {
+        if (children[j].name === pathParts[index]) {
+          return lsHelp(pathParts, index + 1, children[j].children);
+        }
+      }
+
+      // No children matched
+      return [];
+    }
+
+    function changeChildren() {
+      var filesystem = document.getElementById("filesystem");
+
+      // Remove old children
+      while (filesystem.lastChild) {
+        filesystem.removeChild(filesystem.lastChild);
+      }
+
+      // Determine the new children to add
+      var value = filesystem.value;
+      var parts = value.split("/");
+      var pathParts = parts.slice(0, parts.length - 1); // remove last
+      var lsResults = ls(pathParts);
+
+      // Add new children
+      lsResults.forEach(function(lsItem) {
+        var newChild = document.createElement("paper-item");
+        newChild.appendChild(document.createTextNode(lsItem));
+        filesystem.appendChild(newChild);
+      })
+    }
+  </script>
+</body>
+</html>
