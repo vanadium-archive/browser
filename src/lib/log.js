@@ -17,7 +17,8 @@
  *  as DeLogger? DeLog is taken :(
  */
 var debug = require('debug');
-var extend = require('extend');
+
+var extendDefaults = require('./extend-defaults');
 
 module.exports = log;
 module.exports.disable = disable;
@@ -34,7 +35,7 @@ var defaults = {
 };
 
 function log(namespace, options) {
-  options = extend(defaults, options);
+  options = extendDefaults(defaults, options);
   var consoleInstance = options.console;
 
   var errorLogger = debug(namespace + ERROR_LEVEL_SUFFIX);

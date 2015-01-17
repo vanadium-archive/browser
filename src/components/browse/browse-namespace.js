@@ -1,9 +1,8 @@
-var extend = require('extend');
-
 var Bookmarks = require('./bookmarks/index.js');
 var Recommendations = require('./recommendations/index.js');
 var Items = require('./items/index.js');
 
+var extendDefaults = require('../../lib/extend-defaults');
 var log = require('../../lib/log')('components:browse:browse-namespace');
 
 module.exports = browseNamespace;
@@ -30,7 +29,7 @@ function browseNamespace(browseState, browseEvents, data) {
     viewType: 'grid'
   };
 
-  data = extend(defaults, data);
+  data = extendDefaults(defaults, data);
 
   if (!Items.trySetViewType(browseState.items, data.viewType)) {
     error404('Invalid view type: ' + data.viewType);

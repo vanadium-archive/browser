@@ -8,7 +8,7 @@ var addAttributes = require('../../lib/addAttributes');
 var store = require('../../lib/store');
 var log = require('../../lib/log')('services:smart-service');
 var constants = require('./service-implementation');
-var extend = require('extend');
+var extendDefaults = require('../../lib/extend-defaults');
 
 // Export methods and constants
 module.exports = {
@@ -40,7 +40,7 @@ function loadOrCreate(id, type, params) {
   // Store the learner right away. Calls to get should use this promise.
   learners[id] = load(id).then(function loadSuccess(learner) {
     log.debug('loaded learner', id);
-    learner.params = extend(learner.params, params);
+    learner.params = extendDefaults(learner.params, params);
     return Promise.resolve(learner);
   }, function loadFailure() {
     return create(id, type, params).then(function(learner) {
