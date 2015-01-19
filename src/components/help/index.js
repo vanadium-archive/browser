@@ -1,6 +1,5 @@
 var mercury = require('mercury');
 var h = mercury.h;
-var AttributeHook = require('../../lib/mercury/attribute-hook');
 var insertCss = require('insert-css');
 var css = require('./index.css');
 var constants = require('./constants.js');
@@ -51,9 +50,11 @@ function render(state, events) {
   // Show the tabs followed by the content of the selected help tab.
   return [
     h('paper-tabs.tabs', {
-      'selectedProperty': new AttributeHook('tabKey'),
-      'selected': new AttributeHook(sections.get(state.selectedTab).index),
-      'noink': new AttributeHook(true)
+      attributes: {
+        'selectedProperty': 'tabKey',
+        'selected': sections.get(state.selectedTab).index,
+        'noink': true
+      }
     }, tabs),
     h('.tab-content.core-selected', h('.markdown', {
       'innerHTML': sections.get(state.selectedTab).markdownContent

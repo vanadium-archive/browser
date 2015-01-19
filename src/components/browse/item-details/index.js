@@ -1,8 +1,6 @@
 var mercury = require('mercury');
 var insertCss = require('insert-css');
 
-var AttributeHook = require('../../../lib/mercury/attribute-hook');
-
 var methodNameToVarHashKey = require('./methodNameToVarHashKey.js');
 
 var displayItemDetails = require('./display-item-details');
@@ -94,8 +92,10 @@ function render(state, events) {
 
   if (state.showLoadingIndicator) {
     tabContent = h('paper-spinner', {
-      'active': new AttributeHook(true),
-      'aria-label': new AttributeHook('Loading')
+      attributes: {
+        'active': true,
+        'aria-label': 'Loading'
+      }
     });
   } else if (state.item) {
     var detailsContent = renderDetailsContent(state, events);
@@ -109,8 +109,10 @@ function render(state, events) {
   }
 
   return [h('paper-tabs.tabs', {
-      'selected': new AttributeHook(state.selectedTabIndex),
-      'noink': new AttributeHook(true)
+      attributes: {
+        'selected': state.selectedTabIndex,
+        'noink': true
+      }
     }, [
       h('paper-tab.tab', {
         'ev-click': mercury.event(events.tabSelected, {
@@ -119,7 +121,9 @@ function render(state, events) {
       }, 'Service Details')
     ]),
     h('core-selector', {
-      'selected': new AttributeHook(state.selectedTabIndex)
+      attributes: {
+        'selected': state.selectedTabIndex
+      }
     }, [
       h('div.tab-content', tabContent),
     ])
@@ -135,14 +139,18 @@ function renderActions(state, events) {
   // Bookmark action
   var isBookmarked = state.isBookmarked;
   var bookmarkIcon = 'bookmark' + (!isBookmarked ? '-outline' : '');
-  var bookmarkTitle = (isBookmarked ? 'Remove bookmark ' : 'Bookmark');
+  var bookmarkTitle = (isBookmarked ? 'Remove bookmark ' : 'Add Bookmark');
   var bookmarkAction = h('core-tooltip', {
-      'label': new AttributeHook(bookmarkTitle),
-      'position': new AttributeHook('right'),
+      attributes: {
+        'label': bookmarkTitle,
+        'position': 'right'
+      }
     },
     h('paper-icon-button' + (isBookmarked ? '.bookmarked' : ''), {
-      'icon': new AttributeHook(bookmarkIcon),
-      'alt': new AttributeHook(bookmarkTitle),
+      attributes: {
+        'icon': bookmarkIcon,
+        'alt': bookmarkTitle
+      },
       'ev-click': mercury.event(events.bookmark, {
         bookmark: !isBookmarked,
         name: item.objectName
@@ -189,7 +197,9 @@ function renderDetailsContent(state, events) {
           'label': desc || '<no description>',
           'position': 'right'
         }, h('core-icon.icon.info', {
-          'icon': new AttributeHook('info')
+          attributes: {
+            'icon': 'info'
+          }
         })),
         h('span.margin-left-xxsmall', pkgName)
       ]));
@@ -198,8 +208,10 @@ function renderDetailsContent(state, events) {
     if (serviceDescs.length > 0) {
       displayItems.push(
         renderFieldItem('Interfaces', h('div', {
-          'vertical': new AttributeHook(true),
-          'layout': new AttributeHook(true)
+          attributes: {
+            'vertical': true,
+            'layout': true
+          }
         }, serviceDescs))
       );
     }
@@ -280,8 +292,10 @@ function renderMethodOutput(state) {
   }
 
   var outputTable = h('table', {
-    'summary': new AttributeHook('Table showing the outputs of methods run' +
-      'on the service. The results are shown in reverse order.')
+    attributes: {
+      'summary': 'Table showing the outputs of methods run on' +
+          'the service. The results are shown in reverse order.'
+    }
   }, outputRows);
   return h('div.method-output', outputTable);
 }
@@ -293,7 +307,9 @@ function renderFieldItem(label, content, tooltip) {
   if (tooltip) {
     // If there is a tooltip, wrap the content in it
     content = h('core-tooltip.tooltip.field-tooltip', {
-      'label': new AttributeHook(tooltip),
+      attributes: {
+        'label': tooltip
+      },
       'position': 'right'
     }, content);
   }

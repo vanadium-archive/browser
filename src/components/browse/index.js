@@ -1,7 +1,6 @@
 var mercury = require('mercury');
 var insertCss = require('insert-css');
 
-var AttributeHook = require('../../lib/mercury/attribute-hook');
 var PropertyValueEvent = require('../../lib/mercury/property-value-event');
 
 var exists = require('../../lib/exists');
@@ -246,11 +245,15 @@ function render(browseState, browseEvents, navEvents) {
   var progressbar;
   if (!browseState.isFinishedLoadingItems) {
     progressbar = h('core-tooltip.progress-tooltip', {
-      'label': new AttributeHook('Loading items...'),
-      'position': new AttributeHook('bottom')
+      attributes: {
+        'label': 'Loading items...',
+        'position': 'bottom'
+      }
     }, h('paper-progress.delayed', {
-      'indeterminate': new AttributeHook(true),
-      'aria-label': new AttributeHook('Loading items')
+      attributes: {
+        'indeterminate': true,
+        'aria-label': 'Loading items'
+      }
     }));
   }
 
@@ -266,17 +269,23 @@ function render(browseState, browseEvents, navEvents) {
       renderViewActions(browseState, navEvents)
     ]),
     h('core-drawer-panel', {
-      'rightDrawer': new AttributeHook(true),
-      'drawerWidth': new AttributeHook(sideViewWidth),
-      'responsiveWidth': new AttributeHook('0px')
+      attributes: {
+        'rightDrawer': true,
+        'drawerWidth': sideViewWidth,
+        'responsiveWidth': '0px'
+      }
     }, [
       h('core-header-panel.browse-main-panel', {
-        'main': new AttributeHook(true)
+        attributes: {
+          'main': true
+        }
       }, [
         mainView
       ]),
       h('core-header-panel.browse-details-sidebar', {
-        'drawer': new AttributeHook(true)
+        attributes: {
+          'drawer': true
+        }
       }, [
         sideView
       ])
@@ -284,10 +293,14 @@ function render(browseState, browseEvents, navEvents) {
   ];
 
   return h('core-drawer-panel', {
-    'drawerWidth': new AttributeHook('0px')
+    attributes: {
+      'drawerWidth': '0px'
+    }
   }, [
     h('core-header-panel', {
-      'main': new AttributeHook(true)
+      attributes: {
+        'main': true
+      }
     }, [
       view
     ])
@@ -323,20 +336,26 @@ function renderNamespaceBox(browseState, browseEvents, navEvents) {
 
   return h('div.namespace-box',
     h('core-tooltip.tooltip', {
-        'label': new AttributeHook(
-          'Enter a name to browse, e.g. house/living-room'
-        ),
+        attributes: {
+          'label': 'Enter a name to browse, e.g. house/living-room'
+        },
         'position': 'right'
       },
       h('div', {
-        'layout': new AttributeHook('true'),
-        'horizontal': new AttributeHook('true')
+        attributes: {
+          'layout': 'true',
+          'horizontal': 'true'
+        }
       }, [
         h('core-icon.icon', {
-          'icon': new AttributeHook('explore')
+          attributes: {
+            'icon': 'explore'
+          }
         }),
         h('paper-autocomplete', {
-          'flex': new AttributeHook('true'),
+          attributes: {
+            'flex': 'true'
+          },
           'name': 'namespace',
           'value': browseState.namespace,
           'delimiter': '/',
@@ -354,9 +373,13 @@ function createActionIcon(tooltip, icon, href) {
       'position': 'bottom'
     },
     h('a', {
-      'href': new AttributeHook(href)
+      attributes: {
+        'href': href
+      }
     }, h('paper-icon-button.icon', {
-      'icon': new AttributeHook(icon)
+      attributes: {
+        'icon': icon
+      }
     }))
   );
 
@@ -396,8 +419,10 @@ function renderViewActions(browseState, navEvents) {
   ]);
   var searchGroup = renderSearch(browseState, navEvents);
   var view = h('div', {
-    'layout': new AttributeHook('true'),
-    'horizontal': new AttributeHook('true')
+    attributes: {
+      'layout': 'true',
+      'horizontal': 'true'
+    }
   }, [
     switchGroup,
     ruler,
@@ -428,8 +453,10 @@ function renderSearch(browseState, navEvents) {
   var clearSearch;
   if (browseState.globQuery) {
     clearSearch = h('paper-icon-button.icon.clear-search', {
-      'icon': new AttributeHook('clear'),
-      'label': new AttributeHook('Clear search'),
+      attributes: {
+        'icon': 'clear',
+        'label': 'Clear search'
+      },
       'ev-click': mercury.event(navEvents.navigate, {
         path: browseRoute.createUrl(browseState)
       })
@@ -437,24 +464,30 @@ function renderSearch(browseState, navEvents) {
   }
   return h('div.search-box',
     h('core-tooltip.tooltip', {
-        'label': new AttributeHook(
-          'Enter Glob query for searching, e.g. */*/a*'
-        ),
+        attributes: {
+          'label': 'Enter Glob query for searching, e.g., */*/a*'
+        },
         'position': 'bottom'
       },
       h('div', {
-        'layout': new AttributeHook('true'),
-        'horizontal': new AttributeHook('true')
+        attributes: {
+          'layout': 'true',
+          'horizontal': 'true'
+        }
       }, [
         h('core-icon.icon', {
-          'icon': new AttributeHook('search')
+          attributes: {
+            'icon': 'search'
+          }
         }),
         h('paper-input.input', {
-          'flex': new AttributeHook('true'),
+          attributes: {
+            'flex': 'true',
+            'label': 'Glob Search'
+          },
           'name': 'globQuery',
           'value': browseState.globQuery,
-          'ev-change': changeEvent,
-          'label': new AttributeHook('Glob Search')
+          'ev-change': changeEvent
         }),
         clearSearch
       ])
@@ -472,7 +505,9 @@ function renderBreadcrumbs(browseState, navEvents) {
   if (browseState.subPage !== 'items') {
     // use a flex div to leave white-space inplace of breadcrumbs
     return h('div', {
-      'flex': new AttributeHook('true')
+      attributes: {
+        'flex': 'true'
+      }
     });
   }
 
@@ -521,7 +556,9 @@ function renderBreadcrumbs(browseState, navEvents) {
   }
 
   return h('ul.breadcrumbs', {
-    'flex': new AttributeHook('true')
+    attributes: {
+      'flex': 'true'
+    }
   }, breadCrumbs);
 }
 

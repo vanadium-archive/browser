@@ -1,8 +1,6 @@
 var mercury = require('mercury');
 var insertCss = require('insert-css');
 
-var AttributeHook = require('../../lib/mercury/attribute-hook');
-
 var Sidebar = require('../sidebar/index');
 var MainContent = require('../main-content/index');
 var ReportBug = require('../bug-report/index');
@@ -66,29 +64,36 @@ function render(state, events) {
 
   if(!state.navigation.pageKey) {
     return mercury.h('paper-spinner', {
-      'active': new AttributeHook(true),
-      'aria-label': new AttributeHook('Loading')
+      attributes: {
+        'active': true,
+        'aria-label': 'Loading'
+      }
     });
   }
 
   var panelAttributes = {
-    // Keep the drawer collapsed for any width size
-    'responsiveWidth': new AttributeHook('10000px'),
+    attributes: {
+      // Keep the drawer collapsed for any width size
+      'responsiveWidth': '10000px',
+      'selected': state.viewport.sidebarOpened ? 'drawer' : 'main'
+    },
     // If drawer is open, clicking anywhere should close it
     'ev-click': (state.viewport.sidebarOpened ?
       mercury.event(events.viewport.closeSidebar) : null),
-    'selected': new AttributeHook(state.viewport.sidebarOpened ?
-      'drawer' : 'main')
   };
   return h('core-drawer-panel.panel', panelAttributes, [
     h('core-header-panel.drawer', {
-      'drawer': new AttributeHook(true)
+      attributes: {
+        'drawer': true
+      }
     }, [
       renderSideToolbar(state, events),
       Sidebar.render(state, events)
     ]),
     h('core-header-panel.main', {
-      'main': new AttributeHook(true)
+      attributes: {
+        'main': true
+      }
     }, [
       renderMainToolbar(state, events),
       MainContent.render(state, events),
@@ -113,15 +118,19 @@ function renderSideToolbar(state, events) {
 function renderMainToolbar(state, events) {
   return h('core-toolbar.toolbar', [
     h('paper-icon-button.drawer-toggle', {
+      attributes: {
+        'icon': 'menu'
+      },
       'id': 'drawerToggle',
-      'icon': new AttributeHook('menu'),
       'ev-click': mercury.event(events.viewport.openSidebar)
     }),
     h('h2.title', state.viewport.title),
     MainContent.renderHeader(state,events),
     h('core-tooltip.account-name', {
-      'label': new AttributeHook('You are logged in as:'),
-      'position': new AttributeHook('left')
+      attributes: {
+        'label': 'You are logged in as:',
+        'position': 'left'
+      }
     },
       h('span', state.userAccount.accountName)
     )
@@ -162,10 +171,12 @@ function renderToast(toast, events) {
 
   return h('paper-toast.' + cssClass, {
     'key': toast.key, // unique per toast => only drawn once
-    'text': new AttributeHook(toast.text),
-    'opened': new AttributeHook(true),
-    'duration': new AttributeHook(toastDuration),
-    'autoCloseDisabled': new AttributeHook(true),
+    attributes: {
+      'text': toast.text,
+      'opened': true,
+      'duration': toastDuration,
+      'autoCloseDisabled': true
+    },
     // Clean up the old toasts after enough time has passed.
     'ev-core-overlay-open-completed': mercury.event(
       events.viewport.deferRemoveToast,

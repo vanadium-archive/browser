@@ -1,5 +1,4 @@
 var h = require('mercury').h;
-var AttributeHook = require('../../../../lib/mercury/attribute-hook');
 
 module.exports = {
   'shouldFormat': shouldFormat,
@@ -19,7 +18,9 @@ function shouldFormat(input) {
 function format(input) {
   return h('div', [
     h('core-icon.error', {
-      'icon': new AttributeHook('error')
+      attributes: {
+        'icon': 'error'
+      }
     }),
     h('pre', JSON.stringify(input, null, 2))
   ]);

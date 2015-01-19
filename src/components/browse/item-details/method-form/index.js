@@ -6,7 +6,6 @@ var makeRPC = require('./make-rpc.js');
 
 var arraySet = require('../../../../lib/arraySet');
 var setMercuryArray = require('../../../../lib/mercury/setMercuryArray');
-var AttributeHook = require('../../../../lib/mercury/attribute-hook');
 var PropertyValueEvent =
   require('../../../../lib/mercury/property-value-event');
 
@@ -341,9 +340,9 @@ function renderMethodHeader(state, events) {
     'title': state.expanded ? 'Hide form' : 'Show form',
     'ev-click': mercury.event(events.expandAction)
   }, h('core-icon.icon', {
-    'icon': new AttributeHook(
-      state.expanded ? 'expand-less' : 'expand-more'
-    )
+    attributes: {
+      'icon': state.expanded ? 'expand-less' : 'expand-more'
+    }
   }));
 
   return h('div.item.card', [label, expand]);
@@ -491,7 +490,9 @@ function renderStarUserInputButton(state, events) {
     'paper-button',
     {
       'href': 'javascript:;',
-      'raised': new AttributeHook('true'),
+      attributes: {
+        'raised': 'true'
+      },
       'ev-click': mercury.event(events.starAction, {
         star: true
       })
@@ -512,7 +513,9 @@ function renderRPCRunButton(state, events) {
     'paper-button',
     {
       'href': 'javascript:;',
-      'raised': new AttributeHook('true'),
+      attributes: {
+        'raised': 'true'
+      },
       'ev-click': getRunEvent(state, events, state.args)
     },
     [
@@ -540,12 +543,10 @@ function getRunEvent(state, events, args) {
  */
 function renderStarIcon(starred) {
   return h('core-icon.icon.star', {
-    'icon': new AttributeHook(
-      starred ? 'star' : 'star-outline'
-    ),
-    'alt': new AttributeHook(
-      starred ? 'starred' : 'not starred'
-    ),
+    attributes: {
+      'icon': starred ? 'star' : 'star-outline',
+      'alt': starred ? 'starred' : 'not starred'
+    }
   });
 }
 
@@ -554,7 +555,9 @@ function renderStarIcon(starred) {
  */
 function renderPlayIcon() {
   return h('core-icon.icon.run', {
-    'icon': new AttributeHook('av:play-circle-outline'),
-    'alt': new AttributeHook('run')
+    attributes: {
+      'icon': 'av:play-circle-outline',
+      'alt': 'run'
+    }
   });
 }

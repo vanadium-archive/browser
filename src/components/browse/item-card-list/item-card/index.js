@@ -2,8 +2,6 @@ var mercury = require('mercury');
 var insertCss = require('insert-css');
 var getServiceIcon = require('./get-service-icon');
 
-var AttributeHook = require('../../../../lib/mercury/attribute-hook');
-
 var browseRoute = require('../../../../routes/browse');
 
 var css = require('./index.css');
@@ -34,7 +32,9 @@ function render(item, browseState, browseEvents, navEvents) {
         path: url
       })
     }, h('core-icon.icon', {
-      'icon': new AttributeHook('chevron-right')
+      attributes: {
+        'icon': 'chevron-right'
+      }
     }));
   }
 
@@ -49,13 +49,15 @@ function render(item, browseState, browseEvents, navEvents) {
     if (!isAccessible) {
       itemTooltip += ' - Service seems to be offline or inaccessible';
     }
-    iconAttributes.title = new AttributeHook(item.serverInfo.typeInfo.typeName);
-    iconAttributes.icon = new AttributeHook(
-      getServiceIcon(item.serverInfo.typeInfo.key)
-    );
+    iconAttributes.attributes = {
+      title: item.serverInfo.typeInfo.typeName,
+      icon: getServiceIcon(item.serverInfo.typeInfo.key)
+    };
   } else {
-    iconAttributes.title = new AttributeHook('Intermediary Name');
-    iconAttributes.icon = new AttributeHook(getServiceIcon(''));
+    iconAttributes.attributes = {
+      title: 'Intermediary Name',
+      icon: getServiceIcon('')
+    };
   }
 
   // Construct the service icon.
