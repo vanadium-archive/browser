@@ -32,7 +32,7 @@ VDL_FILES = $(shell find go -name "*.vdl")
 all: directories public/bundle.js public/bundle.html
 
 # Creating the bundle JS file.
-public/bundle.js: $(BROWSERIFY_FILES) node_modules
+public/bundle.js: $(BROWSERIFY_FILES) node_modules src/components/help/content/*.md
 	:;jshint src # lint all src JavaScript files.
 	:;browserify src/app.js $(BROWSERIFY_OPTIONS) $< | exorcist $@.map > $@ # Browserify and generate map file.
 
