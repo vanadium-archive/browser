@@ -4,6 +4,10 @@
   padding: 0.5em;
 }
 
+.markdown p {
+  margin: 0 0 0.5em 0;
+}
+
 .markdown h1 {
   text-align: center;
 }
@@ -28,4 +32,8 @@
 }
 .markdown ol li {
   list-style: decimal outside none;
+}
+
+.markdown img {
+  border: solid black 1px;
 }

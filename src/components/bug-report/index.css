@@ -3,7 +3,8 @@
 
 .bug-reporter {
   position: fixed;
-  bottom: 0;
+  /*bottom: 0; TODO(wm) Issue 746 */
+  margin-top: 5px;
   left: 0;
 }
 

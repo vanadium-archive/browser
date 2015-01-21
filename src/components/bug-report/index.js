@@ -19,7 +19,7 @@ function render() {
   insertCss(css);
 
   var reportBugAction = h('core-tooltip', {
-      'label': 'Report a bug or ask for features you like to have.',
+      'label': 'Report a bug or suggest features',
       'position': 'right'
     },
     h('a', {

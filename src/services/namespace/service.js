@@ -34,7 +34,7 @@ function getRuntime() {
 }
 
 /*
- * Returns the accountName for the currently logged in user of Namespace Browser
+ * Returns the accountName for the currently logged in user of Viz
  * @return {Promise.<string>}
  */
 function getAccountName() {

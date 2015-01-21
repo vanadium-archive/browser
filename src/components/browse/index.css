@@ -44,11 +44,15 @@
 }
 
 .browse-main-wrapper h2 {
-  width: 100%;
+  width: 90%; /* force view onto next line */
   font-size: var(--size-font-large);
   color: var(--color-text-heading);
   padding: 0.5em 0em 0em 0.75em;
   text-decoration: none;
+}
+
+.browse-main-panel::shadow #mainContainer {
+  overflow-x: auto;
 }
 
 .progress-tooltip {

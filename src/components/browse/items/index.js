@@ -22,7 +22,11 @@ var VALID_VIEW_TYPES = ['grid', 'tree', 'visualize'];
  */
 function create() {
 
+  var treeComponent = new TreeView();
+
   var state = mercury.varhash({
+
+    tree: treeComponent.state,
 
     /*
      * List of namespace items to display
@@ -45,8 +49,15 @@ function create() {
     currentRequestId: mercury.value('')
   });
 
+  var events = mercury.input([
+    'tree'
+  ]);
+
+  events.tree = treeComponent.events;
+
   return {
-    state: state
+    state: state,
+    events: events
   };
 }
 
@@ -76,6 +87,15 @@ function load(state, namespace, globQuery) {
   // functionality that can be requested of the browse view.
   // -Move items to "GridView"
   // -Have a common component between tree and vis to share the childrens map
+
+  if (state.viewType() === 'tree') {
+    namespaceService.getNamespaceItem(namespace).then(function(item) {
+        state.tree.put('rootItem', item); // WooHoo! fixed the bug!
+    });
+    return TreeView.loadChildren(state.tree, {
+      parentName: namespace
+    });
+  }
 
   if (state.viewType() !== 'grid') {
     return Promise.resolve();
@@ -117,12 +137,13 @@ function load(state, namespace, globQuery) {
   }
 }
 
-function render(state, browseState, browseEvents, navEvents) {
+function render(state, events, browseState, browseEvents, navEvents) {
   switch (state.viewType) {
     case 'grid':
       return GridView.render(state, browseState, browseEvents, navEvents);
     case 'tree':
-      return TreeView.render(state, browseState, browseEvents, navEvents);
+      return TreeView.render(state.tree, events.tree,
+          browseState, browseEvents);
     case 'visualize':
       return VisualizeView.render(state, browseState, browseEvents, navEvents);
     default:

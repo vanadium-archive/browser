@@ -123,12 +123,17 @@ function create() {
     'browseNamespace',
 
     /*
+     * Items to be shown in the current view.
+     */
+    'items',
+
+    /*
      * Indicates a request to obtain the direct descendants of the given name.
      */
     'getNamespaceSuggestions',
 
     /*
-     * Selects an items.
+     * Selects an item.
      * Data of form:
      * {
      *    name: 'object/name'
@@ -162,6 +167,7 @@ function create() {
 
   wireUpEvents(state, events);
   events.selectedItemDetails = selectedItemDetails.events;
+  events.items = items.events;
   selectedItemDetails.events.toast = events.toast;
 
   return {
@@ -197,8 +203,7 @@ function loadLearners() {
 }
 
 /*
- * Renders the top bar of the namespace browser where the user can specify a
- * namespace root.
+ * Renders the top bar of Viz where the user can specify a namespace root.
  */
 function renderHeader(browseState, browseEvents, navEvents) {
   return h('div', [
@@ -207,7 +212,7 @@ function renderHeader(browseState, browseEvents, navEvents) {
 }
 
 /*
- * Renders the main body of the namespace browser.
+ * Renders the main body of Viz.
  * A toolbar is rendered on top of the mainView and sideView showing the current
  * position in the namespace as well as a globquery searchbox.
  * The mainView contains the shortcuts and names at this point in the namespace.
@@ -226,8 +231,8 @@ function render(browseState, browseEvents, navEvents) {
   var mainView;
   switch (browseState.subPage) {
     case 'items':
-      mainView = Items.render(browseState.items, browseState,
-        browseEvents, navEvents);
+      mainView = Items.render(browseState.items, browseEvents.items,
+        browseState, browseEvents, navEvents);
       break;
     case 'bookmarks':
       mainView = Bookmarks.render(browseState.bookmarks,

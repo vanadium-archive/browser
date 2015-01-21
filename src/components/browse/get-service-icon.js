@@ -1,7 +1,7 @@
 module.exports = getServiceIcon;
 
 var serviceIconMap = Object.freeze({
-  'veyron-mounttable': 'social:circles-extended',
+  'veyron-mounttable': 'dns',
   'veyron-unknown': 'cloud-queue',
   '': 'folder-open'
 });

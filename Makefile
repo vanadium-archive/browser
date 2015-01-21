@@ -1,5 +1,5 @@
 ##
-# Provides targets to build, test and run the Namespace Browser application.
+# Provides targets to build, test and run the Viz Vanadium Viewer application.
 #
 # make  # Builds the project.
 # make test  # Runs unit and integration tests.

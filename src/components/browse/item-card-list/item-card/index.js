@@ -1,6 +1,6 @@
 var mercury = require('mercury');
 var insertCss = require('insert-css');
-var getServiceIcon = require('./get-service-icon');
+var getServiceIcon = require('../../get-service-icon');
 
 var browseRoute = require('../../../../routes/browse');
 

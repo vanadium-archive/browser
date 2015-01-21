@@ -1,4 +1,4 @@
-// Mocking the LRU cache used by namespace browser so we can test caching logic
+// Mocking the LRU cache used by Viz so we can test caching logic
 module.exports = {
   cache: {},
   getCallHits: {},

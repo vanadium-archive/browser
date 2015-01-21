@@ -65,17 +65,12 @@ function createServerInfo(obj) {
  * @param {string} [obj.typeName] Human friendly name for the service type. e.g
  * 'Service', 'Mount Table', 'Storage'
  * @param {string} [obj.description] Human friendly description of server type.
- * @param {string} [obj.icon] icon key to be displayed for this type of server
- * in the UI. e.g. 'folder'.
- * @see http://www.polymer-project.org/components/core-icons/demo.html for a
- * list of icon keys
  * @return {mercury.struct}
  */
 function createServerTypeInfo(obj) {
   return mercury.struct({
     key: mercury.value(obj.key),
     typeName: mercury.value(obj.typeName),
-    description: mercury.value(obj.description),
-    icon: mercury.value(obj.icon),
+    description: mercury.value(obj.description)
   });
 }
