@@ -15,6 +15,7 @@ function handleBookmarksRoute(state, events, params) {
   // Trigger browse components browseNamespace event
   events.browse.browseNamespace({
     'namespace': state.browse.namespace(),
-    'subPage': 'bookmarks'
+    'subPage': 'bookmarks',
+    'viewType': state.browse.items.viewType()
   });
 }

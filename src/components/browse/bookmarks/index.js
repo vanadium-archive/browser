@@ -39,7 +39,8 @@ function render(state, browseState, browseEvents, navEvents) {
     browseEvents,
     navEvents, {
       title: 'Bookmarks',
-      emptyText: 'No bookmarks.'
+      emptyText: 'No bookmarks.',
+      showShortName: false
     }
   );
 }

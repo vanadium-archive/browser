@@ -21,7 +21,6 @@ var previousNamespace;
  * }
  */
 function browseNamespace(browseState, browseEvents, data) {
-
   var defaults = {
     namespace: '',
     globQuery: '',

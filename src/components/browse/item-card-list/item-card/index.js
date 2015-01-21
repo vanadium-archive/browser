@@ -13,14 +13,13 @@ module.exports.render = render;
  * Renders a namespace item in a card view.
  * @param item {namespaceitem} @see services/namespace/item
  */
-function render(item, browseState, browseEvents, navEvents) {
+function render(item, browseState, browseEvents, navEvents, showShortName) {
   insertCss(css);
 
   var selected = (browseState.selectedItemName === item.objectName);
-
   var url = browseRoute.createUrl(browseState, {
     namespace: item.objectName,
-    viewType: 'grid'
+    viewType: browseState.items.viewType
   });
 
   // Prepare the drill if this item happens to be globbable.
@@ -68,6 +67,9 @@ function render(item, browseState, browseEvents, navEvents) {
     (selected ? '.selected' : '') +
     (!isAccessible ? '.inaccessible' : '');
 
+  var cardLabel = (showShortName ? item.mountedName : item.objectName) ||
+    '<root>';
+
   return h('div.' + itemClassNames, {
     'title': itemTooltip
   }, [
@@ -79,7 +81,7 @@ function render(item, browseState, browseEvents, navEvents) {
         })
     }, [
       iconNode,
-      h('span', item.mountedName || '<root>')
+      h('span', cardLabel)
     ]),
     expandAction
   ]);

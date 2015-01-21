@@ -15,6 +15,7 @@ function handleRecommendationRoute(state, events, params) {
   // Trigger browse components browseNamespace event
   events.browse.browseNamespace({
     'namespace': state.browse.namespace(),
-    'subPage': 'recommendations'
+    'subPage': 'recommendations',
+    'viewType': state.browse.items.viewType()
   });
 }

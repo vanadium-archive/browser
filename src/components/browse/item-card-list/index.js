@@ -23,7 +23,8 @@ function render(items, browseState, browseEvents, navEvents, opts) {
     view = h('div.empty', h('span', opts.emptyText));
   } else {
     view = items.map(function(item) {
-      return ItemCard.render(item, browseState, browseEvents, navEvents);
+      return ItemCard.render(item, browseState, browseEvents, navEvents,
+        opts.showShortName || false);
     });
   }
 

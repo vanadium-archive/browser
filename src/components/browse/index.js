@@ -458,8 +458,8 @@ function renderSearch(browseState, navEvents) {
     navEvents.navigate({
       path: browseRoute.createUrl(browseState, {
         globQuery: val,
-        //TODO(aghassemi) We only supprt grid view for search, we could
-        //potentially support other views such as tree too but it's tricky.
+        // TODO(aghassemi): We only support grid view for search, we could
+        // potentially support other views such as tree too but it's tricky.
         viewType: 'grid'
       })
     });

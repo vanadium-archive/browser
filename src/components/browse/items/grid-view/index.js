@@ -16,7 +16,8 @@ function render(itemsState, browseState, browseEvents, navEvents) {
     browseEvents,
     navEvents, {
       title: title,
-      emptyText: emptyText
+      emptyText: emptyText,
+      showShortName: true
     }
   );
 }

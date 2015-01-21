@@ -37,7 +37,8 @@ function render(state, browseState, browseEvents, navEvents) {
     browseEvents,
     navEvents, {
       title: 'Recommendations',
-      emptyText: 'No recommendations'
+      emptyText: 'No recommendations',
+      showShortName: false
     }
   );
 }
