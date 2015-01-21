@@ -329,9 +329,19 @@ function renderNamespaceBox(browseState, browseEvents, navEvents) {
     });
   }, 'value', true);
 
-  var inputEvent = new PropertyValueEvent(function(val) {
+  // Change the namespace suggestions if the user types into the namespace box.
+  // Ideally, this would be the input event handler. See inputEvent below.
+  var trueInputEvent = new PropertyValueEvent(function(val) {
     browseEvents.getNamespaceSuggestions(val);
-  }, 'value', true);
+  }, 'value', false);
+
+  // TODO(alexfandrianto): A workaround for Mercury/Polymer. The
+  // paper-autocomplete's input value updates after Mercury captures the event.
+  // If we defer handling the event, then the input has time to update itself to
+  // the correct, new value.
+  var inputEvent = function(ev) {
+    setTimeout(trueInputEvent.handleEvent.bind(trueInputEvent, ev), 0);
+  };
 
   var children = browseState.namespaceSuggestions.map(
     function renderChildItem(child) {
