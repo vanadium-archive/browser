@@ -33,22 +33,23 @@ function methodEnd(state, method, data) {
     learnMethodInvocation(state, method, data.args);
   }
 
-  // Do not process results we expect to be empty.
+  // Do not process results we expect to be empty. Instead, indicate that the
+  // RPC terminated successfully.
   // TODO(alexfandrianto): Streaming results are ignored with this logic.
   var expectedOutArgs = sig.get(method).outArgs.length;
-  if (expectedOutArgs === 1) { // Error is the only possible out argument.
+  if (expectedOutArgs === 0) {
     replaceResult(state, data.runID, h('span', '<ok>'));
     return;
   }
 
   // Draw the results.
-  formatResult(state, method, data.runID, data.result, numInArgs === 0);
+  formatResult(state, method, data.runID, data.result);
 }
 
 /*
  * The result will be rendered, overwriting the placeholder identified by runID.
  */
-function formatResult(state, method, runID, result, addToDetails) {
+function formatResult(state, method, runID, result) {
   // Use formatDetail to process the raw result into a renderable format.
   var formattedResult = formatDetail(result);
 
@@ -63,7 +64,7 @@ function formatResult(state, method, runID, result, addToDetails) {
 function replaceResult(state, runID, newResult) {
   var match = state.methodOutputs.get(state.item().objectName).filter(
     function matchesRunID(output) {
-      return output.get('runID').equals(runID);
+      return output.get('runID') === runID;
     }
   ).get(0);
   if (match !== undefined) {

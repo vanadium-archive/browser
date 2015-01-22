@@ -200,7 +200,7 @@ function wireUpEvents(state, events) {
     setTimeout(function() {
       // Filter out the toast whose key matches.
       state.put('toasts', state.toasts.filter(function(toast) {
-        return !toast.key.equals(key);
+        return toast.key !== key;
       }));
     }, toastDuration);
   });

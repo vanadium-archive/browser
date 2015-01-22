@@ -1,6 +1,6 @@
 var mercury = require('mercury');
 var _ = require('lodash');
-var guid = require('guid');
+var uuid = require('uuid');
 
 var makeRPC = require('./make-rpc.js');
 
@@ -231,7 +231,7 @@ function wireUpEvents(state, events) {
   // The run action triggers a start event, RPC call, and end event.
   events.runAction(function(data) {
     // This random value allows us to uniquely identify this RPC.
-    var randomID = guid.create();
+    var randomID = uuid.v4();
     events.methodStart({
       runID: randomID
     });

@@ -1,4 +1,4 @@
-var guid = require('guid');
+var uuid = require('uuid');
 var mercury = require('mercury');
 var addDelegatedEvents = require('./lib/mercury/addDelegatedEvents');
 var onDocumentReady = require('./lib/document-ready');
@@ -151,7 +151,7 @@ onDocumentReady(function startApp() {
    * Toasts are given a unique key to ensure Mercury draws 1 toast per event.
    */
   function onToast(toast) {
-    toast.key = guid.create();
+    toast.key = uuid.v4();
     state.viewport.toasts.push(toast);
   }
 

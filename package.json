@@ -23,7 +23,7 @@
   "dependencies": {
     "bars": "git+https://github.com/steel/bars.git",
     "debug": "^1.0.4",
-    "guid": "^0.0.12",
+    "uuid": "^2.0.1",
     "insert-css": "^0.2.0",
     "json-stable-stringify": "^1.0.0",
     "localforage": "^1.0.2",

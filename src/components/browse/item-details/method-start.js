@@ -1,4 +1,5 @@
 var mercury = require('mercury');
+var h = require('mercury').h;
 
 module.exports = methodStart;
 
@@ -14,7 +15,7 @@ function methodStart(state, method, data) {
     runID: data.runID,
     shouldShow: false,
     method: method,
-    result: '<running>'
+    result: h('span', '<running>')
   });
   setTimeout(function() {
     output.put('shouldShow', true); // prevent flicker for near-instant RPCs.

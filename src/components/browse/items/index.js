@@ -1,5 +1,5 @@
 var mercury = require('mercury');
-var guid = require('guid');
+var uuid = require('uuid');
 
 var GridView = require('./grid-view/index');
 var TreeView = require('./tree-view/index');
@@ -102,7 +102,7 @@ function load(state, namespace, globQuery) {
   }
 
   // Search the namespace and update the browseState's items.
-  var requestId = guid.create().value;
+  var requestId = uuid.v4();
   state.currentRequestId.set(requestId);
   state.put('items', mercury.array([]));
 
