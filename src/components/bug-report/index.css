@@ -3,9 +3,9 @@
 
 .bug-reporter {
   position: fixed;
-  /*bottom: 0; TODO(wm) Issue 746 */
-  margin-top: 5px;
-  left: 0;
+  left: 5px;
+  bottom: 12px;
+  z-index: 1000;
 }
 
 .bug-reporter .icon {
