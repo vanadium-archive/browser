@@ -2,6 +2,9 @@ var mercury = require('mercury');
 var insertCss = require('insert-css');
 var browseRoute = require('../../routes/browse');
 var helpRoute = require('../../routes/help');
+
+var BugReport = require('../bug-report/index');
+
 var css = require('./index.css');
 
 var h = mercury.h;
@@ -35,6 +38,12 @@ function render(state, events) {
       label: 'Help',
       icon: 'help',
       href: helpRoute.createUrl()
+    }, {
+      key: 'bug',
+      label: 'Report a bug',
+      icon: BugReport.BUG_REPORT_ICON,
+      href: BugReport.BUG_REPORT_URL,
+      newWindow: true
     }];
 
     insertCss(css);
@@ -45,6 +54,7 @@ function render(state, events) {
         'label': navItem.label
       }, [
         h('a', {
+          'target': (navItem.newWindow ? '_blank' : undefined),
           'href': navItem.href,
           'ev-click': [
             mercury.event(events.navigation.navigate, {

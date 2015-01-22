@@ -5,15 +5,19 @@ var h = mercury.h;
 
 var css = require('./index.css');
 
+// TODO(aghassemi) we need a separate repo for Viz. Update Url when we do.
+var QUERY_STRING = '?title=' + 'Viz Vanadium Viewer: ';
+var BUG_REPORT_URL = 'https://github.com/veyron/release-issues/issues/new' +
+  QUERY_STRING;
+
+var BUG_REPORT_ICON = 'bug-report';
+
 module.exports = create;
 module.exports.render = render;
+module.exports.BUG_REPORT_URL = BUG_REPORT_URL;
+module.exports.BUG_REPORT_ICON = BUG_REPORT_ICON;
 
 function create() {}
-
-// TODO(aghassemi) we need a separate repo for Viz. Update Url when we do.
-var DEFAULT_TITLE = 'Viz Vanadium Viewer: ';
-var BUG_URL = 'https://github.com/veyron/release-issues/issues/new?title=' +
-  DEFAULT_TITLE;
 
 function render() {
   insertCss(css);
@@ -23,11 +27,11 @@ function render() {
       'position': 'right'
     },
     h('a', {
-      'href': BUG_URL,
+      'href': BUG_REPORT_URL,
       'target': '_blank'
     }, h('paper-icon-button.icon', {
       attributes: {
-        'icon': 'bug-report'
+        'icon': BUG_REPORT_ICON
       }
     }))
   );

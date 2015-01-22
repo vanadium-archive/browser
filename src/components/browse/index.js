@@ -417,7 +417,7 @@ function renderViewActions(browseState, navEvents) {
         viewType: 'tree'
       })
     ),
-    createActionIcon('Visualize view', 'social:circles-extended',
+    createActionIcon('Visualize view', 'image:grain',
       browseRoute.createUrl(browseState, {
         viewType: 'visualize'
       })
