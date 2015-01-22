@@ -27,13 +27,6 @@ function displayItemDetails(state, events, data) {
   var name = data.name;
   lastRequestedName = name;
 
-  // Log the URL to the smart service as a potential shortcut.
-  smartService.update('learner-shortcut', {
-    name: name
-  }).catch(function(err) {
-    log.error('Error while updating shortcut learner', err);
-  });
-
   // Whether we have finished loading yet.
   var isLoaded = false;
   // How long to wait before showing loading if things have not loaded yet
@@ -59,6 +52,14 @@ function displayItemDetails(state, events, data) {
     if (!isCurrentlySelected()) {
       return;
     }
+
+    // Log the name to the smart service as a potential shortcut, since it was
+    // successfully visited.
+    smartService.update('learner-shortcut', {
+      name: name
+    }).catch(function(err) {
+      log.error('Error while updating shortcut learner', err);
+    });
 
     var isBookmarked = results[0];
     var itemObs = results[1];
