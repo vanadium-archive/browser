@@ -24,7 +24,7 @@ module.exports.createUrl = function(browseState, opts) {
   // We preserve namespace and viewtype if they are not provided
   // We reset globquery unless provided
   namespace = (namespace === undefined ? browseState.namespace : namespace);
-  viewType = (viewType === undefined ? browseState.viewType : viewType);
+  viewType = (viewType === undefined ? browseState.items.viewType : viewType);
 
   var path = '/browse';
   if (exists(namespace)) {
