@@ -6,26 +6,40 @@
 # pass true as first argument to run the tests in watch mode
 # script will exit with code 0 if tests pass and with 1 if tests fail.
 
+# This script is called by the "make test" command, which runs servicerunner and
+# sets the NAMESPACE_ROOT environment variable.  Thus, all commands run in this
+# script have access to a mounttable at NAMESPACE_ROOT.
+
 source "${VANADIUM_ROOT}/release/projects/namespace_browser/scripts/services/common.sh"
 
 main() {
-
-  local -r MOUNTTABLE_PORT=8881
   local -r MOUNTTABLE_PORT_HOUSE=8882
   local -r MOUNTTABLE_PORT_COTTAGE=8883
-  local -r WSPR_PORT=8885
-  local -r PROXY_PORT=8886
-  local -r VEYRON_IDENTITY_DIR="${TMPDIR}/test_credentials_dir"
-  local -r SEEK_BLESSSING=false
+
+  # Export the name of the house mounttable so it can be used in the tests.
+  export HOUSE_MOUNTTABLE="/localhost:${MOUNTTABLE_PORT_HOUSE}"
 
   PROVA_WATCH="${PROVA_WATCH-false}"
 
-  common::run "${MOUNTTABLE_PORT}" "${MOUNTTABLE_PORT_HOUSE}" "${MOUNTTABLE_PORT_COTTAGE}" "${WSPR_PORT}" "${PROXY_PORT}" "${VEYRON_IDENTITY_DIR}" "${SEEK_BLESSSING}"
+  common::run "${MOUNTTABLE_PORT_HOUSE}" "${MOUNTTABLE_PORT_COTTAGE}"
 
   echo -e "\033[34m-Services are running\033[0m"
 
+  # This is the id of the Vanadium test extension.  It is put into the veyron.js
+  # source code by the "--globalTranform envify" flag in PROVA_OPTIONS.
+  export VANADIUM_EXTENSION_ID=geagjbjjbbamldjlcbpabgdpeopikgne
+
   cd "${VANADIUM_ROOT}/release/projects/namespace_browser"
-  local PROVA_OPTIONS="--browser --includeFilenameAsPackage --launch chrome --plugin proxyquireify/plugin --transform ./main-transform"
+  local -r VANADIUM_JS=${VANADIUM_ROOT}/release/javascript/core
+
+  local PROVA_OPTIONS="--browser \
+    --includeFilenameAsPackage \
+    --launch chrome \
+    --plugin proxyquireify/plugin \
+    --transform ./main-transform \
+    --globalTransform envify \
+    --log tmp/chrome.log \
+    --options=--load-extension=${VANADIUM_JS}/extension/build-test/,--ignore-certificate-errors,--enable-logging=stderr"
   local -r PROVA="${VANADIUM_ROOT}/release/projects/namespace_browser/node_modules/.bin/prova"
   local -r TAP_XUNIT="${VANADIUM_ROOT}/release/projects/namespace_browser/node_modules/.bin/tap-xunit"
   local -r XUNIT_OUTPUT_FILE="${XUNIT_OUTPUT_FILE-${TMPDIR}/test_output.xml}"

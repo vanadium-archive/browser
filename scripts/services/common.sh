@@ -54,21 +54,6 @@ terminate() {
   fi
 }
 
-# build is used to install binaries needed to run services.
-build() {
-  export GOPATH="${VANADIUM_ROOT}/release/projects/namespace_browser/go"
-  export VDLPATH="${VANADIUM_ROOT}/release/projects/namespace_browser/go"
-  export GOBIN="${VANADIUM_ROOT}/release/projects/namespace_browser/go/bin"
-
-  v23 go install v.io/core/veyron/services/mounttable/mounttabled
-  v23 go install v.io/core/veyron/services/proxy/proxyd
-  v23 go install v.io/core/veyron/services/mgmt/binary/binaryd
-  v23 go install v.io/core/veyron/services/mgmt/build/buildd
-  v23 go install v.io/core/veyron/tools/principal
-  v23 go install v.io/wspr/veyron/services/wsprd
-  v23 go install sample/sampled
-}
-
 # common::fail will output a red FAILED message along with and optional message given
 # as first argument and an optional LOGFILE location to output as second argument.
 # This function will also exit the shell with an exit code of 1.
@@ -117,92 +102,45 @@ fail_on_exit() {
   common::fail "${NAME} service did not start or crashed, see log below for details" "${LOGFILE}"
 }
 
-# common::run is used to run the services needed to test and demon veyron browser
-# run will exit the shell if a process fails to start or panics and it will display
-# an error message along with the log file for the misbehaving service.
-common::run() {
-  build || common::fail "failed to build the binaries"
-  cd "${GOBIN}"
+common::run_mounttable() {
+  local -r NAME="$1"
+  local -r PORT="$2"
 
-  local -r ROOT_MOUNTTABLE_PORT="$1"
-  local -r HOUSE_MOUNTTABLE_PORT="$2"
-  local -r COTTAGE_MOUNTTABLE_PORT="$3"
-  local -r WSPR_PORT="$4"
-  local -r PROXY_PORT="$5"
-  local -r IDENTITY_DIR="$6"
-  local -r SEEK_BLESSSING="$7"
-
-  local -r PROXY_ADDR=127.0.0.1:"${PROXY_PORT}"
-  local -r IDENTITY_SERVER=/proxy.envyor.com:8101/identity/veyron-test/google
-
-  # Get credentials
-  export VEYRON_CREDENTIALS="${IDENTITY_DIR}";
-  if [[ ! -e "${IDENTITY_DIR}" ]] || [[ ! "$(ls -A ${IDENTITY_DIR})" ]]; then
-    ./principal create "${IDENTITY_DIR}" "veyron-browser" || common::fail "Failed to create principal."
-    if [[ "${SEEK_BLESSSING}" = true ]]; then
-      # TODO(aghassemi) This is temporarily needed since wspr can not talk to
-      # Identity server otherwise which is a known but to be fixed.
-      ./principal seekblessings || common::fail "Failed to seek blessing."
-    fi
-  fi
-
-  # Run each server in a sub shell so we can call common::fail if process fails to start
-  # or panics as it is running.
+  echo "Running ${NAME} mounttable on ${PORT}"
 
   # Allowed seconds for each service to start
   local -r SRV_TIMEOUT=10
   local -r TIMEDOUT_MSG="Timed out waiting for:"
 
-  # Run mounttables.
-  local -r ROOT_MTLOG="${TMPDIR}/mt_root.log"
+  # Run mounttable and wait for its startup signal.
   local -r MTLOG_MESSAGE="Mount table service at"
-  cat /dev/null > "${ROOT_MTLOG}"
+  local -r MTLOG="${TMPDIR}/mt_${NAME}.log"
+  cat /dev/null > "${MTLOG}"
   (
-    ./mounttabled --veyron.tcp.address="localhost:${ROOT_MOUNTTABLE_PORT}" &> "${ROOT_MTLOG}" &
-    fail_on_exit $! "root mounttable" "${ROOT_MTLOG}"
+    mounttabled --veyron.tcp.protocol=wsh --veyron.tcp.address="localhost:${PORT}" --name="${NAME}" &> "${MTLOG}" &
+    fail_on_exit $! "${NAME} mounttable" "${MTLOG}"
   ) &
-  shell::timed_wait_for "${SRV_TIMEOUT}" "${ROOT_MTLOG}" "${MTLOG_MESSAGE}" || common::fail "${TIMEDOUT_MSG} mounttable root"
+  shell::timed_wait_for "${SRV_TIMEOUT}" "${MTLOG}" "${MTLOG_MESSAGE}" || common::fail "${TIMEDOUT_MSG} ${NAME} mounttable"
+}
 
-  export NAMESPACE_ROOT=/localhost:"${ROOT_MOUNTTABLE_PORT}";
+# common::run is used to run the services needed to test and demon veyron browser
+# run will exit the shell if a process fails to start or panics and it will display
+# an error message along with the log file for the misbehaving service.
+common::run() {
+  local -r HOUSE_MOUNTTABLE_PORT="$1"
+  local -r COTTAGE_MOUNTTABLE_PORT="$2"
 
-  local -r HOUSE_MTLOG="${TMPDIR}/mt_house.log"
-  cat /dev/null > "${HOUSE_MTLOG}"
-  (
-    ./mounttabled --veyron.tcp.address="localhost:${HOUSE_MOUNTTABLE_PORT}" --name="house" &> "${HOUSE_MTLOG}" &
-    fail_on_exit $! "house mounttable" "${HOUSE_MTLOG}"
-  ) &
-  shell::timed_wait_for "${SRV_TIMEOUT}" "${HOUSE_MTLOG}" "${MTLOG_MESSAGE}" || common::fail "${TIMEDOUT_MSG} house mounttable"
+  # Run each server in a sub shell so we can call common::fail if process fails to start
+  # or panics as it is running.
 
-  local -r COTTAGE_MTLOG="${TMPDIR}/mt_cottage.log"
-  cat /dev/null > "${COTTAGE_MTLOG}"
-  (
-    ./mounttabled --veyron.tcp.address="localhost:${COTTAGE_MOUNTTABLE_PORT}" --name="cottage" &> "${COTTAGE_MTLOG}" &
-    fail_on_exit $! "cottage mounttable" "${COTTAGE_MTLOG}"
-  ) &
-  shell::timed_wait_for "${SRV_TIMEOUT}" "${COTTAGE_MTLOG}" "${MTLOG_MESSAGE}" || common::fail "${TIMEDOUT_MSG} cottage mounttable"
+  common::run_mounttable "house" ${HOUSE_MOUNTTABLE_PORT}
+  common::run_mounttable "cottage" ${COTTAGE_MOUNTTABLE_PORT}
 
-  # Run proxies.
-  local -r PROXYLOG="${TMPDIR}/proxy.log"
-  cat /dev/null > "${PROXYLOG}"
-  (
-    ./proxyd --v=1 --http=":0" -address="${PROXY_ADDR}" &> "${PROXYLOG}" &
-    fail_on_exit $! "proxy" "${PROXYLOG}"
-  ) &
-  shell::timed_wait_for "${SRV_TIMEOUT}" "${PROXYLOG}" "Proxy listening on" || common::fail "${TIMEDOUT_MSG} proxy"
-
-  local -r WSPRLOG="${TMPDIR}/wspr.log"
-  cat /dev/null > "${WSPRLOG}"
-  (
-    ./wsprd --v=1 --veyron.proxy="${PROXY_ADDR}" --port="${WSPR_PORT}" --identd="${IDENTITY_SERVER}" &> "${WSPRLOG}" &
-    fail_on_exit $! "wspr" "${WSPRLOG}"
-  ) &
-  shell::timed_wait_for "${SRV_TIMEOUT}" "${WSPRLOG}" "Listening at" || common::fail "${TIMEDOUT_MSG} wspr"
-
-  # Run some veyron services for demo and integration testing.
+  # Run sampled on a free port for demo and integration testing.
   local -r SAMPLEDLOG="${TMPDIR}/sampled.log"
   cat /dev/null > "${SAMPLEDLOG}"
   (
-    ./sampled &> "${SAMPLEDLOG}" &
+    sampled --veyron.tcp.protocol=wsh --veyron.tcp.address="localhost:0" &> "${SAMPLEDLOG}" &
     fail_on_exit $! "sampled" "${SAMPLEDLOG}"
   ) &
  }

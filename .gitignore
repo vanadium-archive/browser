@@ -5,6 +5,7 @@ public/bundle.*
 npm-debug.log
 go/bin/
 *.vdl.go
+tmp/
 
 # Vanadium
 /.v23

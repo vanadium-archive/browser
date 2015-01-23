@@ -4,15 +4,17 @@ var _ = require('lodash');
 var proxyquire = require('proxyquireify')(require);
 var mockLRUCache = require('./mocks/lru-cache');
 
-// 8885 is the expected wspr port to be running for the tests
 // @noCallThru ensures this completely overrdies the original config
 // instead of inheriting the properties that are not defined here from
 // the original dependency
 var veyronConfigForTest = {
-  'authenticate': false,
-  'wspr': 'http://localhost:8885',
   '@noCallThru': true
 };
+
+// The NAMESPACE_ROOT environment variable is set by servicerunner in the "make
+// test" target.  That environment variable is picked up by the "envify" prova
+// transform and used to set process.env.NAMESPACE_ROOT.
+var globalRoot = process.env.NAMESPACE_ROOT;
 
 // Require namespaceService but using test specific mocks and configs
 var namespaceService =
@@ -93,10 +95,8 @@ test('getChildren of cottage/lawn', function(t) {
   }
 });
 
-test('getChildren of rooted /localhost:8881/house/kitchen', function(t) {
-
-  // 8881 is the expected root mounttable port to be running for the tests
-  namespaceService.getChildren('/localhost:8881/house/kitchen').
+test('getChildren of rooted ' + globalRoot + '/house/kitchen', function(t) {
+  namespaceService.getChildren(globalRoot + '/house/kitchen').
   then(function assertResult(result) {
     assertIsImmutable(t, result);
     // Wait until we finish, we expect 2 items, lights and smoke-detector
@@ -115,7 +115,7 @@ test('getChildren of rooted /localhost:8881/house/kitchen', function(t) {
   function assertLightSwitch(item) {
     assertServer(t, item, {
       name: 'lights',
-      objectName: '/localhost:8881/house/kitchen/lights',
+      objectName: globalRoot + '/house/kitchen/lights',
       isGlobbable: false,
       type: 'unknown'
     });
@@ -124,7 +124,48 @@ test('getChildren of rooted /localhost:8881/house/kitchen', function(t) {
   function assertSmokeDetector(item) {
     assertServer(t, item, {
       name: 'smoke-detector',
-      objectName: '/localhost:8881/house/kitchen/smoke-detector',
+      objectName: globalRoot + '/house/kitchen/smoke-detector',
+      isGlobbable: false,
+      type: 'unknown'
+    });
+  }
+});
+
+// The HOUSE_MOUNTTABLE environment variable is set by run-tests.sh.  That
+// environment variable is picked up by the "envify" prova transform and used to
+// set process.env.HOUSE_MOUNTTABLE.
+var hostPortRoot = process.env.HOUSE_MOUNTTABLE;
+
+test('getChildren of rooted ' + hostPortRoot + '/kitchen', function(t) {
+  namespaceService.getChildren(hostPortRoot + '/kitchen').
+  then(function assertResult(result) {
+    assertIsImmutable(t, result);
+    // Wait until we finish, we expect 2 items, lights and smoke-detector
+    result.events.on('end', function validate() {
+      mercury.watch(result, function(children) {
+        children = _.sortBy(children, 'mountedName');
+        assertLightSwitch(children[0]);
+        assertSmokeDetector(children[1]);
+        t.end();
+      });
+    });
+    result.events.on('streamError', t.end);
+    result.events.on('itemError', t.end);
+  }).catch(t.end);
+
+  function assertLightSwitch(item) {
+    assertServer(t, item, {
+      name: 'lights',
+      objectName: hostPortRoot + '/kitchen/lights',
+      isGlobbable: false,
+      type: 'unknown'
+    });
+  }
+
+  function assertSmokeDetector(item) {
+    assertServer(t, item, {
+      name: 'smoke-detector',
+      objectName: hostPortRoot + '/kitchen/smoke-detector',
       isGlobbable: false,
       type: 'unknown'
     });

@@ -18,7 +18,8 @@
     "vulcanize": "^0.3.1",
     "postie": "~0.4.5",
     "lru-cache": "~2.5.0",
-    "tap-xunit": "~1.1.1"
+    "tap-xunit": "~1.1.1",
+    "envify": "~3.2.0"
   },
   "dependencies": {
     "bars": "git+https://github.com/steel/bars.git",

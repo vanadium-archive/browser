@@ -8,8 +8,7 @@ import (
 	"sample/mocks"
 
 	"v.io/core/veyron/lib/signals"
-	"v.io/core/veyron/profiles"
-	_ "v.io/core/veyron/profiles"
+	"v.io/core/veyron/profiles/static"
 	"v.io/core/veyron2"
 	"v.io/core/veyron2/rt"
 	"v.io/core/veyron2/security"
@@ -63,7 +62,7 @@ func main() {
 		}
 
 		// Create an endpoint and begin listening.
-		if endpoint, err := s.Listen(profiles.LocalListenSpec); err == nil {
+		if endpoint, err := s.Listen(static.ListenSpec); err == nil {
 			fmt.Printf("Listening at: %v\n", endpoint)
 		} else {
 			log.Fatal("error listening to service: ", err)
