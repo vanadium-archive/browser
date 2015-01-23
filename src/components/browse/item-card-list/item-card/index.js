@@ -18,8 +18,7 @@ function render(item, browseState, browseEvents, navEvents, showShortName) {
 
   var selected = (browseState.selectedItemName === item.objectName);
   var url = browseRoute.createUrl(browseState, {
-    namespace: item.objectName,
-    viewType: browseState.items.viewType
+    namespace: item.objectName
   });
 
   // Prepare the drill if this item happens to be globbable.
