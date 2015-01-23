@@ -25,13 +25,10 @@ function render(itemsState, browseState, browseEvents, navEvents) {
 }
 
 // Maximum number of levels that are automatically shown
+// TODO(aghassemi) Switch to globbing <namespace>/... instead
 var MAX_AUTO_LOAD_DEPTH = 3;
 
 function TreeWidget(browseState, browseEvents) {
-  if (!(this instanceof TreeWidget)) {
-    return new TreeWidget(browseState);
-  }
-
   this.browseState = browseState;
   this.browseEvents = browseEvents;
   this.nodes = new vis.DataSet();
@@ -40,16 +37,38 @@ function TreeWidget(browseState, browseEvents) {
 
 TreeWidget.prototype.type = 'Widget';
 
+// Dom element to initialize the network in
+var networkElem;
+
 TreeWidget.prototype.init = function() {
-  var elem = document.createElement('div');
-  elem.className = 'tree';
+  this.initNetworkElem();
 
-  requestAnimationFrame(this.initNetwork.bind(this, elem));
+  requestAnimationFrame(this.initNetwork.bind(this));
 
-  return elem;
+  // wrap in a new element, needed for Mercury vdom to patch properly.
+  var wrapper = document.createElement('div');
+  wrapper.appendChild(networkElem);
+  return wrapper;
 };
 
-TreeWidget.prototype.initNetwork = function(elem) {
+
+TreeWidget.prototype.initNetworkElem = function() {
+  if (!networkElem) {
+    networkElem = document.createElement('div');
+    networkElem.className = 'network';
+  }
+};
+
+// We keep track of previous namespace that was browsed to so we can
+// know when navigating to a different namespace happens.
+var previousNamespace;
+TreeWidget.prototype.initNetwork = function() {
+  if (previousNamespace === this.browseState.namespace) {
+    return;
+  }
+
+  previousNamespace = this.browseState.namespace;
+
   var self = this;
 
   // Add the initial node.
@@ -68,7 +87,6 @@ TreeWidget.prototype.initNetwork = function(elem) {
     hover: false,
     selectable: true, // Need this or nodes won't be click-able
     smoothCurves: false,
-    stabilize: false,
     edges: {
       width: 1
     },
@@ -85,7 +103,7 @@ TreeWidget.prototype.initNetwork = function(elem) {
   };
 
   // Start drawing the network.
-  var network = new vis.Network(elem, {
+  var network = new vis.Network(networkElem, {
     nodes: this.nodes,
     edges: this.edges
   }, options);
@@ -112,6 +130,7 @@ TreeWidget.prototype.initNetwork = function(elem) {
       self.loadSubNodes(node);
     }
   });
+
   return network;
 };
 
@@ -172,4 +191,4 @@ TreeWidget.prototype.loadSubNodes = function(node) {
   });
 };
 
-TreeWidget.prototype.update = function(prev, elem) {};
+TreeWidget.prototype.update = function(prev, networkElem) {};
