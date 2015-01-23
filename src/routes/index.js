@@ -18,7 +18,7 @@ function handleIndexRoute(state, events) {
 
     // Redirect to browse
     events.navigation.navigate({
-      path: browseRoute.createUrl(state.browse, {
+      path: browseRoute.createUrl(state.browse(), {
         namespace: index
       })
     });
@@ -27,7 +27,7 @@ function handleIndexRoute(state, events) {
 
     // Redirect to browse
     events.navigation.navigate({
-      path: browseRoute.createUrl(state.browse, {
+      path: browseRoute.createUrl(state.browse(), {
         namespace: index
       })
     });
