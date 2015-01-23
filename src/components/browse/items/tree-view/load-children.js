@@ -16,5 +16,4 @@ function loadChildren(state, data) {
       //TODO(aghassemi) Go to error page
       log.error(err);
     });
-
 }

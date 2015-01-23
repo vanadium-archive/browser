@@ -24,6 +24,14 @@ function create() {
     childrenMap: mercury.varhash({}),
 
     /*
+    * Map of objectNames to Boolean flag showing if tree view is expanded
+    * @type {varhash<string,Boolean>}
+    * For each item, says whether it is expanded in the tree view.
+    * If there is no value, assumes false.
+    */
+    expandedMap: mercury.varhash({}),
+
+    /*
      * The current item to be used as the root of the tree
      * @see services/namespace/item
      * @type {namespaceitem}
@@ -78,6 +86,7 @@ function createTreeNode(state, selected, item, extraprops) {
       label: item.mountedName || '<root>',
       icon:  getServiceIcon(item.isServer ? item.serverInfo.typeInfo.key : ''),
       itemTitle: item.objectName,
+      open: !!state.expandedMap[item.objectName],
       highlight: (item.objectName === selected)
     },
     objectName: item.objectName
@@ -89,15 +98,22 @@ function createTreeNode(state, selected, item, extraprops) {
 }
 
 function wireUpEvents(state, events) {
+  // expand or collapse item
   events.openChange(function(data) {
     var objectName = data.polymerDetail.node.objectName;
-    // load up the immediate children of a newly displayed item
-    // so we know if that item can be expanded
-    state.childrenMap[objectName].map(function(child) {
-      loadChildren(state, { parentName: child.objectName() });
-    });
+    var openMe = data.polymerDetail.node.open;
+    if (openMe) {
+      state.expandedMap.put(objectName, true);
+      // load up the immediate children of a newly displayed item
+      // so we know if that item can be expanded
+      state.childrenMap[objectName].map(function(child) {
+        loadChildren(state, { parentName: child.objectName() });
+      });
+    } else {  // collapse this item
+      state.expandedMap.delete(objectName);
+    }
   });
-
+  // highlight item and display details
   events.activate(function(data) {
     var objectName = data.polymerDetail.node.objectName;
     data.browseEvents.selectItem({
