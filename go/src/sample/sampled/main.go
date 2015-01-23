@@ -8,9 +8,8 @@ import (
 	"sample/mocks"
 
 	"v.io/core/veyron/lib/signals"
-	"v.io/core/veyron/profiles/static"
+	_ "v.io/core/veyron/profiles/static"
 	"v.io/core/veyron2"
-	"v.io/core/veyron2/rt"
 	"v.io/core/veyron2/security"
 )
 
@@ -43,14 +42,8 @@ func (o openAuthorizer) Authorize(_ security.Context) error {
 }
 
 func main() {
-	// Create the runtime
-	r, err := rt.New()
-	if err != nil {
-		log.Fatal("Could not initialize runtime: ", err)
-	}
-	defer r.Cleanup()
-
-	ctx := r.NewContext()
+	ctx, shutdown := veyron2.Init()
+	defer shutdown()
 
 	// Create new server and publish the given server under the given name
 	var listenAndServe = func(name string, server interface{}) func() {
@@ -62,7 +55,7 @@ func main() {
 		}
 
 		// Create an endpoint and begin listening.
-		if endpoint, err := s.Listen(static.ListenSpec); err == nil {
+		if endpoint, err := s.Listen(veyron2.GetListenSpec(ctx)); err == nil {
 			fmt.Printf("Listening at: %v\n", endpoint)
 		} else {
 			log.Fatal("error listening to service: ", err)
