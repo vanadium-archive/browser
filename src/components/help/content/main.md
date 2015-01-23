@@ -10,15 +10,15 @@ Mount Tables
 One special kind of Vanadium service is a *mount table*, which contains
 distributed pointers to other services (including other mount tables).
 
-Each entry in a mount table can be one of three things:
+Each item in a mount table can be one of three things:
 * a distributed pointer to another mount table
 * a distributed pointer to a Vanadium service (other than a mount table)
-* a folder
+* a folder (intermediary name)
 
-Folders are used to group entries together, like in a file system
+Folders are used to group items together, like in a file system
 on a computer.
 The name used to identify a folder is called an "intermediary name" (like
-a directory name). Folders in a mount table can only contain other entries
+a directory name). Folders in a mount table can only contain other items
 in the same mount table.
 
 Namespaces
@@ -26,24 +26,37 @@ Namespaces
 
 An interconnected set of mount tables forms a Vanadium *namespace*.
 
-Vanadium uses namespaces to find things (services), similar to how the WWW
+Vanadium uses namespaces to find things (services), somewhat like how the WWW
 uses URLs to find things (web pages).
-However, URLs are global names that are strictly hierarchical and must be
-globally unique,
-while names in Vanadium are distributed and need not be unique.
+
+Names
+-----
+
+Names in Vanadium are a sequence of simple names separated by slashes (/)
+(see https://v.io/docs/core-concepts/naming.html for more information).
+
+Names in Vanadium can either be *rooted* or *relative*.
+A rooted name begins with a slash (/), while a relative name does not.
+The name following the initial slash of a rooted name is the *root*.
+A root can be specified three ways:
+1. using a domain name (with an optional port number), like "v.io:8101"
+or "localhost:5167",
+2. using an IP address (with an optional port number), like "127.0.0.1:5167",
+3. or a Vanadium endpoint for a mount table, like
+"@3@@batman.com:2345@00000000000000000000000000000000@2@3@s@@".
 
 Relative Names
 --------------
 
-In addition, names are not strictly hierarchical,
-so a namespace can contain cycles.
-Consequently, what a name means changes depending on what is used as the root
-of the name.
-Any mount table in a namespace can be used as the root of a name.
+A relative name does not begin with a slash.
+The meaning of a relative name depends on a root stored in your environment
+(this is similar to the concept of a "current directory").
 
 For example, a user can have their own mount table where they store things
 they own. This mount table can contain names like "phone/messages" that
 could be used to access the messages on their mobile phone.
+Different users (or devices) would normally have a different default root,
+so they would access their own messages.
 
 Identity
 --------
@@ -51,7 +64,6 @@ Identity
 In Vanadium, mount tables (and thus names) are secure.
 What names are accessible to a user depend on the identity of the user, and
 the services (including mount tables) to which the user has been given access.
-
 
 Help Topics
 -----------
