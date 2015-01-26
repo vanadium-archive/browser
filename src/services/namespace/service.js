@@ -89,6 +89,7 @@ function glob(pattern) {
     return Promise.resolve(cacheHit);
   }
 
+  var ctx = veyron.context.Context().withTimeout(RPC_TIMEOUT);
   var globItemsObservArr = mercury.array([]);
   var immutableResult = freeze(globItemsObservArr);
   immutableResult.events = new EventEmitter();
@@ -96,7 +97,7 @@ function glob(pattern) {
     getRuntime().then(function callGlobOnNamespace(rt) {
       // TODO(aghassemi) use watchGlob when available
       var namespace = rt.namespace();
-      return namespace.glob(pattern).stream;
+      return namespace.glob(ctx, pattern).stream;
     }).then(function updateResult(globStream) {
       var itemPromises = [];
 
