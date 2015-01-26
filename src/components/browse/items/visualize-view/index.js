@@ -43,7 +43,7 @@ var networkElem;
 TreeWidget.prototype.init = function() {
   this.initNetworkElem();
 
-  requestAnimationFrame(this.initNetwork.bind(this));
+  requestAnimationFrame(this.updateNetwork.bind(this));
 
   // wrap in a new element, needed for Mercury vdom to patch properly.
   var wrapper = document.createElement('div');
@@ -62,7 +62,7 @@ TreeWidget.prototype.initNetworkElem = function() {
 // We keep track of previous namespace that was browsed to so we can
 // know when navigating to a different namespace happens.
 var previousNamespace;
-TreeWidget.prototype.initNetwork = function() {
+TreeWidget.prototype.updateNetwork = function() {
   if (previousNamespace === this.browseState.namespace) {
     return;
   }
@@ -191,4 +191,6 @@ TreeWidget.prototype.loadSubNodes = function(node) {
   });
 };
 
-TreeWidget.prototype.update = function(prev, networkElem) {};
+TreeWidget.prototype.update = function(prev, networkElem) {
+  requestAnimationFrame(this.updateNetwork.bind(this));
+};
