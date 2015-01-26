@@ -25,10 +25,6 @@ main() {
 
   echo -e "\033[34m-Services are running\033[0m"
 
-  # This is the id of the Vanadium test extension.  It is put into the veyron.js
-  # source code by the "--globalTranform envify" flag in PROVA_OPTIONS.
-  export VANADIUM_EXTENSION_ID=geagjbjjbbamldjlcbpabgdpeopikgne
-
   cd "${VANADIUM_ROOT}/release/projects/namespace_browser"
   local -r VANADIUM_JS=${VANADIUM_ROOT}/release/javascript/core
 
@@ -36,8 +32,7 @@ main() {
     --includeFilenameAsPackage \
     --launch chrome \
     --plugin proxyquireify/plugin \
-    --transform ./main-transform \
-    --globalTransform envify \
+    --transform envify,./main-transform \
     --log tmp/chrome.log \
     --options=--load-extension=${VANADIUM_JS}/extension/build-test/,--ignore-certificate-errors,--enable-logging=stderr"
   local -r PROVA="${VANADIUM_ROOT}/release/projects/namespace_browser/node_modules/.bin/prova"
