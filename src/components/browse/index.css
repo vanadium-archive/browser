@@ -27,6 +27,7 @@
 }
 .browse-details-sidebar::shadow #dropShadow {
   display: none;
+  z-index: -1;
 }
 .browse-details-sidebar::shadow #mainContainer {
   background-color: var(--color-grey-very-light);
@@ -35,7 +36,6 @@
 
 .browse-main-wrapper paper-progress {
   position: absolute;
-  z-index: 500;
   opacity: 0.6;
 }
 
