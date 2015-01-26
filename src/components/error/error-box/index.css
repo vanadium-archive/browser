@@ -1,0 +1,28 @@
+@import "common-style/sizes.css";
+@import "common-style/theme.css";
+
+.error-box-title {
+  display: flex;
+  width: 100%;
+  font-size: var(--size-font-xlarge);
+  color: var(--color-text-secondary);
+}
+
+.error-box-details {
+  width: 100%;
+  font-size: var(--size-font-xsmall);
+  color: var(--color-text-hint);
+  padding: var(--size-space-xxsmall);
+  padding-top: var(--size-space-large);
+}
+
+.error-box {
+  overflow: hidden;
+  word-break: break-word
+}
+
+.error-box-icon {
+  padding-right: var(--size-space-xxsmall);
+  margin-left: -var(--size-space-xxsmall);
+  color: var(--color-error);
+}

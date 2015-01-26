@@ -1,8 +1,10 @@
 var mercury = require('mercury');
 var insertCss = require('insert-css');
+
 var Browse = require('../browse/index');
 var Help = require('../help/index');
 var ErrorPage = require('../error/index');
+
 var css = require('./index.css');
 
 var h = mercury.h;

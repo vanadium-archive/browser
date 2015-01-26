@@ -22,7 +22,7 @@ function methodEnd(state, method, data) {
     return;
   }
 
-  var sig = state.item().serverInfo.signature;
+  var sig = state.signature;
 
   // Otherwise, we'll have to learn from the results and draw them, if possible.
   var numInArgs = sig.get(method).inArgs.length;
@@ -76,7 +76,7 @@ function replaceResult(state, runID, newResult) {
  * Learn from the method inputs to be able to suggest them in the future.
  */
 function learnMethodInput(state, method, args) {
-  var sig = state.item().serverInfo.signature;
+  var sig = state.signature;
   args.forEach(function(value, i) {
     var argName = sig.get(method).inArgs[i].name;
     var input = {
@@ -97,7 +97,7 @@ function learnMethodInput(state, method, args) {
  * Learn from this invocation to be able to suggest them in the future.
  */
 function learnMethodInvocation(state, method, args) {
-  var sig = state.item().serverInfo.signature;
+  var sig = state.signature;
   var input = {
     methodName: method,
     signature: sig,

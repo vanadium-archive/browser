@@ -1,12 +1,13 @@
 var mercury = require('mercury');
 var insertCss = require('insert-css');
 
-var methodNameToVarHashKey = require('./methodNameToVarHashKey.js');
+var methodNameToVarHashKey = require('./methodNameToVarHashKey');
 
 var displayItemDetails = require('./display-item-details');
 var bookmark = require('./bookmark');
 
-var methodForm = require('./method-form/index.js');
+var methodForm = require('./method-form/index');
+var ErrorBox = require('../../error/error-box/index');
 
 var css = require('./index.css');
 var h = mercury.h;
@@ -22,11 +23,36 @@ function create() {
   var state = mercury.varhash({
 
     /*
-     * namespace item to display details for
+     * objectName for the item we are showing details of.
+     * We keep this in addition to item.objectName since item object may not be
+     * present (when in the middle of loading or when failed to load).
+     * Keeping itemName separate allows us to render a header with add/remove
+     * bookmark actions even when item is loading or has failed to load.
+     * @type {string}
+     */
+    itemName: mercury.value(null),
+
+    /*
+     * namespace item to display details for.
      * @see services/namespace/item
      * @type {namespaceitem}
      */
     item: mercury.value(null),
+
+    /*
+     * Any fatal error while getting the details.
+     * Note: will be displayed to user.
+     * @type Error
+     */
+    error: mercury.value(null),
+
+    /*
+     * signature for the item.
+     * It's a map with extra information.
+     * @see services/namespace/signature-adapter
+     * @type {signature}
+     */
+    signature: mercury.value(null),
 
     /*
      * Which tab to display; 0 is for service details
@@ -101,13 +127,16 @@ function render(state, events) {
     var detailsContent = renderDetailsContent(state, events);
 
     var methodsContent;
-    if (state.item.isServer && state.item.serverInfo.isAccessible) {
+    if (state.item.isServer) {
       methodsContent = renderMethodsContent(state, events);
     }
-
     tabContent = [detailsContent, methodsContent];
+  } else if (state.error) {
+    var errorTitle = 'Unable to connect to ' + state.itemName;
+    tabContent = ErrorBox.render(errorTitle, state.error.toString());
   }
 
+  var headerContent = renderHeaderContent(state, events);
   return [h('paper-tabs.tabs', {
       attributes: {
         'selected': state.selectedTabIndex,
@@ -125,7 +154,7 @@ function render(state, events) {
         'selected': state.selectedTabIndex
       }
     }, [
-      h('div.tab-content', tabContent),
+      h('div.tab-content', [headerContent, tabContent]),
     ])
   ];
 }
@@ -134,7 +163,6 @@ function render(state, events) {
  * Renders an action bar on top of the details panel page.
  */
 function renderActions(state, events) {
-  var item = state.item;
 
   // Bookmark action
   var isBookmarked = state.isBookmarked;
@@ -153,12 +181,30 @@ function renderActions(state, events) {
       },
       'ev-click': mercury.event(events.bookmark, {
         bookmark: !isBookmarked,
-        name: item.objectName
+        name: state.itemName
       })
     })
   );
 
   return h('div.icon-group.item-actions', [bookmarkAction]);
+}
+
+
+/*
+ * Renders the header which includes actions and name field.
+ * Header is always displayed, even during loading time or when we fail
+ * to load details for an item.
+ * Note: we should be able to render header without loading signature any
+ * information about the item other than name and whether it is bookmarked.
+ */
+function renderHeaderContent(state, events) {
+  var actions = renderActions(state, events);
+  var headerItems = [
+    actions,
+    renderFieldItem('Name', (state.itemName || '<root>')),
+  ];
+
+  return headerItems;
 }
 
 /*
@@ -176,18 +222,14 @@ function renderDetailsContent(state, events) {
     typeName = 'Intermediary Name';
   }
 
-  var actions = renderActions(state, events);
-
   var displayItems = [
-    actions,
-    renderFieldItem('Name', (item.objectName || '<root>')),
     renderFieldItem('Type', typeName, typeDescription)
   ];
 
-  if (item.isServer) {
+  if (item.isServer && state.signature) {
     // Display each service description and show it.
     var serviceDescs = [];
-    var descs = state.item.serverInfo.signature.pkgNameDescriptions;
+    var descs = state.signature.pkgNameDescriptions;
     Object.keys(descs).forEach(function(pkgName) {
       var desc = descs[pkgName];
 
@@ -238,8 +280,8 @@ function renderMethodsContent(state, events) {
  * making RPCs to the associated service.
  */
 function renderMethodSignatures(state, events) {
-  var sig = state.item.serverInfo.signature;
-  if (!sig) {
+  var sig = state.signature;
+  if (!sig || sig.size === 0) {
     return h('div', h('span', 'No method signature'));
   }
 
@@ -294,7 +336,7 @@ function renderMethodOutput(state) {
   var outputTable = h('table', {
     attributes: {
       'summary': 'Table showing the outputs of methods run on' +
-          'the service. The results are shown in reverse order.'
+        'the service. The results are shown in reverse order.'
     }
   }, outputRows);
   return h('div.method-output', outputTable);

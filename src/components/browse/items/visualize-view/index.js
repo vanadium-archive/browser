@@ -25,8 +25,7 @@ function render(itemsState, browseState, browseEvents, navEvents) {
 }
 
 // Maximum number of levels that are automatically shown
-// TODO(aghassemi) Switch to globbing <namespace>/... instead
-var MAX_AUTO_LOAD_DEPTH = 3;
+var MAX_AUTO_LOAD_DEPTH = 5;
 
 function TreeWidget(browseState, browseEvents) {
   this.browseState = browseState;
@@ -161,8 +160,7 @@ TreeWidget.prototype.loadSubNodes = function(node) {
           label: item.mountedName,
           level: node.level + 1,
           shape: shape,
-          color: color,
-          isGlobbable: item.isGlobbable
+          color: color
         };
       });
       var newEdges = nodesToAdd.map(function(item) {
@@ -174,9 +172,6 @@ TreeWidget.prototype.loadSubNodes = function(node) {
       });
       newNodes.forEach(function(item) {
         // recurse if within the MAX_AUTO_LOAD_DEPTH
-        if (!item.isGlobbable) {
-          return;
-        }
         if (item.level - self.rootNode.level < MAX_AUTO_LOAD_DEPTH) {
           self.loadSubNodes(item);
         } else {

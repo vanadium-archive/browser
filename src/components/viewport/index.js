@@ -4,6 +4,7 @@ var insertCss = require('insert-css');
 var Sidebar = require('../sidebar/index');
 var MainContent = require('../main-content/index');
 var ReportBug = require('../bug-report/index');
+var UserAccount = require('../user-account/index');
 
 var css = require('./index.css');
 
@@ -125,15 +126,8 @@ function renderMainToolbar(state, events) {
       'ev-click': mercury.event(events.viewport.openSidebar)
     }),
     h('h2.title', state.viewport.title),
-    MainContent.renderHeader(state,events),
-    h('core-tooltip.account-name', {
-      attributes: {
-        'label': 'You are logged in as:',
-        'position': 'left'
-      }
-    },
-      h('span', state.userAccount.accountName)
-    )
+    MainContent.renderHeader(state, events),
+    UserAccount.render(state.userAccount)
   ]);
 }
 

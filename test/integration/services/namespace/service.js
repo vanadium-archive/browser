@@ -363,8 +363,6 @@ function assertServer(t, item, vals) {
   } else if(vals.isGlobbable === false) {
     assertIsNotGlobbable(t, item);
   }
-  assertHasSignature(t, item);
-  assertIsAccessible(t, item);
 
   if (vals.type === 'unknown') {
     assertUnknownServiceTypeInfo(t, item);
@@ -408,14 +406,6 @@ function assertIsGlobbable(t, item) {
 
 function assertIsNotGlobbable(t, item) {
   t.equal(item.isGlobbable, false, item.mountedName + ': is not globbable');
-}
-
-function assertHasSignature(t, item) {
-  t.ok(item.serverInfo.signature, item.mountedName + ': has a signature');
-}
-
-function assertIsAccessible(t, item) {
-  t.ok(item.serverInfo.isAccessible, item.mountedName + ': is accessible');
 }
 
 function assertIsImmutable(t, observable) {

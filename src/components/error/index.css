@@ -1,0 +1,5 @@
+@import "common-style/sizes.css";
+
+.error-page {
+  padding: var(--size-space-normal);
+}

@@ -36,6 +36,8 @@ BROWSERIFY_OPTIONS = --transform ./main-transform --debug
 GO_FILES = $(shell find go -name "*.go")
 VDL_FILES = $(shell find go -name "*.vdl")
 
+default: build
+
 # Creating the bundle JS file.
 public/bundle.js: $(BROWSERIFY_FILES) node_modules src/components/help/content/*.md
 	:;jshint src # lint all src JavaScript files.
@@ -93,7 +95,7 @@ test-runner: directories
 # Continuously watch for changes to .js, .html or .css files.
 # Rebundles the appropriate bundles when local files change.
 watch:
-	watch -n 1 make
+	watch -n 1 make build
 
 # Continuously reruns the tests as they change.
 watch-test: go/bin

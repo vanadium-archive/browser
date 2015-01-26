@@ -1,4 +1,10 @@
 var mercury = require('mercury');
+var insertCss = require('insert-css');
+
+var ErrorBox = require('./error-box/index');
+
+var css = require('./index.css');
+
 var h = mercury.h;
 
 module.exports = create;
@@ -23,8 +29,8 @@ function create() {
 }
 
 function render(state) {
-  // TODO(aghassemi)
-  return [
-    h('p', state.message)
-  ];
+  insertCss(css);
+
+  var errorTitle = 'Something went wrong :(';
+  return h('div.error-page', ErrorBox.render(errorTitle, state.message));
 }
