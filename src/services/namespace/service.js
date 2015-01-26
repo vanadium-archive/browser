@@ -21,6 +21,11 @@ module.exports = {
   util: namespaceUtil,
 };
 
+//TODO(aghassemi) What's a good timeout? It should be shorter than this.
+//Can we use ML to dynamically change the timeout?
+//Should this be a user settings?
+var RPC_TIMEOUT = 30 * 1000;
+
 /*
  * Lazy getter and initializer for Veyron runtime
  */
@@ -58,7 +63,7 @@ var globCache = new LRU({
  * the changes.
  *
  * The observable result has an events property which is an EventEmitter
- * and emits 'end', 'streamError' and 'itemError' events.
+ * and emits 'end' and 'streamError' events.
  *
  * @param {string} pattern Glob pattern
  * @return {Promise.<mercury.array>} Promise of an observable array
@@ -95,35 +100,29 @@ function glob(pattern) {
     }).then(function updateResult(globStream) {
       var itemPromises = [];
 
-      globStream.on('data', function createItem(result) {
+      globStream.on('data', function createItem(globResult) {
         // Create an item as glob results come in and add the item to result
-        var createItemPromise = createNamespaceItem(result)
-          .then(function(item) {
-            // TODO(aghassemi) namespace glob can return duplicate results, this
-            // temporary fix keeps the one that's a server. Is this correct?
-            // If a name can be more than one thing, UI needs change too.
-            var existingItem = globItemsObservArr.filter(function(curItem) {
-              return curItem().objectName === item().objectName;
-            }).get(0);
-            if (existingItem) {
-              // override the old one if new item is a server
-              if (item().isServer) {
-                var index = globItemsObservArr.indexOf(existingItem);
-                globItemsObservArr.put(index, item);
-              }
-            } else {
-              globItemsObservArr.push(item);
-            }
-          }).catch(function(err) {
-            globCache.del(cacheKey);
-            immutableResult.events.emit('itemError', {
-              name: result.name,
-              error: err
-            });
-            log.error('Failed to create item for "' + result.name + '"', err);
-          });
+        var result = createNamespaceItem(globResult);
+        var item = result.item;
+        var onFinishPromise = result.onFinish;
 
-        itemPromises.push(createItemPromise);
+        // TODO(aghassemi) namespace glob can return duplicate results, this
+        // temporary fix keeps the one that's a server. Is this correct?
+        // If a name can be more than one thing, UI needs change too.
+        var existingItem = globItemsObservArr.filter(function(curItem) {
+          return curItem().objectName === item().objectName;
+        }).get(0);
+        if (existingItem) {
+          // override the old one if new item is a server
+          if (item().isServer) {
+            var index = globItemsObservArr.indexOf(existingItem);
+            globItemsObservArr.put(index, item);
+          }
+        } else {
+          globItemsObservArr.push(item);
+        }
+
+        itemPromises.push(onFinishPromise);
       });
 
       globStream.on('end', function() {
@@ -167,9 +166,6 @@ function getNamespaceItem(objectName) {
     // Wait until the glob finishes before returning the item
     return new Promise(function(resolve, reject) {
       resultsObs.events.on('streamError', function(err) {
-        reject(err);
-      });
-      resultsObs.events.on('itemError', function(err) {
         reject(err);
       });
       resultsObs.events.on('end', function() {
@@ -239,7 +235,7 @@ function getSignature(objectName) {
     return Promise.resolve(cacheHit);
   }
   return getRuntime().then(function invokeSignatureMethod(rt) {
-    var ctx = veyron.context.Context();
+    var ctx = veyron.context.Context().withTimeout(RPC_TIMEOUT);
     var client = rt.newClient();
     return client.signature(ctx, objectName);
   }).then(function cacheAndReturnSignature(signatures) {
@@ -306,11 +302,11 @@ function isGlobbable(objectName) {
  */
 function makeRPC(name, methodName, args) {
   return getRuntime().then(function bindToName(rt) {
-    var ctx = veyron.context.Context();
+    var ctx = veyron.context.Context().withTimeout(RPC_TIMEOUT);
     return rt.bindTo(ctx, name);
   }).then(function callMethod(service) {
     log.debug('Calling', methodName, 'on', name, 'with', args);
-    var ctx = veyron.context.Context();
+    var ctx = veyron.context.Context().withTimeout(RPC_TIMEOUT);
     args.unshift(ctx);
     return service[methodName].apply(null, args);
   }).then(function returnResult(result) {
@@ -325,60 +321,62 @@ function makeRPC(name, methodName, args) {
  * "bar/baz/foo"
  * @param {MountEntry} mountEntry The mount entry from glob results.
  * @param {Array<string>} List of server addresses this name points to, if any.
- * @return {mercury.struct}
+ * @return item: {mercury.struct} onFinish: {Promise<bool>} Promise indicating
+ * we have loaded all the information including the async ones for the item.
  */
 function createNamespaceItem(mountEntry) {
 
   var name = mountEntry.name;
+
   // mounted name relative to parent
   var mountedName = namespaceUtil.basename(name);
   var servers = mountEntry.servers;
 
-  // Find out if the object referenced by name is globbable and get
-  // server related information about it.
+  // get server related information.
   var isServer = servers.length > 0;
-  return Promise.all([
-    (!isServer ? Promise.resolve(true) : isGlobbable(name)),
-    (isServer ? getServerInfo(name, mountEntry) : Promise.resolve(null))
-  ]).then(function(results) {
-    return itemFactory.createItem({
-      objectName: name,
-      mountedName: mountedName,
-      isGlobbable: results[0],
-      isServer: isServer,
-      serverInfo: results[1]
-    });
+  var serverInfo = null;
+  if (isServer) {
+    serverInfo = getServerInfo(name, mountEntry);
+  }
+
+  var item = itemFactory.createItem({
+    objectName: name,
+    mountedName: mountedName,
+    isGlobbable: false,
+    isServer: isServer,
+    serverInfo: serverInfo
   });
+
+  // find out if the object referenced by name is globbable asynchronously and
+  // update the state when it comes back
+  var onFinishPromise = isGlobbable(name).then(function(isGlobbable) {
+    item.isGlobbable.set(isGlobbable);
+    return true;
+  }).catch(function() {
+    return true;
+  });
+
+  return {
+    item: item,
+    onFinish: onFinishPromise
+  };
 }
 
 /*
  * Creates an observable struct representing information about a server such as
- * type information, signature, etc...
+ * type information
  * @see item.js for details.
  * @param {string} objectName Object name to get serverInfo for.
  * @param {MountEntry} mountEntry mount entry to item to get serverInfo for.
  * @return {mercury.struct}
  */
 function getServerInfo(objectName, mountEntry) {
-  var signature;
-  var isAccessible;
-  return getSignature(objectName).then(function gotSignature(sig) {
-    signature = sig;
-    isAccessible = true;
-    return getServerTypeInfo(sig, mountEntry);
-  }, function failedToGetSignature(err) {
-    signature = adaptSignature([]);
-    //TODO(aghassemi): We should at least be able to tell if inaccessible
-    //because not authorized vs other reasons.
-    isAccessible = false;
-    return createUnknownServiceTypeInfo();
-  }).then(function(serverTypeInfo) {
-    return itemFactory.createServerInfo({
-      typeInfo: serverTypeInfo,
-      signature: signature,
-      isAccessible: isAccessible
-    });
+  var typeInfo = getServerTypeInfo(mountEntry);
+  var serverInfo = itemFactory.createServerInfo({
+    typeInfo: typeInfo
   });
+
+  return serverInfo;
 }
 
 /*
@@ -387,11 +385,10 @@ function getServerInfo(objectName, mountEntry) {
  * would have information such as a key, human readable name and description for
  * the type of server.
  * @see item.js for details.
- * @param {Signature} signature signature to get serverTypeInfo for.
  * @param {MountEntry} mountEntry mount entry to get serverTypeInfo for.
  * @return {mercury.struct}
  */
-function getServerTypeInfo(signature, mountEntry) {
+function getServerTypeInfo(mountEntry) {
   // Currently we only support detecting mounttables which is
   // based on a "MT" flag that comes from the Glob API. Mounttables are special
   // in a sense that we fundamentally "know" they are a mounttable.

@@ -37,16 +37,11 @@ function render(item, browseState, browseEvents, navEvents, showShortName) {
   }
 
   // Prepare tooltip and service icon information for the item.
-  var isAccessible = true;
   var itemTooltip = item.objectName;
   var iconCssClass = '.service-type-icon';
   var iconAttributes = {};
 
   if (item.isServer) {
-    isAccessible = item.serverInfo.isAccessible;
-    if (!isAccessible) {
-      itemTooltip += ' - Service seems to be offline or inaccessible';
-    }
     iconAttributes.attributes = {
       title: item.serverInfo.typeInfo.typeName,
       icon: getServiceIcon(item.serverInfo.typeInfo.key)
@@ -63,8 +58,7 @@ function render(item, browseState, browseEvents, navEvents, showShortName) {
 
   // Put the item card's pieces together.
   var itemClassNames = 'item.card' +
-    (selected ? '.selected' : '') +
-    (!isAccessible ? '.inaccessible' : '');
+    (selected ? '.selected' : '');
 
   var cardLabel = (showShortName ? item.mountedName : item.objectName) ||
     '<root>';

@@ -34,23 +34,16 @@ function createItem(obj) {
 }
 
 /*
- * Creates an observable struct representing information about a server such as
- * type information, signature, etc...
+ * Creates an observable struct representing type information about a server.
  *
  * @param {mercury.struct} obj.typeInfo. Struct representing the type of the
  * server. ServerTypeInfo includes key, name, description, icon, etc..
  * @see #createServerTypeInfo method for details on typeInfo.
- * @param {object} obj.signature object representing the method signature of the
- * server.
- * @param {boolean} obj.isAccessible Whether the server instance is online and
- * accessible by the user.
  * @return {mercury.struct}
  */
 function createServerInfo(obj) {
   return mercury.struct({
     typeInfo: obj.typeInfo,
-    signature: mercury.value(obj.signature),
-    isAccessible: mercury.value(obj.isAccessible)
   });
 }
 
