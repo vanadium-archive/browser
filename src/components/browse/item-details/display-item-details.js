@@ -16,7 +16,7 @@ var log = require('../../../lib/log')(
 module.exports = displayItemDetails;
 
 // Holds name of the last requested name.
-var lastRequestedName = '';
+var lastRequestedName;
 
 /*
  * Ask the namespaceService for a service signature.
@@ -24,6 +24,12 @@ var lastRequestedName = '';
  */
 function displayItemDetails(state, events, data) {
   var name = data.name;
+
+  // Return if we are already on that item.
+  if (isCurrentlySelected()) {
+    return;
+  }
+
   lastRequestedName = name;
 
   state.put('error', null);
