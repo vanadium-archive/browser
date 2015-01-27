@@ -304,7 +304,8 @@ function isGlobbable(objectName) {
 function makeRPC(name, methodName, args) {
   return getRuntime().then(function bindToName(rt) {
     var ctx = veyron.context.Context().withTimeout(RPC_TIMEOUT);
-    return rt.bindTo(ctx, name);
+    var client = rt.newClient();
+    return client.bindTo(ctx, name);
   }).then(function callMethod(service) {
     log.debug('Calling', methodName, 'on', name, 'with', args);
     var ctx = veyron.context.Context().withTimeout(RPC_TIMEOUT);
