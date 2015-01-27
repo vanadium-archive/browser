@@ -38,12 +38,14 @@ function createItem(obj) {
  *
  * @param {mercury.struct} obj.typeInfo. Struct representing the type of the
  * server. ServerTypeInfo includes key, name, description, icon, etc..
+ * @param {mercury.array<string>} obj.endpoints List of the server's endpoints.
  * @see #createServerTypeInfo method for details on typeInfo.
  * @return {mercury.struct}
  */
 function createServerInfo(obj) {
   return mercury.struct({
     typeInfo: obj.typeInfo,
+    endpoints: obj.endpoints
   });
 }
 

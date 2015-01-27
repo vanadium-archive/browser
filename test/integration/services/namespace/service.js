@@ -393,6 +393,8 @@ function assertObjectName(t, item, val) {
 function assertIsServer(t, item) {
   t.equal(item.isServer, true, item.mountedName + ': is a server');
   t.ok(item.serverInfo, item.mountedName + ': has server info');
+  t.ok(item.serverInfo.endpoints.length > 0, item.mountedName +
+    ': has at least 1 endpoint');
 }
 
 function assertIsNotServer(t, item) {

@@ -373,8 +373,10 @@ function createNamespaceItem(mountEntry) {
  */
 function getServerInfo(objectName, mountEntry) {
   var typeInfo = getServerTypeInfo(mountEntry);
+  var endpoints = getEndpoints(mountEntry);
   var serverInfo = itemFactory.createServerInfo({
-    typeInfo: typeInfo
+    typeInfo: typeInfo,
+    endpoints: endpoints
   });
 
   return serverInfo;
@@ -408,6 +410,20 @@ function getServerTypeInfo(mountEntry) {
   } else {
     return createUnknownServiceTypeInfo();
   }
+}
+
+/**
+ * Creates an observable array with the endpoints of the mountEntry.
+ * @param {MountEntry} mountEntry mount entry with server endpoints.
+ * @return {mercury.array} Mercury array containing the endpoints.
+ */
+function getEndpoints(mountEntry) {
+  // Convert the endpoints into a mercury list.
+  return mercury.array(
+    mountEntry.servers.map(function(endpoint) {
+      return mercury.value(endpoint.server);
+    })
+  );
 }
 
 function createUnknownServiceTypeInfo() {

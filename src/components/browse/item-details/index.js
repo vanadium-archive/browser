@@ -212,6 +212,24 @@ function renderHeaderContent(state, events) {
  * Note: Currently renders in the same tab as renderMethodsContent.
  */
 function renderDetailsContent(state, events) {
+  var displayItems = [];
+  displayItems.push(renderTypeFieldItem(state));
+  if (state.item.isServer) {
+    displayItems.push(renderEndpointsFieldItem(state));
+    if (state.signature) {
+      displayItems.push(renderInterfacesFieldItem(state));
+    }
+  }
+  return [
+    h('div', displayItems)
+  ];
+}
+
+/*
+ * Renders the Type Field Item. Includes the type name of the service and its
+ * description. Non-servers receive a default type name instead.
+ */
+function renderTypeFieldItem(state) {
   var item = state.item;
   var typeName;
   var typeDescription;
@@ -222,19 +240,51 @@ function renderDetailsContent(state, events) {
     typeName = 'Intermediary Name';
   }
 
-  var displayItems = [
-    renderFieldItem('Type', typeName, typeDescription)
-  ];
+  return renderFieldItem('Type', typeName, typeDescription);
+}
 
-  if (item.isServer && state.signature) {
-    // Display each service description and show it.
-    var serviceDescs = [];
-    var descs = state.signature.pkgNameDescriptions;
-    Object.keys(descs).forEach(function(pkgName) {
+/*
+ * Renders the Endpoints Field Item, a simple listing of the server's endpoints.
+ */
+function renderEndpointsFieldItem(state) {
+  var item = state.item;
+  var endpointDivs;
+  if (item.serverInfo.endpoints.length === 0) {
+    endpointDivs = [
+      h('div', h('span', 'No endpoints found'))
+    ];
+  } else {
+    // Show 1 div per server endpoint.
+    endpointDivs = item.serverInfo.endpoints.map(function(endpoint) {
+      return h('div', h('span', endpoint));
+    });
+  }
+  return renderFieldItem('Endpoints', h('div', {
+    attributes: {
+      'vertical': true,
+      'layout': true
+    }
+  }, endpointDivs));
+}
+
+/*
+ * Renders the Interfaces Field Item, a listing of the interfaces that the
+ * server implements, including VDL descriptions of the interfaces.
+ */
+function renderInterfacesFieldItem(state) {
+  var serviceDescDivs;
+  var descs = state.signature.pkgNameDescriptions;
+  var pkgNames = Object.keys(descs);
+  if (pkgNames.length === 0) {
+    serviceDescDivs = [
+      h('div', h('span', 'No interfaces implemented'))
+    ];
+  } else {
+    // Go through each pkgName and show the tooltip for that interface.
+    serviceDescDivs = pkgNames.map(function(pkgName) {
       var desc = descs[pkgName];
 
-      // Use an info icon whose tooltip reveals the description.
-      serviceDescs.push(h('div', [
+      return h('div', [
         h('core-tooltip.tooltip.field-tooltip', {
           'label': desc || '<no description>',
           'position': 'right'
@@ -244,24 +294,16 @@ function renderDetailsContent(state, events) {
           }
         })),
         h('span.margin-left-xxsmall', pkgName)
-      ]));
+      ]);
     });
-
-    if (serviceDescs.length > 0) {
-      displayItems.push(
-        renderFieldItem('Interfaces', h('div', {
-          attributes: {
-            'vertical': true,
-            'layout': true
-          }
-        }, serviceDescs))
-      );
-    }
   }
 
-  return [
-    h('div', displayItems)
-  ];
+  return renderFieldItem('Interfaces', h('div', {
+    attributes: {
+      'vertical': true,
+      'layout': true
+    }
+  }, serviceDescDivs));
 }
 
 /*
