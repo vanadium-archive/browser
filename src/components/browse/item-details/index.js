@@ -2,12 +2,13 @@ var mercury = require('mercury');
 var insertCss = require('insert-css');
 
 var methodNameToVarHashKey = require('./methodNameToVarHashKey');
-
 var displayItemDetails = require('./display-item-details');
 var bookmark = require('./bookmark');
 
 var methodForm = require('./method-form/index');
 var ErrorBox = require('../../error/error-box/index');
+
+var namespaceUtil = require('../../../services/namespace/service').util;
 
 var css = require('./index.css');
 var h = mercury.h;
@@ -30,7 +31,7 @@ function create() {
      * bookmark actions even when item is loading or has failed to load.
      * @type {string}
      */
-    itemName: mercury.value(null),
+    itemName: mercury.value(''),
 
     /*
      * namespace item to display details for.
@@ -137,6 +138,8 @@ function render(state, events) {
   }
 
   var headerContent = renderHeaderContent(state, events);
+  var formattedTabTitle = (namespaceUtil.basename(state.itemName) || '<root>') +
+    ' - Details';
   return [h('paper-tabs.tabs', {
       attributes: {
         'selected': state.selectedTabIndex,
@@ -147,7 +150,7 @@ function render(state, events) {
         'ev-click': mercury.event(events.tabSelected, {
           index: 0
         })
-      }, 'Service Details')
+      }, formattedTabTitle)
     ]),
     h('core-selector', {
       attributes: {
