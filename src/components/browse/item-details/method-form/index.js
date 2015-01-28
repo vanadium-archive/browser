@@ -319,8 +319,36 @@ function render(state, events) {
  * Wrap the method form with a tooltip.
  */
 function makeMethodTooltip(state, child) {
+  // The tooltip contains the documentation for the method name.
+  var methodSig = state.signature.get(state.methodName);
+  var tooltip = methodSig.doc || '<no description>';
+
+  // If the method takes input, add documentation about the input arguments.
+  if (methodSig.inArgs.length > 0) {
+    tooltip += '\n\nParameters';
+    methodSig.inArgs.forEach(function(inArg) {
+      tooltip += '\n';
+      tooltip += '- ' + inArg.name + ': ' + inArg.type.toString();
+      if (inArg.doc) {
+        tooltip += '  ' + inArg.doc;
+      }
+    });
+  }
+
+  // If the method returns output, add documentation about the output arguments.
+  if (methodSig.outArgs.length > 0) {
+    tooltip += '\n\nOutput';
+    methodSig.outArgs.forEach(function(outArg) {
+      tooltip += '\n';
+      tooltip += '- ' + outArg.name + ': ' + outArg.type.toString();
+      if (outArg.doc) {
+        tooltip += '  ' + outArg.doc;
+      }
+    });
+  }
+
   return h('core-tooltip.tooltip.method-tooltip', {
-    'label': state.signature.get(state.methodName).doc || '<no description>',
+    'label': tooltip,
     'position': 'top'
   }, child);
 }
@@ -350,25 +378,31 @@ function renderMethodHeader(state, events) {
 
 /*
  * Extracts a pretty-printed version of the method signature.
- * args is an optional parameter.
+ * If the method has no input args, print the name
+ * If the method does have input args, also show parentheses
+ * @args is an optional list whose elements are also printed out.
  */
 function getMethodSignature(state, args) {
   var methodName = state.methodName;
   var param = state.signature.get(methodName);
-  var text = methodName + '(';
-  for (var i = 0; i < param.inArgs.length; i++) {
-    var arg = '';
-    if (args !== undefined) {
-      arg = args[i];
-    } else {
-      arg = param.inArgs[i].name + ' ' + param.inArgs[i].type.toString();
-    }
-    if (i > 0) {
-      text += ', ';
-    }
-    text += arg;
+  var text = methodName;
+  var hasArgs = (param.inArgs.length > 0);
+  if (hasArgs) {
+    text += '(';
   }
-  text += ')';
+  if (args !== undefined) {
+    for (var i = 0; i < param.inArgs.length; i++) {
+      if (i > 0) {
+        text += ', ';
+      }
+      text += args[i];
+    }
+  } else if (hasArgs) {
+    text += '...';
+  }
+  if (hasArgs) {
+    text += ')';
+  }
   if (param.inStream || param.outStream) {
     text += ' - streaming';
   }
@@ -429,7 +463,7 @@ function renderInvocation(state, events, argsStr) {
   var starred = state.starred.indexOf(argsStr) !== -1;
   var starButton = h('a.drill.star', {
     'href': 'javascript:;',
-    'title': starred ? 'Unstar' : 'Star',
+    'title': starred ? 'Forget Method Call' : 'Save Method Call',
     'ev-click': mercury.event(events.starAction, {
       argsStr: argsStr,
       star: !starred
@@ -443,9 +477,7 @@ function renderInvocation(state, events, argsStr) {
  * Render a method label using labelText.
  */
 function makeMethodLabel(labelText) {
-  return h('div.label', {
-    'title': labelText
-  }, labelText);
+  return h('div.label', labelText);
 }
 
 /*
@@ -454,7 +486,9 @@ function makeMethodLabel(labelText) {
  */
 function renderMethodInput(state, index) {
   var methodName = state.methodName;
-  var argName = state.signature.get(methodName).inArgs[index].name;
+  var inArg = state.signature.get(methodName).inArgs[index];
+  var argName = inArg.name;
+  var argTypeStr = inArg.type.name || inArg.type.toString();
   var inputSuggestions = state.inputSuggestions[index];
   var args = state.args;
 
@@ -474,7 +508,7 @@ function renderMethodInput(state, index) {
   // That means spurious 'change' and 'input' events may appear occasionally.
   var elem = h('paper-autocomplete.method-input-item.autocomplete', {
     'key': state.itemName, // Enforce element refresh when switching items
-    'label': argName,
+    'label': argName + ' (' + argTypeStr + ')',
     'value': args[index],
     'ev-change': changeEvent
   }, children);
@@ -499,7 +533,7 @@ function renderStarUserInputButton(state, events) {
     },
     [
       renderStarIcon(false),
-      h('span', 'Star')
+      h('span', 'Save')
     ]
   );
   return starButton;
@@ -542,10 +576,10 @@ function getRunEvent(state, events, args) {
  * Render a star icon.
  */
 function renderStarIcon(starred) {
-  return h('core-icon.action-icon', {
+  return h('core-icon.action-icon' + (starred ? '.starred' : ''), {
     attributes: {
       'icon': starred ? 'star' : 'star-outline',
-      'alt': starred ? 'starred' : 'not starred'
+      'alt': starred ? 'saved' : 'recommended'
     }
   });
 }

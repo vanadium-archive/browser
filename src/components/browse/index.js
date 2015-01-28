@@ -195,7 +195,7 @@ function loadLearners() {
     'learner-method-invocation',
     smartService.constants.LEARNER_METHOD_INVOCATION, {
       minThreshold: 0.25,
-      maxValues: 2
+      maxValues: 1
     }
   ).catch(function(err) {
     log.error(err);

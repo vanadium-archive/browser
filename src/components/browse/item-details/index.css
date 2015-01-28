@@ -27,7 +27,6 @@ paper-icon-button.bookmarked {
   display: inline-block;
   vertical-align: top;
   width: 18em;
-  overflow: hidden;
 }
 
 .tooltip.field-tooltip::shadow .core-tooltip, .tooltip.method-tooltip::shadow .core-tooltip {
@@ -81,14 +80,14 @@ paper-icon-button.bookmarked {
   white-space: pre-wrap;
 }
 
-.method-input .invocation {
+.method-input .item.card.invocation {
   margin-top: 0em;
   margin-bottom: 0em;
   height: 2em;
   margin-top: var(--size-space-xxsmall);
 }
 
-.method-input .invocation .label {
+.method-input .item.card.invocation .label {
   font-size: var(--size-font-small);
 }
 
@@ -100,7 +99,7 @@ core-icon.error {
   color: var(--color-error);
 }
 
-core.icon.starred {
+core-icon.starred {
   color: var(--color-bright);
 }
 
