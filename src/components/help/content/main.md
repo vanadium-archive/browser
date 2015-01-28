@@ -2,20 +2,19 @@ Introduction
 ------------
 
 The Viz Vanadium Viewer is a tool to browse and interact with Vanadium services.
-See the Vanadium documentation for more information.
+See the [Vanadium documentation](http://staging.v.io) for more information.
 
 Mount Tables
 ------------
 
 One special kind of Vanadium service is a *mount table*, which contains
 distributed pointers to other services (including other mount tables).
-
 Each item in a mount table can be one of three things:
 * a distributed pointer to another mount table
 * a distributed pointer to a Vanadium service (other than a mount table)
 * a folder (intermediary name)
 
-Folders are used to group items together, like in a file system
+<br />Folders are used to group items together, like in a file system
 on a computer.
 The name used to identify a folder is called an "intermediary name" (like
 a directory name). Folders in a mount table can only contain other items
@@ -36,6 +35,10 @@ Names in Vanadium are a sequence of simple names separated by slashes (/)
 (see https://v.io/docs/core-concepts/naming.html for more information).
 
 Names in Vanadium can either be *rooted* or *relative*.
+
+Rooted Names
+------------
+
 A rooted name begins with a slash (/), while a relative name does not.
 The name following the initial slash of a rooted name is the *root*.
 A root can be specified three ways:

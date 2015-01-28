@@ -21,7 +21,7 @@ Additional modes are planned for the future.
 
 In Browse mode, the header also shows the current Vanadium name being used
 as the root of the namespace.
-This can be a mount table, or an intermediary name in a mount table.
+This can be a mount table or an intermediary name in a mount table.
 You can type a Vanadium name into this field, or you can select a name
 using the Bookmarks or Recommendations tools. If this field is empty,
 it defaults to the Home mount table for the current environment.
@@ -57,4 +57,9 @@ you can set a bookmark on it by clicking the bookmark icon in the right pane.
 Recommendations uses machine intelligence to suggest interesting items.
 
 Lastly, you can use glob syntax to search for items.
-[TODO(wm): need details and examples]
+For example, you are in a namespace that represents a house.
+Under the house namespace are a number of rooms
+(bedroom, kitchen, living room, etc.) and under each room are things like
+lights, smoke detectors, thermostats, and speakers.
+To search for the lights in all rooms, you could search for "*/lights".
+Note that currently you can search only at a single level.
