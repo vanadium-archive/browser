@@ -37,18 +37,24 @@ author: wmleler@
     <link rel="stylesheet" href="tree-node.css">
     <div class="indent" aria-expanded="{{open}}"
         aria-owns="{{isParent && open?'children':''}}">
-      <core-icon id="expander" on-tap="{{openme}}"
-          class="{{isParent?'':'notParent'}}"
-          icon="{{open?'arrow-drop-down-circle':'add-circle'}}"
-          alt="{{open?'collapse':'expand'}}">
-      </core-icon>
-      <span on-tap="{{activate}}" role="treeitem" aria-selected="{{highlight}}"
-          class="item{{highlight?' highlight':''}}" title="{{itemtitle}}">
-        <template if="{{icon}}">
-          <core-icon class="itemicon" icon="{{icon}}" alt="{{iconalt}}"></core-icon>
-        </template>
-        {{label}}
-      </span>
+      <div class="row">
+        <core-icon id="expander" on-tap="{{openme}}"
+            class="{{isParent?'':'notParent'}}"
+            icon="{{open?'expand-less':'expand-more'}}"
+            alt="{{open?'collapse':'expand'}}">
+        </core-icon>
+        <span on-tap="{{activate}}" role="treeitem" aria-selected="{{highlight}}"
+            class="item{{highlight?' highlight':''}}" title="{{itemtitle}}">
+          <span class="itemcontent">
+            <template if="{{icon}}">
+              <core-icon class="itemicon" icon="{{icon}}" alt="{{iconalt}}"></core-icon>
+            </template>
+            <span class="itemtext">
+              {{label}}
+            </span>
+          </span>
+        </span>
+      </div>
       <template if="{{isParent && open}}">
         <div id="children" role="group">
           <content></content>

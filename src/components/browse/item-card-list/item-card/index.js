@@ -29,7 +29,7 @@ function render(item, browseState, browseEvents, navEvents, showShortName) {
       'ev-click': mercury.event(navEvents.navigate, {
         path: url
       })
-    }, h('core-icon.icon', {
+    }, h('core-icon.action-icon', {
       attributes: {
         'icon': 'chevron-right'
       }

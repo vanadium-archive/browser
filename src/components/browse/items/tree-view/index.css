@@ -1,0 +1,21 @@
+@import "common-style/sizes.css";
+@import "common-style/theme.css";
+
+tree-node::shadow .item {
+  color: var(--color-text-primary);
+  padding: var(--size-space-xxsmall) var(--size-space-xsmall);
+}
+
+tree-node::shadow .highlight {
+  color: var(--color-text-primary-invert);
+  background-color: var(--color-bright);
+}
+
+tree-node::shadow .highlight .itemicon {
+  color: var(--color-text-primary-invert);
+}
+
+tree-node::shadow .itemicon {
+  color: var(--color-text-secondary);
+  transform: scale(0.7);
+}

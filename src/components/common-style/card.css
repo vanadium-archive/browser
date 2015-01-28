@@ -30,7 +30,7 @@
 }
 .item .drill {
   width: 1.5em;
-  background-color: var(--color-grey-light);
+  background-color: var(--color-icon-button);
   border-left: var(--border);
 }
 
@@ -38,16 +38,24 @@
   background-color: var(--color-bright);
 }
 
-.item a:hover, .item a:focus{
-  opacity: 0.7;
-}
-
-.item.card .icon {
+.item.card .action-icon {
   align-self: center;
   padding-right: 0.5em;
+}
+
+.item.selected.card .action-icon {
+  color: var(--color-text-primary-invert);
 }
 
 .item.selected.card {
   background-color: var(--color-bright);
   color: var(--color-text-primary-invert);
+}
+
+.item.selected.card .drill {
+  border-color: var(--color-text-hint);
+}
+
+.item.card a:hover {
+  opacity: 0.7;
 }

@@ -47,7 +47,7 @@
   width: 90%; /* force view onto next line */
   font-size: var(--size-font-large);
   color: var(--color-text-heading);
-  padding: 0.5em 0em 0em 0.75em;
+  padding: var(--size-space-xsmall);
   text-decoration: none;
 }
 
@@ -101,7 +101,7 @@
 }
 
 .namespace-box {
-  background: var(--color-white-transparent);
+  background: var(--color-grey-very-light);
   font-size: var(--size-font-xsmall);
   padding: var(--size-space-xxsmall) var(--size-space-small);
   margin-left: var(--size-space-xxlarge) !important;
@@ -128,6 +128,10 @@
   color: var(--color-text-secondary);
   padding: var(--size-space-xxsmall);
   margin:0 var(--size-space-xxsmall);
+}
+
+.icon-group paper-icon-button::shadow #ripple{
+  color: var(--color-bright);
 }
 
 .icon-group paper-icon-button:hover, .icon-group paper-icon-button:focus {

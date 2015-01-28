@@ -5,6 +5,6 @@
   position: absolute;
   right: var(--size-space-xxsmall);
   top: var(--size-space-xxsmall);
-  color: var(--color-text-secondary);
+  color: var(--color-text-primary-invert);
   font-size: var(--size-font-xsmall);
 }

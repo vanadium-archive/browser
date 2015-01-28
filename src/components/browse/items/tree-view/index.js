@@ -1,10 +1,12 @@
 var mercury = require('mercury');
+var insertCss = require('insert-css');
 var extend = require('extend');
 
 var polymerEvent = require('../../../../lib/mercury/polymer-event');
 var loadChildren = require('./load-children');
 var getServiceIcon = require('../../get-service-icon');
 
+var css = require('./index.css');
 var h = mercury.h;
 
 module.exports = create;
@@ -53,6 +55,8 @@ function create() {
 }
 
 function render(state, events, browseState, browseEvents) {
+  insertCss(css);
+
   var item = state.rootItem;  // start at the root
   if (item === null) { return; }  // TODO(wm) Maybe show "Loading..."?
 

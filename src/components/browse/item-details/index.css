@@ -92,20 +92,16 @@ paper-icon-button.bookmarked {
   font-size: var(--size-font-small);
 }
 
-core-icon.run {
-  color: var(--color-ok);
-}
-
-core-icon.star {
-  color: var(--color-bright);
+core-icon.info {
+  color: var(--color-info);
 }
 
 core-icon.error {
   color: var(--color-error);
 }
 
-core-icon.info {
-  color: var(--color-dark);
+core.icon.starred {
+  color: var(--color-bright);
 }
 
 /* Chrome, Safari, Opera */

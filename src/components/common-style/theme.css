@@ -1,5 +1,6 @@
 /* CSS variables for the color theme of the application.
- * Many color values come from Material Design
+ * Many color values come from Material Design and Vanadium Style Guide
+ * See https://docs.google.com/a/google.com/uc?id=0B-KEC9O0kcv5aUZTSHNYN3VyS2s
  * See http://www.google.com/design/spec/style/color.html
  */
 :root {
@@ -8,54 +9,60 @@
   /*
    * Text colors
    */
-  /* Regular text such as paragraphs, values, svg icons. Off-black */
+  /* Regular text such as paragraphs, values. Off-black */
   --color-text-primary: rgba(0, 0, 0, 0.87);
 
-  /* Secondary text such as headings and labels. Lighter grey than text-primary */
+  /* Secondary text such as labels, action icons. Lighter grey than text-primary */
   --color-text-secondary: rgba(0, 0, 0, 0.54);
 
   /* Hint text such as inline help text. Lighter grey than text-secondary */
   --color-text-hint: rgba(0, 0, 0, 0.26);
 
-  /* Invert of text-primary to be used for regular text on darker backgrounds or to indicate highlighting. Off-white */
-  --color-text-primary-invert: #fafafa;
+  /* Invert of text-primary to be used for regular text on darker backgrounds or to indicate highlighting. white */
+  --color-text-primary-invert: var(--color-white);
 
   /* Link text. Light Blue and a lighter hover version */
-  --color-text-link: #03a9f4;
-  --color-text-link-hover: #40c4ff;
+  --color-text-link: #0288D1;
+  --color-text-link-hover: #03A9F4;
 
-  /* Heading text. Darker blue */
-  --color-text-heading: #0288d1;
+  /* Heading text. Same as the main dark color. Dark purple */
+  --color-text-heading: var(--color-dark);
 
   /*
    * Layout colors
    */
-  /* White. Use where-ever traditionally regular white is used such as reading backgrounds. Off-white */
-  --color-white: #fafafa;
+  /* White. Use where-ever traditionally regular white is used such as reading backgrounds. White */
+  --color-white: #ffffff;
 
-  /* Transparent white. Alpha channel for opacity. Use to pseudo-inherit the parent container's background-color. */
-  --color-white-transparent: rgba(250, 250, 250, 0.7);
+  /* Dark Primary background color for top-level status bar and primary buttons. Dark purple */
+  --color-dark: #4A068E;
 
-  /* Dark Primary background color for top-level status bar. Material Design level 700 of the primary color. Dark Blue */
-  --color-dark: #0288d1;
-
-  /* Main Primary background color for tabs and larger color blocks. Material Design level 500 of the primary color. Light Blue */
-  --color-main: #03a9f4;
-
-  /* Bright accent background color for highlighting and primary action buttons. Material Design level A200 of a bright accent color. Bright Orange */
-  --color-bright: #ffab40;
-
-  /* Deep accent background color for deep highlighting. Material Design level A700 of a bright accent color. Deep Bright Orange */
-  --color-bright-deep: #ff6d00;
+  /* Bright accent background color for highlighting. Bright purple */
+  --color-bright: #6B0E9C;
 
   /* Divider color for separators and borders. Grey */
   --color-divider: rgba(0, 0, 0, 0.12);
 
-  /* Light Grey. Use as background color for buttons and actionable icons */
-  --color-grey-light: #eeeeee;
+  /*
+   * Button colors
+   */
+  /* Primary button colors, main dark color background with white text */
+  --color-button-primary: var(--color-dark);
+  --color-button-primary-text: var(--color-white);
 
-  /* Very Light Grey. Use as background color where-ever darker shade of off-white is needed such as toolbars and secondary reading backgrounds */
-  --color-grey-very-light: #f7f7f7;
+  /* Primary button colors, white background with main dark color text */
+  --color-button-secondary: var(--color-white);
+  --color-button-secondary-text: var(--color-dark);
+
+
+  /* Dark Grey for secondary boxes like tabs. */
+  --color-grey-dark: #263238;
+
+  /* Very Light Grey. Use as background color where-ever darker shade of white is needed such as toolbars and secondary reading backgrounds */
+  --color-grey-very-light: #ECEFF1;
+
+  /* Icon button colors. Use as background color for actionable icons. */
+  --color-icon-button: var(--color-grey-very-light);
 
   /*
    * Shadows
@@ -72,9 +79,12 @@
   /*
    * Miscellaneous colors
    */
-  /* Color used to indicate errors. */
-  --color-error: crimson;
+  /* Redish color used to indicate errors. */
+  --color-error: #D32F2F;
 
-  /* Color used to indicate success or an action the user can initiate */
-  --color-ok: green;
+  /* Greenish color used to indicate success or an action the user can initiate */
+  --color-ok: #388E3C;
+
+  /* Blueish color used to indicate neutral information */
+  --color-info: #0277BD;
 }

@@ -310,7 +310,7 @@ function render(state, events) {
   var starButton = renderStarUserInputButton(state, events);
   var runButton = renderRPCRunButton(state, events);
 
-  var footer = h('div.method-input-expanded', [argForm, starButton, runButton]);
+  var footer = h('div.method-input-expanded', [argForm, runButton, starButton]);
   return makeMethodTooltip(state,
     h('div.method-input', [methodNameHeader, recs, footer]));
 }
@@ -339,7 +339,7 @@ function renderMethodHeader(state, events) {
     'href': 'javascript:;',
     'title': state.expanded ? 'Hide form' : 'Show form',
     'ev-click': mercury.event(events.expandAction)
-  }, h('core-icon.icon', {
+  }, h('core-icon.action-icon', {
     attributes: {
       'icon': state.expanded ? 'expand-less' : 'expand-more'
     }
@@ -487,7 +487,7 @@ function renderMethodInput(state, index) {
  */
 function renderStarUserInputButton(state, events) {
   var starButton = h(
-    'paper-button',
+    'paper-button.secondary',
     {
       'href': 'javascript:;',
       attributes: {
@@ -542,7 +542,7 @@ function getRunEvent(state, events, args) {
  * Render a star icon.
  */
 function renderStarIcon(starred) {
-  return h('core-icon.icon.star', {
+  return h('core-icon.action-icon', {
     attributes: {
       'icon': starred ? 'star' : 'star-outline',
       'alt': starred ? 'starred' : 'not starred'
@@ -554,7 +554,7 @@ function renderStarIcon(starred) {
  * Render a play icon.
  */
 function renderPlayIcon() {
-  return h('core-icon.icon.run', {
+  return h('core-icon..action-icon', {
     attributes: {
       'icon': 'av:play-circle-outline',
       'alt': 'run'

@@ -12,10 +12,20 @@ var h = mercury.h;
 module.exports = create;
 module.exports.render = render;
 
+// Matches HEX value of --color-text-primary in theme.css
+var TEXT_COLOR = '#333333';
+// Matches --color-bright in theme.css
+var INTER_NODE_COLOR = '#6B0E9C';
+// Matches --color-text-link-hover in theme.css
+var SERVER_NODE_COLOR = '#03A9F4';
+// Matches --color-grey-dark in theme.css
+var NODE_BORDER = '#263238';
+// Matches --color-dark in theme.css
+var ROOT_NODE_COLOR = '#4A068E';
+
 function create() {}
 
 function render(itemsState, browseState, browseEvents, navEvents) {
-
   insertCss(css);
 
   return [
@@ -75,7 +85,12 @@ TreeWidget.prototype.updateNetwork = function() {
   this.nodes.add({
     id: rootNodeId,
     label: rootNodeId || '<root>',
-    level: 0
+    level: 0,
+    shape: 'star',
+    color: {
+      background: ROOT_NODE_COLOR,
+      border: NODE_BORDER
+    }
   });
 
   // Load the subnodes.
@@ -92,12 +107,7 @@ TreeWidget.prototype.updateNetwork = function() {
     nodes: {
       radiusMin: 16,
       radiusMax: 32,
-      fontColor: '#333333',
-      shape: 'dot',
-      color: {
-        background: '#03a9f4',
-        border: '#0288d1'
-      }
+      fontColor: TEXT_COLOR
     }
   };
 
@@ -149,12 +159,11 @@ TreeWidget.prototype.loadSubNodes = function(node) {
         return isNew;
       });
       var newNodes = nodesToAdd.map(function(item) {
-        var shape = 'dot';
-        var color;
-        if (item.isServer) {
-          shape = 'triangle';
-          color = '#ffab40';
-        }
+        var shape = (item.isServer ? 'triangle' : 'dot');
+        var color = {
+          background: (item.isServer ? SERVER_NODE_COLOR : INTER_NODE_COLOR),
+          border: NODE_BORDER
+        };
         return {
           id: item.objectName,
           label: item.mountedName,
@@ -167,7 +176,7 @@ TreeWidget.prototype.loadSubNodes = function(node) {
         return {
           from: namespace,
           to: item.objectName,
-          color: '#cccccc'
+          color: TEXT_COLOR
         };
       });
       newNodes.forEach(function(item) {

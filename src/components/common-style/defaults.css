@@ -10,7 +10,7 @@
 }
 
 .tab {
-  background-color: var(--color-main);
+  background-color: var(--color-grey-dark);
   color: var(--color-text-primary-invert);
 }
 
@@ -32,6 +32,10 @@ paper-spinner {
 
 ::shadow paper-input-decorator {
   padding: 0;
+}
+
+::shadow paper-input-decorator /deep/ #focusedUnderline {
+  background-color: var(--color-bright);
 }
 
 paper-progress {
@@ -62,8 +66,14 @@ paper-progress::shadow #progressContainer {
 }
 
 paper-button {
-  background-color: var(--color-grey-light);
+  background-color: var(--color-button-primary);
+  color: var(--color-button-primary-text);
   margin: var(--size-space-xsmall);
+}
+
+paper-button.secondary {
+  background-color: var(--color-button-secondary);
+  color: var(--color-button-secondary-text);
 }
 
 /*
