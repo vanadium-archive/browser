@@ -26,7 +26,7 @@ to browse those children. Services (like alarm) do not have children.
 Tree View
 ---------
 
-The Tree View a namespace as a rooted tree:
+The Tree View browses a namespace as a rooted tree:
 
 ![Tree View](helpimg/tree.png)
 
@@ -42,7 +42,7 @@ If no widget is shown, then the item has no children.
 Because a namespace is often distributed across multiple computers,
 it may take a moment before this widget appears.
 
-If the widget contains a plus sign, then the item has children but
+If the widget contains a right-pointing arrow, then the item has children but
 they are not shown. Click on the widget to expand the tree.
 
 If the widget contains a down-pointing arrow, then the children are shown.
@@ -59,6 +59,6 @@ nodes and edges.
 ![Visualize View](helpimg/visualize.png)
 
 You can drag items (nodes) around to rearrange the graph,
-and can zoom in and out.
+and can zoom in and out (if your mouse has a scroll wheel).
 As in the other views, you can click on items to show details for that item
 (in the right pane).
