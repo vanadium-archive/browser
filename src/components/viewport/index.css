@@ -15,8 +15,12 @@ body {
   color: var(--color-white);
 }
 
-.toolbar {
+.drawer .toolbar {
   background-color: var(--color-dark);
+}
+
+.toolbar {
+  background-color: transparent;
 }
 
 .panel .drawer {
@@ -63,4 +67,8 @@ paper-toast.error::shadow .toast-text {
 paper-toast.ok::shadow .toast-text,
 paper-toast::shadow .toast-text.toast-action {
   color: var(--color-ok);
+}
+
+core-header-panel::shadow #mainPanel {
+  background-color: var(--color-white);
 }
