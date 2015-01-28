@@ -3,7 +3,7 @@
 # This script exports a common::run function which builds
 # and runs mounttables and other daemons needed to run and
 # test the Veyron Browser.
-# The ports on which to run these services should be passed
+# The addresses on which to run these services should be passed
 # as arguments to the function.
 # This script shuts down these services on exit.
 # TODO(aghassemi) This script is becoming too complicated and
@@ -104,9 +104,9 @@ fail_on_exit() {
 
 common::run_mounttable() {
   local -r NAME="$1"
-  local -r PORT="$2"
+  local -r ADDRESS="$2"
 
-  echo "Running ${NAME} mounttable on ${PORT}"
+  echo "Running ${NAME} mounttable on ${ADDRESS}"
 
   # Allowed seconds for each service to start
   local -r SRV_TIMEOUT=10
@@ -117,7 +117,7 @@ common::run_mounttable() {
   local -r MTLOG="${TMPDIR}/mt_${NAME}.log"
   cat /dev/null > "${MTLOG}"
   (
-    mounttabled --veyron.tcp.protocol=wsh --veyron.tcp.address="localhost:${PORT}" --name="${NAME}" &> "${MTLOG}" &
+    mounttabled --veyron.tcp.protocol=wsh --veyron.tcp.address="${ADDRESS}" --name="${NAME}" &> "${MTLOG}" &
     fail_on_exit $! "${NAME} mounttable" "${MTLOG}"
   ) &
   shell::timed_wait_for "${SRV_TIMEOUT}" "${MTLOG}" "${MTLOG_MESSAGE}" || common::fail "${TIMEDOUT_MSG} ${NAME} mounttable"
@@ -127,20 +127,21 @@ common::run_mounttable() {
 # run will exit the shell if a process fails to start or panics and it will display
 # an error message along with the log file for the misbehaving service.
 common::run() {
-  local -r HOUSE_MOUNTTABLE_PORT="$1"
-  local -r COTTAGE_MOUNTTABLE_PORT="$2"
+  local -r HOUSE_MOUNTTABLE_ADDRESS="$1"
+  local -r COTTAGE_MOUNTTABLE_ADDRESS="$2"
+  local -r SAMPLED_ADDRESS="$3"
 
   # Run each server in a sub shell so we can call common::fail if process fails to start
   # or panics as it is running.
 
-  common::run_mounttable "house" ${HOUSE_MOUNTTABLE_PORT}
-  common::run_mounttable "cottage" ${COTTAGE_MOUNTTABLE_PORT}
+  common::run_mounttable "house" ${HOUSE_MOUNTTABLE_ADDRESS}
+  common::run_mounttable "cottage" ${COTTAGE_MOUNTTABLE_ADDRESS}
 
   # Run sampled on a free port for demo and integration testing.
   local -r SAMPLEDLOG="${TMPDIR}/sampled.log"
   cat /dev/null > "${SAMPLEDLOG}"
   (
-    sampled --veyron.tcp.protocol=wsh --veyron.tcp.address="localhost:0" &> "${SAMPLEDLOG}" &
+    sampled --veyron.tcp.protocol=wsh --veyron.tcp.address="${SAMPLED_ADDRESS}" &> "${SAMPLEDLOG}" &
     fail_on_exit $! "sampled" "${SAMPLEDLOG}"
   ) &
  }

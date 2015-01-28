@@ -13,15 +13,16 @@
 source "${VANADIUM_ROOT}/release/projects/namespace_browser/scripts/services/common.sh"
 
 main() {
-  local -r MOUNTTABLE_PORT_HOUSE=8882
-  local -r MOUNTTABLE_PORT_COTTAGE=8883
+  local -r MOUNTTABLE_ADDRESS_HOUSE='localhost:8882'
+  local -r MOUNTTABLE_ADDRESS_COTTAGE='localhost:8883'
+  local -r SAMPLED_ADDRESS='localhost:0'
 
   # Export the name of the house mounttable so it can be used in the tests.
-  export HOUSE_MOUNTTABLE="/localhost:${MOUNTTABLE_PORT_HOUSE}"
+  export HOUSE_MOUNTTABLE="/${MOUNTTABLE_ADDRESS_HOUSE}"
 
   PROVA_WATCH="${PROVA_WATCH-false}"
 
-  common::run "${MOUNTTABLE_PORT_HOUSE}" "${MOUNTTABLE_PORT_COTTAGE}"
+  common::run "${MOUNTTABLE_ADDRESS_HOUSE}" "${MOUNTTABLE_ADDRESS_COTTAGE}" "${SAMPLED_ADDRESS}"
 
   echo -e "\033[34m-Services are running\033[0m"
 
