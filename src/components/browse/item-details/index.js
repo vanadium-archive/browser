@@ -2,6 +2,9 @@ var mercury = require('mercury');
 var insertCss = require('insert-css');
 
 var methodNameToVarHashKey = require('./methodNameToVarHashKey');
+
+var browseRoute = require('../../../routes/browse');
+
 var displayItemDetails = require('./display-item-details');
 var bookmark = require('./bookmark');
 
@@ -112,7 +115,7 @@ function create() {
 /*
  * Render the item details page, which includes tabs for details and methods.
  */
-function render(state, events) {
+function render(state, events, browseState, navEvents) {
   insertCss(css);
 
   var tabContent;
@@ -137,7 +140,8 @@ function render(state, events) {
     tabContent = ErrorBox.render(errorTitle, state.error.toString());
   }
 
-  var headerContent = renderHeaderContent(state, events);
+  var headerContent = renderHeaderContent(state, events, browseState,
+    navEvents);
   var formattedTabTitle = (namespaceUtil.basename(state.itemName) || '<root>') +
     ' - Details';
   return [h('paper-tabs.tabs', {
@@ -165,9 +169,12 @@ function render(state, events) {
 /*
  * Renders an action bar on top of the details panel page.
  */
-function renderActions(state, events) {
+function renderActions(state, events, browseState, navEvents) {
 
-  // Bookmark action
+  // Collect a list of actions.
+  var actions = [];
+
+  // Bookmark action (Add or remove a bookmark)
   var isBookmarked = state.isBookmarked;
   var bookmarkIcon = 'bookmark' + (!isBookmarked ? '-outline' : '');
   var bookmarkTitle = (isBookmarked ? 'Remove bookmark ' : 'Add Bookmark');
@@ -188,8 +195,40 @@ function renderActions(state, events) {
       })
     })
   );
+  actions.push(bookmarkAction);
 
-  return h('div.icon-group.item-actions', [bookmarkAction]);
+  // Browse action (Navigate into this item)
+  // This action only appears if this item is globbable and distinct from the
+  // current namespace.
+  var isGlobbable = state.item ? state.item.isGlobbable : false;
+  if (browseState.namespace !== state.itemName && isGlobbable) {
+    var browseUrl = browseRoute.createUrl(browseState, {
+      namespace: state.itemName
+    });
+    var itemName = state.itemName || '<root>';
+    var browseTitle = 'Browse into ' + itemName;
+    var browseAction = h('core-tooltip', {
+        attributes: {
+          'label': browseTitle,
+          'position': 'right'
+        }
+      },
+      h('a', {
+        'href': browseUrl,
+        'ev-click': mercury.event(navEvents.navigate, {
+          path: browseUrl
+        })
+      }, h('paper-icon-button', {
+        attributes: {
+          'icon': 'launch',
+          'alt': browseTitle
+        }
+      }))
+    );
+    actions.push(browseAction);
+  }
+
+  return h('div.icon-group.item-actions', actions);
 }
 
 
@@ -200,8 +239,8 @@ function renderActions(state, events) {
  * Note: we should be able to render header without loading signature any
  * information about the item other than name and whether it is bookmarked.
  */
-function renderHeaderContent(state, events) {
-  var actions = renderActions(state, events);
+function renderHeaderContent(state, events, browseState, navEvents) {
+  var actions = renderActions(state, events, browseState, navEvents);
   var headerItems = [
     actions,
     renderFieldItem('Name', (state.itemName || '<root>')),

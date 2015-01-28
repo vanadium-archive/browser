@@ -224,7 +224,9 @@ function render(browseState, browseEvents, navEvents) {
   var sideView = [
     ItemDetails.render(
       browseState.selectedItemDetails,
-      browseEvents.selectedItemDetails
+      browseEvents.selectedItemDetails,
+      browseState,
+      navEvents
     )
   ];
 
