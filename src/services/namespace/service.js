@@ -19,6 +19,7 @@ module.exports = {
   makeRPC: makeRPC,
   search: search,
   util: namespaceUtil,
+  initVanadium: getRuntime
 };
 
 //TODO(aghassemi) What's a good timeout? It should be shorter than this.

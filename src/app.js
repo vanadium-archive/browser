@@ -9,6 +9,7 @@ var error = require('./components/error/index');
 var help = require('./components/help/index');
 var viewport = require('./components/viewport/index');
 var userAccount = require('./components/user-account/index');
+var namespaceService = require('./services/namespace/service');
 var errorRoute = require('./routes/error');
 
 onDocumentReady(function startApp() {
@@ -48,6 +49,13 @@ onDocumentReady(function startApp() {
      * State of the viewport component
      */
     viewport: viewportComponent.state,
+
+    /*
+     * Boolean indicating that app has been initialized.
+     * Used to show/hide splash screen.
+     * @type {boolean}
+     */
+    initialized: mercury.value(false),
 
     /*
      * State of the error component
@@ -108,6 +116,9 @@ onDocumentReady(function startApp() {
   // Start the router which will register the application routes
   router(state, events);
 
+  // Initialize Vanadium
+  initVanadium();
+
   // Debugging related exports
   exportDebugging();
 
@@ -162,5 +173,19 @@ onDocumentReady(function startApp() {
     window.log = require('./lib/log');
     window.enableContinuousRendering =
       debug.enableContinuousRendering.bind(null, state.debug);
+  }
+
+  /*
+   * Initialized vanadium and sets appropriate messages on the splash screen
+   */
+  function initVanadium() {
+    viewport.setSplashMessage('Initializing Vanadium...');
+    namespaceService.initVanadium().then(function() {
+      viewport.setSplashMessage('Initialized');
+      state.initialized.set(true);
+    }).catch(function(err) {
+      var isError = true;
+      viewport.setSplashMessage(err.toString(), isError);
+    });
   }
 });

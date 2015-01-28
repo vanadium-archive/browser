@@ -12,6 +12,7 @@ var h = mercury.h;
 
 module.exports = create;
 module.exports.render = render;
+module.exports.setSplashMessage = setSplashMessage;
 
 /*
  * Page level layout of the application
@@ -61,9 +62,16 @@ function create() {
  * @main-content/index.js for their rendering functions.
  */
 function render(state, events) {
+
+  if (!state.initialized) {
+    return h('div');
+  } else {
+    removeSplashScreen();
+  }
+
   insertCss(css);
 
-  if(!state.navigation.pageKey) {
+  if (!state.navigation.pageKey) {
     return mercury.h('paper-spinner', {
       attributes: {
         'active': true,
@@ -198,4 +206,41 @@ function wireUpEvents(state, events) {
       }));
     }, toastDuration);
   });
+}
+
+/*
+ * Removes the splash screen once and then becomes a noop
+ * Splash screen fades so it is removed on animation end.
+ */
+var splashDomNode = document.querySelector('#splash');
+function removeSplashScreen() {
+  if (splashDomNode) {
+    // keep a reference for the webkitAnimationEnd event handler
+    // since splashDomNode gets nuked after this to make this function a noop
+    var node = splashDomNode;
+    node.classList.add('fade');
+    node.addEventListener('webkitAnimationEnd', function() {
+      node.remove();
+    });
+    splashDomNode = null;
+  }
+}
+
+/*
+ * Sets a message on the slash screen.
+ * @param {string} message Text of message to sent
+ * @param {boolean} isError Boolean indicating whether this is an error message
+ */
+function setSplashMessage(message, isError) {
+
+  if (!splashDomNode) {
+    return;
+  }
+  var messageNode = splashDomNode.querySelector('#splashMessage');
+  if (isError) {
+    messageNode.classList.add('splashError');
+  } else {
+    messageNode.classList.remove('splashError');
+  }
+  messageNode.textContent = message;
 }
