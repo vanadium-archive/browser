@@ -25,7 +25,7 @@ module.exports = {
 //TODO(aghassemi) What's a good timeout? It should be shorter than this.
 //Can we use ML to dynamically change the timeout?
 //Should this be a user settings?
-var RPC_TIMEOUT = 30 * 1000;
+var RPC_TIMEOUT = 15 * 1000;
 
 /*
  * Lazy getter and initializer for Veyron runtime

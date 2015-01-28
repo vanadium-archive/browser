@@ -3,12 +3,9 @@
   margin: 3px 0 0 20px;
   white-space: nowrap;
 }
-.row {
-  display: flex;
-}
-#expander {
-  align-self: center;
-  margin-right: 3px;
+#expander, .item, .itemtext, .itemicon {
+  display: inline-block;
+  vertical-align: middle;
 }
 #expander.notParent {
   visibility: hidden;
@@ -17,7 +14,6 @@
   color: grey; */
 }
 .item {
-  display: inline-block;
   box-sizing: border-box;
   color: rgba(0, 0, 0, 0.870588);
   box-sizing: border-box;
@@ -28,7 +24,6 @@
   border: solid 1px rgba(0, 0, 0, 0.12);
   padding: 1px 5px 2px 3px;
   cursor: pointer;
-  align-self: center;
 }
 .item .itemcontent:hover {
   opacity: 0.7;
@@ -36,12 +31,6 @@
 .item.highlight {
   background-color: rgb(255, 171, 64);
   color: rgb(250, 250, 250);
-}
-.itemcontent {
-  display: flex;
-}
-.itemtext, .itemicon {
-  align-self: center;
 }
 .itemicon {
   padding-right: 3px;

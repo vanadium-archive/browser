@@ -142,8 +142,7 @@ function render(state, events, browseState, navEvents) {
 
   var headerContent = renderHeaderContent(state, events, browseState,
     navEvents);
-  var formattedTabTitle = (namespaceUtil.basename(state.itemName) || '<root>') +
-    ' - Details';
+  var formattedTabTitle = (namespaceUtil.basename(state.itemName) || '<root>');
   return [h('paper-tabs.tabs', {
       attributes: {
         'selected': state.selectedTabIndex,
@@ -243,7 +242,7 @@ function renderHeaderContent(state, events, browseState, navEvents) {
   var actions = renderActions(state, events, browseState, navEvents);
   var headerItems = [
     actions,
-    renderFieldItem('Name', (state.itemName || '<root>')),
+    renderFieldItem('Full Name', (state.itemName || '<root>')),
   ];
 
   return headerItems;
