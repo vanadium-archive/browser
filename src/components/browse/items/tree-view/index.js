@@ -3,7 +3,7 @@ var insertCss = require('insert-css');
 var extend = require('extend');
 
 var polymerEvent = require('../../../../lib/mercury/polymer-event');
-var loadChildren = require('./load-children');
+var expand = require('./expand');
 var getServiceIcon = require('../../get-service-icon');
 
 var css = require('./index.css');
@@ -11,7 +11,7 @@ var h = mercury.h;
 
 module.exports = create;
 module.exports.render = render;
-module.exports.loadChildren = loadChildren;
+module.exports.expand = expand;
 
 function create() {
 
@@ -107,12 +107,7 @@ function wireUpEvents(state, events) {
     var objectName = data.polymerDetail.node.objectName;
     var openMe = data.polymerDetail.node.open;
     if (openMe) {
-      state.expandedMap.put(objectName, true);
-      // load up the immediate children of a newly displayed item
-      // so we know if that item can be expanded
-      state.childrenMap[objectName].map(function(child) {
-        loadChildren(state, { parentName: child.objectName() });
-      });
+      expand(state, objectName);
     } else {  // collapse this item
       state.expandedMap.delete(objectName);
     }

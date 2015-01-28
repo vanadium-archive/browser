@@ -92,9 +92,7 @@ function load(state, namespace, globQuery) {
     namespaceService.getNamespaceItem(namespace).then(function(item) {
         state.tree.put('rootItem', item); // WooHoo! fixed the bug!
     });
-    return TreeView.loadChildren(state.tree, {
-      parentName: namespace
-    });
+    return TreeView.expand(state.tree, namespace);
   }
 
   if (state.viewType() !== 'grid') {
