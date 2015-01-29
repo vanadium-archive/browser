@@ -241,6 +241,7 @@ function getSignature(objectName) {
     var client = rt.newClient();
     return client.signature(ctx, objectName);
   }).then(function cacheAndReturnSignature(signatures) {
+    // Signatures is a list of implemented interfaces. Adapt it for rendering.
     var adaptedSignature = adaptSignature(signatures);
     signatureCache.set(cacheKey, adaptedSignature);
     return adaptedSignature;
@@ -313,6 +314,9 @@ function makeRPC(name, methodName, args) {
     args.unshift(ctx);
     return service[methodName].apply(null, args);
   }).then(function returnResult(result) {
+    // If the result was for 0 outArg, then this returns undefined.
+    // If the result was for 1 outArg, then it gets a single output.
+    // If the result was for >1 outArgs, then we return []output.
     return result;
   });
 }
