@@ -1,6 +1,6 @@
 <!--
 tree-node elements are nested to create a tree menu
-  <tree-node label="" icon="" iconalt="" itemtitle="" open highlight>
+  <tree-node label="" icon="" iconalt="" itemtitle="" open highlight loading>
 
 Example:
   <tree-node id="root" label="Location">
@@ -16,6 +16,7 @@ Attributes:
   itemtitle: (string) title text for item
   open: (Boolean) expand to display nested children
   highlight: (Boolean) adds "highlight" CSS class to item
+  loading: (Boolean) displays loading spinner
 
 Events:
   Attach one event listener to the root (or above),
@@ -43,11 +44,14 @@ author: wmleler@
             icon="{{open?'expand-more':'chevron-right'}}"
             alt="{{open?'collapse':'expand'}}">
         </core-icon>
+        <paper-spinner active="{{loading}}" aria-label="loading">
+        </paper-spinner>
         <span on-tap="{{activate}}" role="treeitem" aria-selected="{{highlight}}"
             class="item{{highlight?' highlight':''}}" title="{{itemtitle}}">
           <span class="itemcontent">
             <template if="{{icon}}">
-              <core-icon class="itemicon" icon="{{icon}}" alt="{{iconalt}}"></core-icon>
+              <core-icon class="itemicon" icon="{{icon}}" alt="{{iconalt}}">
+              </core-icon>
             </template>
             <span class="itemtext">
               {{label}}
@@ -69,7 +73,8 @@ author: wmleler@
       iconalt: 'item icon',
       itemtitle: 'item',
       open: false,
-      highlight: false
+      highlight: false,
+      loading: false
     },
     ready: function() {
       this.isParent = !!this.firstElementChild;

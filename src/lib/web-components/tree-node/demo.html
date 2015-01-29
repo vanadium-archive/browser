@@ -5,10 +5,14 @@
   <script src="/bower_components/webcomponentsjs/webcomponents.js"></script>
   <link rel="import" href="/bower_components/polymer/polymer.html">
   <link rel="import" href="/bower_components/core-icons/core-icons.html">
+  <link rel="import" href="/bower_components/paper-spinner/paper-spinner.html">
   <link rel="import" href="tree-node.html">
   <style>
     body {
       font-family: Roboto, sans-serif;
+    }
+    tree-node::shadow .item {
+      padding: 0.2em 0.5em;
     }
   </style>
 </head>
@@ -24,10 +28,10 @@
     <p id="status">&nbsp;</p>
 
     <tree-node id="menu" label="root" icon="dns">
-      <tree-node label="lib" icon="label-outline"></tree-node>
+      <tree-node label="lib" icon="label-outline" loading></tree-node>
       <tree-node label="users" title="intermediary name">
-        <tree-node label="local" icon="dns" open>
-          <tree-node label="george" icon="label-outline"></tree-node>
+        <tree-node label="local" icon="dns" open loading>
+          <tree-node label="george" icon="label-outline" loading></tree-node>
           <tree-node label="martha" icon="label-outline"></tree-node>
         </tree-node>
         <tree-node label="remote" icon="dns" highlight></tree-node>
@@ -75,6 +79,7 @@ document.getElementById('nodeadd').addEventListener('click', function(e) {
   inel.value = '';
   node.setAttribute('label', label);
   node.setAttribute('icon', ['dns', 'label-outline', 'folder-open'][Math.floor(Math.random()* 2.5)]);
+  if (Math.random() * 2 > 1) { node.setAttribute('loading', true); }
   activeNode.appendChild(node);
   activeNode.open = true;  // open active node (optional)
 });
