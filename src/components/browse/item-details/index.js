@@ -205,7 +205,7 @@ function renderActions(state, events, browseState, navEvents) {
       namespace: state.itemName
     });
     var itemName = state.itemName || '<root>';
-    var browseTitle = 'Browse into ' + itemName;
+    var browseTitle = 'Change root to ' + itemName;
     var browseAction = h('core-tooltip', {
         attributes: {
           'label': browseTitle,
