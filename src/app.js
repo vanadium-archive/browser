@@ -180,12 +180,20 @@ onDocumentReady(function startApp() {
    */
   function initVanadium() {
     viewport.setSplashMessage('Initializing Vanadium...');
-    namespaceService.initVanadium().then(function() {
+    namespaceService.initVanadium().then(function(vruntime) {
+      vruntime.once('crash', onVanadiumCrash);
       viewport.setSplashMessage('Initialized');
       state.initialized.set(true);
     }).catch(function(err) {
       var isError = true;
       viewport.setSplashMessage(err.toString(), isError);
     });
+  }
+
+  /*
+   * Handler if Vanadium runtime crashes
+   */
+  function onVanadiumCrash(crashErr) {
+    events.browse.error(crashErr);
   }
 });
