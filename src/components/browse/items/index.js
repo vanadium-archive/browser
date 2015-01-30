@@ -112,7 +112,7 @@ function load(state, namespace, globQuery) {
         return;
       }
       state.put('items', items);
-      items.events.on('end', loadingFinished);
+      items.events.once('end', loadingFinished);
       items.events.on('streamError', loadingFinished);
     }).catch(function(err) {
       log.error(err);

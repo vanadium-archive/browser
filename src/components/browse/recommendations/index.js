@@ -56,7 +56,7 @@ function load(state) {
     recommendationsService.getAll()
       .then(function recReceived(items) {
         state.put('recShortcuts', items);
-        items.events.on('end', resolve);
+        items.events.once('end', resolve);
       }).catch(function(err) {
         log.error(err);
         reject();

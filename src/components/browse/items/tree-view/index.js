@@ -34,6 +34,13 @@ function create() {
     expandedMap: mercury.varhash({}),
 
     /*
+     * Map of objectNames to Boolean flag for whether this is being loaded.
+     * @type {varhash<string,Boolean>}
+     * If the item is not present, it is not considered to be loading.
+     */
+    isLoadingMap: mercury.varhash({}),
+
+    /*
      * The current item to be used as the root of the tree
      * @see services/namespace/item
      * @type {namespaceitem}
@@ -91,7 +98,8 @@ function createTreeNode(state, selected, item, extraprops) {
       icon:  getServiceIcon(item.isServer ? item.serverInfo.typeInfo.key : ''),
       itemTitle: item.objectName,
       open: !!state.expandedMap[item.objectName],
-      highlight: (item.objectName === selected)
+      highlight: (item.objectName === selected),
+      loading: item.isGlobbable && state.isLoadingMap[item.objectName]
     },
     objectName: item.objectName
   };

@@ -58,7 +58,7 @@ function load(state) {
     bookmarksService.getAll()
       .then(function bookmarksReceived(items) {
         state.put('bookmarkItems', items);
-        items.events.on('end', resolve);
+        items.events.once('end', resolve);
       }).catch(function(err) {
         log.error(err);
         reject();
