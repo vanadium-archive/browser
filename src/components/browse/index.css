@@ -193,3 +193,12 @@ paper-autocomplete paper-item:hover {
 paper-autocomplete paper-item {
   color: var(--color-text-primary);
 }
+
+paper-icon-button.selected,
+paper-icon-button.selected:focus,
+paper-icon-button.selected:hover {
+  background-color: var(--color-bright);
+  color: var(--color-white);
+  box-shadow: var(--shadow-all-around);
+  border-radius: 999px; /* Any square with sufficiently rounded corner is indistinguishable from a circle */
+}

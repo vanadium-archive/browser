@@ -384,7 +384,7 @@ function renderNamespaceBox(browseState, browseEvents, navEvents) {
   );
 }
 
-function createActionIcon(tooltip, icon, href) {
+function createActionIcon(tooltip, icon, href, isSelected) {
   var view = h('core-tooltip', {
       'label': tooltip,
       'position': 'bottom'
@@ -393,7 +393,7 @@ function createActionIcon(tooltip, icon, href) {
       attributes: {
         'href': href
       }
-    }, h('paper-icon-button.icon', {
+    }, h('paper-icon-button.icon' + (isSelected ? '.selected' : ''), {
       attributes: {
         'icon': icon
       }
@@ -408,30 +408,40 @@ function createActionIcon(tooltip, icon, href) {
  */
 function renderViewActions(browseState, navEvents) {
 
+  var selectedActionKey = browseState.subPage;
+  if (browseState.subPage === 'items') {
+    selectedActionKey = browseState.items.viewType;
+  }
+
   var switchGroup = h('div.icon-group', [
     createActionIcon('Grid view', 'apps',
       browseRoute.createUrl(browseState, {
         viewType: 'grid'
-      })
+      }),
+      (selectedActionKey === 'grid')
     ),
     createActionIcon('Tree view', 'list',
       browseRoute.createUrl(browseState, {
         viewType: 'tree'
-      })
+      }),
+      (selectedActionKey === 'tree')
     ),
     createActionIcon('Visualize view', 'image:grain',
       browseRoute.createUrl(browseState, {
         viewType: 'visualize'
-      })
+      }),
+      (selectedActionKey === 'visualize')
     )
   ]);
   var ruler = h('div.vertical-ruler');
   var bookmarkGroup = h('div.icon-group', [
     createActionIcon('Bookmarks', 'bookmark-outline',
-      bookmarksRoute.createUrl()
+      bookmarksRoute.createUrl(),
+      (selectedActionKey === 'bookmarks')
     ),
     createActionIcon('Recommendations', 'social:whatshot',
-      recommendationsRoute.createUrl()
+      recommendationsRoute.createUrl(),
+      (selectedActionKey === 'recommendations')
     )
   ]);
   var searchGroup = renderSearch(browseState, navEvents);
