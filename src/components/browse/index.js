@@ -65,11 +65,11 @@ function create() {
 
     /*
      * The namespace input prefix is the last namespace value that triggered
-     * a glob for direct descendants. Upon update of the namespace input prefix,
-     * new children will be globbed.
-     * @type {string}
+     * a glob for direct descendants. Initially, it is null. Upon update of the
+     * namespace input prefix, new children will be globbed.
+     * @type {string | null}
      */
-    namespacePrefix: mercury.value(''),
+    namespacePrefix: mercury.value(null),
 
     /*
      * State of the bookmarks component
@@ -345,6 +345,9 @@ function renderNamespaceBox(browseState, browseEvents, navEvents) {
     setTimeout(trueInputEvent.handleEvent.bind(trueInputEvent, ev), 0);
   };
 
+  // The focus event also retrieves namespace suggestions.
+  var focusEvent = inputEvent;
+
   var children = browseState.namespaceSuggestions.map(
     function renderChildItem(child) {
       return h('paper-item', child.mountedName);
@@ -376,6 +379,7 @@ function renderNamespaceBox(browseState, browseEvents, navEvents) {
           'name': 'namespace',
           'value': browseState.namespace,
           'delimiter': '/',
+          'ev-focus': focusEvent,
           'ev-input': inputEvent,
           'ev-change': changeEvent
         }, children)
