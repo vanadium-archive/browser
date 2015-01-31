@@ -1,32 +1,38 @@
 # Viz Vanadium Viewer
-Viz is a browser-like application that lets the user view the Vanadium world.
-Starting from their namespace root, users can see where services are mounted and
+Viz is a browser-like application that lets developers and other users view
+the Vanadium world.
+Starting from their namespace root, a user can see where services are mounted and
 browse through the mount table hierarchy. The user can also select a service to
-see more detailed information about it. Users may also interact with the
-service; by invoking methods, they can examine or modify the service's state.
+see more detailed information about it. A user can also interact with the
+service; by invoking methods they can examine or modify the service's state.
 
 ## Installing the Vanadium Extension
 
-Viz requires that user's install the Vanadium Extension from the Chrome Web Store.
+Viz requires that users install the Vanadium Extension from the Chrome Web Store.
 Without this extension, Viz will not load properly.
 
 Link to the Vanadium Extension:
 https://chrome.google.com/webstore/detail/vanadium-extension/jcaelnibllfoobpedofhlaobfcoknpap
 
-## Building Viz (for deployment)
+##Building Viz
+
+You will need to install the Vanadium environment and setup the web
+profile to build your own copy of Viz. See the development instructions
+for Vanadium for more information.
+
+### Building Viz for deployment
+
 In order to build your own copy of Viz, simply run:
 
 ```sh
+cd $VANADIUM_ROOT/release/projects/namespace_browser
 make build
 ```
 
-Note: You will need to install the Vanadium environment and setup the web
-profile for this command to succeed.
-
-The command compiles the relevant bundle files in the 'public' folder. The
+This compiles the relevant bundle files in the 'public' folder. The
 assets inside can be served as your own instance of Viz.
 
-## Running Viz (for development)
+### Running Viz locally for development
 
 You can serve a local instance of Viz with the following command:
 
@@ -50,7 +56,7 @@ make clean
 make start
 ```
 
-## Testing Viz (for development)
+## Testing Viz
 
 Viz has some unit and integration tests that verify basic functionality.
 
@@ -64,3 +70,4 @@ There are no UI tests yet.
 
 ## Contributing to Viz
 Coming Soon!
+Meanwhile, you can submit issues and suggestions from Viz itself.
