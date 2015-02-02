@@ -11,7 +11,17 @@ module.exports = getNamespaceSuggestions;
  * TODO(alexfandrianto): Update this when we switch to the new glob service.
  */
 function getNamespaceSuggestions(browseState, namespace) {
-  var prefix = namespaceService.util.stripBasename(namespace);
+  // Get children of the chosen prefix.
+  // When there is a trailing slash, treat the namespace as the prefix.
+  var prefix;
+  var len = namespace.length;
+  var lastSlashIndex = namespace.lastIndexOf('/');
+  if (len > 1 && lastSlashIndex === len - 1) {
+
+    prefix = namespace.substring(0, lastSlashIndex);
+  } else {
+    prefix = namespaceService.util.stripBasename(namespace);
+  }
 
   if (prefix === browseState.namespacePrefix()) {
     return; // The children are already based on the correct glob.
@@ -21,8 +31,8 @@ function getNamespaceSuggestions(browseState, namespace) {
   browseState.namespacePrefix.set(prefix);
   emptyOutItems();
 
-  // There is nothing to glob without a rooted name.
-  if (prefix === '' || prefix === '/') {
+  // Do not search if selecting a namespace root.
+  if (prefix === '' && namespace[0] === '/') {
     return;
   }
 
