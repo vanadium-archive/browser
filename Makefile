@@ -54,8 +54,6 @@ node_modules: package.json
 	# TODO(aghassemi) Temporarily use local release/javascript/core add github/npm to package.json later
 	cd "$(VANADIUM_ROOT)/release/javascript/core" && npm link
 	:;npm link veyron
-	cd "$(VANADIUM_ROOT)/release/javascript/vom" && npm link
-	:;npm link vom
 
 	touch node_modules
 
