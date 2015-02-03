@@ -176,7 +176,7 @@ function renderActions(state, events, browseState, navEvents) {
   // Bookmark action (Add or remove a bookmark)
   var isBookmarked = state.isBookmarked;
   var bookmarkIcon = 'bookmark' + (!isBookmarked ? '-outline' : '');
-  var bookmarkTitle = (isBookmarked ? 'Remove bookmark ' : 'Add Bookmark');
+  var bookmarkTitle = (isBookmarked ? 'Remove Bookmark ' : 'Add Bookmark');
   var bookmarkAction = h('core-tooltip', {
       attributes: {
         'label': bookmarkTitle,
@@ -196,6 +196,38 @@ function renderActions(state, events, browseState, navEvents) {
   );
   actions.push(bookmarkAction);
 
+  // Browse-up action (Navigate to the namespace's parent)
+  // This action only appears if the namespace's parent is not empty.
+  var parent = namespaceUtil.stripBasename(browseState.namespace);
+  var noParent = (parent === '' && (browseState.namespace[0] === '/' ||
+                                    browseState.namespace === ''));
+  if (!noParent) {
+    var browseUpUrl = browseRoute.createUrl(browseState, {
+      namespace: parent
+    });
+    var parentName = parent || '<root>';
+    var browseUpTitle = 'Browse up to ' + parentName;
+    var browseUpAction = h('core-tooltip', {
+        attributes: {
+          'label': browseUpTitle,
+          'position': 'right'
+        }
+      },
+      h('a', {
+        'href': browseUpUrl,
+        'ev-click': mercury.event(navEvents.navigate, {
+          path: browseUpUrl
+        })
+      }, h('paper-icon-button', {
+        attributes: {
+          'icon': 'undo',
+          'alt': browseUpTitle
+        }
+      }))
+    );
+    actions.push(browseUpAction);
+  }
+
   // Browse action (Navigate into this item)
   // This action only appears if this item is globbable and distinct from the
   // current namespace.
@@ -205,7 +237,7 @@ function renderActions(state, events, browseState, navEvents) {
       namespace: state.itemName
     });
     var itemName = state.itemName || '<root>';
-    var browseTitle = 'Change root to ' + itemName;
+    var browseTitle = 'Browse into ' + itemName;
     var browseAction = h('core-tooltip', {
         attributes: {
           'label': browseTitle,
