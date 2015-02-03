@@ -1,4 +1,4 @@
-var vom = require('vom');
+var vom = require('veyron').vom;
 
 module.exports = adapt;
 /*
