@@ -129,7 +129,8 @@ onDocumentReady(function startApp() {
   mercury.app(document.body, state, render);
 
   // Add additional events that mercury's delegator should listenTo.
-  addDelegatedEvents(['core-overlay-open-completed', 'openchange', 'activate']);
+  addDelegatedEvents(['core-overlay-open-completed',
+      'down', 'up', 'openchange', 'activate']);
 
   function wireEvents() {
     // TODO(aghassemi): Make these events global.
