@@ -1,3 +1,5 @@
+var mercury = require('mercury');
+
 var methodNameToVarHashKey = require('./methodNameToVarHashKey');
 var methodStart = require('./method-start.js');
 var methodEnd = require('./method-end.js');
@@ -7,7 +9,6 @@ var methodForm = require('./method-form/index.js');
 var namespaceService = require('../../../services/namespace/service');
 var bookmarkService = require('../../../services/bookmarks/service');
 var smartService = require('../../../services/smart/service');
-
 
 var log = require('../../../lib/log')(
   'components:browse:item-details:display-item-details'
@@ -98,29 +99,46 @@ function displayItemDetails(state, events, data) {
       return;
     }
 
-    // Go through each signature method, preparing the state needed for its
-    // form to be rendered and deciding if the method should be recommended.
-    signatureResult.forEach(function(methodData, methodName) {
-      var methodKey = methodNameToVarHashKey(methodName);
-      var form = methodForm();
-      state.methodForm.put(methodKey, form.state);
-      events.methodForm.put(methodKey, form.events);
+    // Go through each signature method from each interface. Prepare the state
+    // needed for the form to be rendered and its events to function.
+    signatureResult.forEach(function(interface, i) {
+      var forms = mercury.varhash();
+      var formEvents = mercury.varhash();
 
-      // Hook up the new form's method start, end, and toast events.
-      form.events.methodStart(
-        methodStart.bind(null, state, methodName)
-      );
-      form.events.methodEnd(
-        methodEnd.bind(null, state, methodName)
-      );
-      form.events.toast = events.toast;
+      interface.methods.forEach(function(methodData) {
+        var methodName = methodData.name;
+        var methodKey = methodNameToVarHashKey(methodName);
+        var form = methodForm();
+        forms.put(methodKey, form.state);
+        formEvents.put(methodKey, form.events);
 
-      // Finally, allow the form to gather the info it needs to display.
-      form.events.displayMethodForm({
-        itemName: name,
-        signature: signatureResult,
-        methodName: methodName
+        // Hook up the new form's method start, end, and toast events.
+        form.events.methodStart(
+          methodStart.bind(null, state, methodName)
+        );
+        form.events.methodEnd(
+          methodEnd.bind(null, state, methodName, interface)
+        );
+        form.events.toast = events.toast;
+
+        // Finally, allow the form to gather the info it needs to display.
+        form.events.displayMethodForm({
+          itemName: name,
+          interface: interface,
+          methodName: methodName
+        });
       });
+
+      // Save the method forms, events, open-status of each interface.
+      // Note: Some services have more interfaces than others. If a service has
+      // fewer than usual, it won't override/delete any extra interfaces. It
+      // isn't necessary because those old interfaces won't be rendered.
+      state.methodForms.put(i, forms);
+      events.methodForms[i] = formEvents;
+
+      // Note: We want the __Reserved interface to be closed by default.
+      // It has a common pool of methods that would be distracting in the UI.
+      state.methodFormsOpen.put(i, interface.name !== '__Reserved');
     });
   }).catch(function(err) {
     log.error('Error while getting details for', name, err);

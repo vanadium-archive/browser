@@ -4,7 +4,7 @@
  */
 
 var addAttributes = require('../../lib/addAttributes');
-var hashSignature = require('../namespace/service').hashSignature;
+var hashInterface = require('../namespace/interface-util').hashInterface;
 var log = require('../../lib/log')('services:smart-service');
 var perceptron = require('../../lib/learning/perceptron');
 var rank = require('../../lib/learning/rank');
@@ -184,7 +184,7 @@ function autoRPCLearner(type, params) {
 
 /*
  * Given input data, return an appropriate feature vector for RPCs.
- * Input must have: methodName, signature, and name.
+ * Input must have: methodName, interface, and name.
  */
 function autoRPCLearnerFeatureExtractor(input) {
   var features = {};
@@ -195,8 +195,8 @@ function autoRPCLearnerFeatureExtractor(input) {
   // Same-named methods may act similarly and might want to be queried too.
   features[input.methodName] = 1;
 
-  // Same-named methods that share service signatures are likely similar.
-  features[input.methodName + '|' + hashSignature(input.signature)] = 1;
+  // Same-named methods that share service interfaces are likely similar.
+  features[input.methodName + '|' + hashInterface(input.interface)] = 1;
 
   // Services in the same namespace subtree may be queried similarly.
   var pathFeatures = pathFeatureExtractor(input.name);
@@ -214,7 +214,7 @@ function autoRPCLearnerFeatureExtractor(input) {
 
 /*
  * Given input data, update the learner's weights.
- * Input must have: methodName, signature, name, and reward.
+ * Input must have: methodName, interface, name, and reward.
  * TODO(alexfandrianto): Remove the weights printout.
  */
 function autoRPCLearnerUpdate(input) {
@@ -244,7 +244,7 @@ function autoRPCLearnerPredict(input) {
  * - reward, a constant for the rate to reward chosen values
  *
  * Uses a simple topK Update and Prediction function.
- * This learner's input needs to have argName, methodName, and signature.
+ * This learner's input needs to have argName, methodName, and interface.
  * Update also needs an argument value.
  */
 function methodInputLearner(type, params) {
@@ -266,7 +266,7 @@ function methodInputLearner(type, params) {
  */
 function methodInputLearnerComputeKey(input) {
   var keyArr = [
-    hashSignature(input.signature),
+    hashInterface(input.interface),
     input.methodName,
     input.argName
   ];
@@ -283,7 +283,7 @@ function methodInputLearnerComputeKey(input) {
  * - reward, a constant for the rate to reward chosen values
  *
  * Uses a simple topK Update and Prediction function.
- * This learner's input needs to have a methodName and signature.
+ * This learner's input needs to have a methodName and interface.
  * Update also needs a JSON-encoded arguments string.
  */
 function methodInvocationLearner(type, params) {
@@ -302,11 +302,11 @@ function methodInvocationLearner(type, params) {
 
 /*
  * Given input data, compute the appropriate lookup key
- * Input must have: methodName and signature.
+ * Input must have: methodName and interface.
  */
 function methodInvocationLearnerComputeKey(input) {
   var keyArr = [
-    hashSignature(input.signature),
+    hashInterface(input.interface),
     input.methodName
   ];
   return keyArr.join('|');
