@@ -12,8 +12,10 @@ var PropertyValueEvent =
 var store = require('../../../../lib/store');
 
 var smartService = require('../../../../services/smart/service');
-var hashSignature =
-  require('../../../../services/namespace/service').hashSignature;
+var getMethodData =
+  require('../../../../services/namespace/interface-util').getMethodData;
+var hashInterface =
+  require('../../../../services/namespace/interface-util').hashInterface;
 
 var log = require('../../../../lib/log')(
   'components:browse:item-details:method-form');
@@ -37,10 +39,10 @@ function create() {
     itemName: mercury.value(''),
 
     /*
-     * The item's signature.
-     * @type {Object}
+     * The item's interface.
+     * @type {interface}
      */
-    signature: mercury.value(null),
+    interface: mercury.value(null),
 
     /*
      * Method name for this method form
@@ -103,12 +105,12 @@ function create() {
 
 /*
  * Event handler that sets and prepares data into this form component.
- * data needs to include "itemName", "signature", and "methodName".
+ * data needs to include "itemName", "interface", and "methodName".
  */
 function displayMethodForm(state, events, data) {
   // Set the given data into the state and prepare the method form.
   state.itemName.set(data.itemName);
-  state.signature.set(data.signature);
+  state.interface.set(data.interface);
   state.methodName.set(data.methodName);
   initializeInputArguments(state);
 
@@ -133,7 +135,7 @@ function displayMethodForm(state, events, data) {
  * Clear the mercury values related to the input arguments.
  */
 function initializeInputArguments(state) {
-  var param = state.signature().get(state.methodName());
+  var param = getMethodData(state.interface(), state.methodName());
   var startingArgs = _.range(param.inArgs.length).map(function() {
     return undefined; // Initialize array with undefined values using lodash.
   });
@@ -144,9 +146,9 @@ function initializeInputArguments(state) {
  * Returns a promise that refreshes the suggestions to the input arguments.
  */
 function refreshInputSuggestions(state) {
-  var param = state.signature().get(state.methodName());
+  var param = getMethodData(state.interface(), state.methodName());
   var input = {
-    signature: state.signature(),
+    interface: state.interface(),
     methodName: state.methodName(),
   };
   return Promise.all(
@@ -192,7 +194,7 @@ function saveStarredInvocations(state) {
 
 /*
  * Given an observed state, produce the storage key.
- * The keys are of the form STARS|item|signature|method.
+ * The keys are of the form STARS|item|interface|method.
  * The corresponding value is an array of invocations.
  */
 var starsPrefix = 'STARS';
@@ -200,7 +202,7 @@ function constructStarredInvocationKey(state) {
   var parts = [
     starsPrefix,
     state.itemName(),
-    hashSignature(state.signature()),
+    hashInterface(state.interface()),
     state.methodName()
   ];
   return parts.join('|');
@@ -211,7 +213,7 @@ function constructStarredInvocationKey(state) {
  */
 function refreshRecommendations(state) {
   var input = {
-    signature: state.signature(),
+    interface: state.interface(),
     methodName: state.methodName(),
   };
   return smartService.predict('learner-method-invocation', input).then(
@@ -320,7 +322,7 @@ function render(state, events) {
  */
 function makeMethodTooltip(state, child) {
   // The tooltip contains the documentation for the method name.
-  var methodSig = state.signature.get(state.methodName);
+  var methodSig = getMethodData(state.interface, state.methodName);
   var tooltip = methodSig.doc || '<no description>';
 
   // If the method takes input, add documentation about the input arguments.
@@ -384,7 +386,7 @@ function renderMethodHeader(state, events) {
  */
 function getMethodSignature(state, args) {
   var methodName = state.methodName;
-  var param = state.signature.get(methodName);
+  var param = getMethodData(state.interface, methodName);
   var text = methodName;
   var hasArgs = (param.inArgs.length > 0);
   if (hasArgs) {
@@ -486,7 +488,7 @@ function makeMethodLabel(labelText) {
  */
 function renderMethodInput(state, index) {
   var methodName = state.methodName;
-  var inArg = state.signature.get(methodName).inArgs[index];
+  var inArg = getMethodData(state.interface, state.methodName).inArgs[index];
   var argName = inArg.name;
   var argTypeStr = inArg.type.name || inArg.type.toString();
   var inputSuggestions = state.inputSuggestions[index];

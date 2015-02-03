@@ -76,11 +76,19 @@ function create() {
     methodOutputs: mercury.varhash(),
 
     /*
-     * The method form has information for each service object. It maps method
-     * names to the relevant state used in the renderMethod module.
-     * @type {map[string]mercury.struct}
+     * Each method form corresponds to an interface in the signature. It is a
+     * map from method names to the relevant state used in the method-form
+     * component.
+     * @type {[]map[string]mercury.struct}
      */
-    methodForm: mercury.varhash(),
+    methodForms: mercury.array([]),
+
+    /*
+     * Each method form could be open or closed. All start out open, except
+     * for __Reserved, which is explicitly set to closed.
+     * @type {[]boolean}
+     */
+    methodFormsOpen: mercury.array([]),
 
     /*
      * Whether a loading indicator should be displayed instead of content
@@ -99,12 +107,16 @@ function create() {
     'bookmark',
     'displayItemDetails',
     'tabSelected',
-    'methodForm',
+    'methodForms',
+    'toggleMethodForm',
     'toast'
   ]);
 
   wireUpEvents(state, events);
-  events.methodForm = mercury.varhash();
+
+  // events.methodForms is []events; the index order matches state.methodForms
+  // and state.methodFormsOpen.
+  events.methodForms = [];
 
   return {
     state: state,
@@ -235,7 +247,7 @@ function renderActions(state, events, browseState, navEvents) {
  * Renders the header which includes actions and name field.
  * Header is always displayed, even during loading time or when we fail
  * to load details for an item.
- * Note: we should be able to render header without loading signature any
+ * Note: we should be able to render header without loading signature. Any
  * information about the item other than name and whether it is bookmarked.
  */
 function renderHeaderContent(state, events, browseState, navEvents) {
@@ -257,9 +269,6 @@ function renderDetailsContent(state, events) {
   displayItems.push(renderTypeFieldItem(state));
   if (state.item.isServer) {
     displayItems.push(renderEndpointsFieldItem(state));
-    if (state.signature) {
-      displayItems.push(renderInterfacesFieldItem(state));
-    }
   }
   return [
     h('div', displayItems)
@@ -281,7 +290,9 @@ function renderTypeFieldItem(state) {
     typeName = 'Intermediary Name';
   }
 
-  return renderFieldItem('Type', typeName, typeDescription);
+  return renderFieldItem('Type', typeName, {
+    contentTooltip: typeDescription
+  });
 }
 
 /*
@@ -309,78 +320,61 @@ function renderEndpointsFieldItem(state) {
 }
 
 /*
- * Renders the Interfaces Field Item, a listing of the interfaces that the
- * server implements, including VDL descriptions of the interfaces.
- */
-function renderInterfacesFieldItem(state) {
-  var serviceDescDivs;
-  var descs = state.signature.pkgNameDescriptions;
-  var pkgNames = Object.keys(descs);
-  if (pkgNames.length === 0) {
-    serviceDescDivs = [
-      h('div', h('span', 'No interfaces implemented'))
-    ];
-  } else {
-    // Go through each pkgName and show the tooltip for that interface.
-    serviceDescDivs = pkgNames.map(function(pkgName) {
-      var desc = descs[pkgName];
-
-      return h('div', [
-        h('core-tooltip.tooltip.field-tooltip', {
-          'label': desc || '<no description>',
-          'position': 'right'
-        }, h('core-icon.icon.info', {
-          attributes: {
-            'icon': 'info'
-          }
-        })),
-        h('span.margin-left-xxsmall', pkgName)
-      ]);
-    });
-  }
-
-  return renderFieldItem('Interfaces', h('div', {
-    attributes: {
-      'vertical': true,
-      'layout': true
-    }
-  }, serviceDescDivs));
-}
-
-/*
  * Renders the method signature forms and the RPC output area.
  * Note: Currently renders in the same tab as renderDetailsContent.
  */
 function renderMethodsContent(state, events) {
-  return h('div', [
-    renderFieldItem('Methods', renderMethodSignatures(state, events)),
-    renderFieldItem('Output', renderMethodOutput(state))
-  ]);
+  var sig = state.signature;
+  if (!sig || sig.size === 0) {
+    return renderFieldItem('Methods',
+      h('div', h('span', 'No method signature')));
+  }
+
+  // Render each interface and an output region.
+  var content = state.signature.map(function(interface, interfaceIndex) {
+    var label = interface.pkgPath + '.' + interface.name;
+    var content;
+    var open = state.methodFormsOpen[interfaceIndex];
+    var options = {
+      labelTooltip: interface.doc,
+      collapsed: !open,
+      callback: events.toggleMethodForm.bind(null, {
+        index: interfaceIndex,
+        value: !open
+      })
+    };
+    if (!open) {
+      content = h('span');
+    } else {
+      content = renderMethodInterface(state, events, interfaceIndex);
+    }
+    return renderFieldItem(label, content, options);
+  });
+  content.push(renderFieldItem('Output', renderMethodOutput(state)));
+
+  return h('div', content);
 }
 
 /*
- * Renders each method signature with associated form for entering inputs and
- * making RPCs to the associated service.
+ * Renders each method signature belonging to one of the interfaces of the
+ * service. Each form allows RPCs to be made to the associated service.
  */
-function renderMethodSignatures(state, events) {
-  var sig = state.signature;
-  if (!sig || sig.size === 0) {
-    return h('div', h('span', 'No method signature'));
-  }
-
+function renderMethodInterface(state, events, interfaceIndex) {
   var methods = [];
 
   // Render all the methods in alphabetical order.
   // ES6 Map iterates in the order values were added, so we must sort them.
   var methodNames = [];
-  sig.forEach(function(methodData, methodName) {
-    methodNames.push(methodName);
-  });
+  state.signature[interfaceIndex].methods.forEach(
+    function(methodData) {
+      methodNames.push(methodData.name);
+    }
+  );
   methodNames.sort().forEach(function(methodName) {
     var methodKey = methodNameToVarHashKey(methodName);
     methods.push(methodForm.render(
-      state.methodForm[methodKey],
-      events.methodForm[methodKey]
+      state.methodForms[interfaceIndex][methodKey],
+      events.methodForms[interfaceIndex][methodKey]
     ));
   });
 
@@ -426,21 +420,51 @@ function renderMethodOutput(state) {
 }
 
 /*TODO(aghassemi) make a web component for this*/
-function renderFieldItem(label, content, tooltip) {
+function renderFieldItem(label, content, options) {
+  options = options || {};
+
   var hlabel = h('h4', label);
+  var hinfo = h('span');
+  if (options.labelTooltip) {
+    // If there is a tooltip, create an info icon with that tooltip.
+    hinfo = h('core-tooltip.tooltip.field-tooltip', {
+      attributes: {
+        'label': options.labelTooltip
+      },
+      'position': 'left'
+    }, h('core-icon.icon.info', {
+      attributes: {
+        'icon': 'info'
+      }
+    }));
+  }
   content = h('span', content);
-  if (tooltip) {
-    // If there is a tooltip, wrap the content in it
+  if (options.contentTooltip) {
+    // If there is a tooltip, wrap the content in it.
     content = h('core-tooltip.tooltip.field-tooltip', {
       attributes: {
-        'label': tooltip
+        'label': options.contentTooltip
       },
       'position': 'right'
     }, content);
   }
 
-  return h('div.field', [
-    h('h4', hlabel),
+  var expander = h('span');
+  if (options.collapsed !== undefined) {
+    expander = h('core-icon.icon', {
+      attributes: {
+        'icon': options.collapsed ? 'chevron-right' : 'expand-more'
+      },
+      'ev-click': options.callback
+    });
+  }
+
+  return h('div.field' + (options.collapsed === true ? '.collapsed' : ''), [
+    h('div.header', [
+      hlabel,
+      hinfo,
+      expander
+    ]),
     h('div.content', content)
   ]);
 }
@@ -452,4 +476,7 @@ function wireUpEvents(state, events) {
     state.selectedTabIndex.set(data.index);
   });
   events.bookmark(bookmark.bind(null, state, events));
+  events.toggleMethodForm(function(data) {
+    state.methodFormsOpen.put(data.index, data.value);
+  });
 }

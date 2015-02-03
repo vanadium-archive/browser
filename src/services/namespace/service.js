@@ -1,13 +1,12 @@
 var veyron = require('veyron');
 var mercury = require('mercury');
+var vom = require('veyron').vom;
 var LRU = require('lru-cache');
 var EventEmitter = require('events').EventEmitter;
-var jsonStableStringify = require('json-stable-stringify');
 var namespaceUtil = veyron.namespaceUtil;
 var veyronConfig = require('../../veyron-config');
 var itemFactory = require('./item');
 var freeze = require('../../lib/mercury/freeze');
-var adaptSignature = require('./signature-adapter');
 var log = require('../../lib/log')('services:namespace:service');
 
 module.exports = {
@@ -15,7 +14,6 @@ module.exports = {
   getNamespaceItem: getNamespaceItem,
   getSignature: getSignature,
   getAccountName: getAccountName,
-  hashSignature: hashSignature,
   makeRPC: makeRPC,
   search: search,
   util: namespaceUtil,
@@ -228,7 +226,7 @@ var signatureCache = new LRU({
  * Given a object name, returns a promise of the signature of methods available
  * on the object represented by that name.
  * @param {string} objectName Object name to get signature for
- * @return {object} signature for the object represented by the given name
+ * @return {signature} signature for the object represented by the given name
  */
 function getSignature(objectName) {
   var cacheKey = 'getSignature|' + objectName;
@@ -240,27 +238,11 @@ function getSignature(objectName) {
     var ctx = veyron.context.Context().withTimeout(RPC_TIMEOUT);
     var client = rt.newClient();
     return client.signature(ctx, objectName);
-  }).then(function cacheAndReturnSignature(signatures) {
-    // Signatures is a list of implemented interfaces. Adapt it for rendering.
-    var adaptedSignature = adaptSignature(signatures);
-    signatureCache.set(cacheKey, adaptedSignature);
-    return adaptedSignature;
+  }).then(function cacheAndReturnSignature(signature) {
+    // Signature is []interface; each interface contains method data.
+    signatureCache.set(cacheKey, signature);
+    return signature;
   });
-}
-
-/*
- * Given a service signature, compute a reasonable hash that uniquely identifies
- * a service without containing unnecessary information.
- * TODO(alexfandrianto): This heuristic comes close, but it does not properly
- * distinguish services from each other.
- * The adapted signature now has type info, streaming info, interface name, etc.
- */
-function hashSignature(adaptedSignature) {
-  var cp = [];
-  adaptedSignature.forEach(function(method, methodName) {
-    cp[methodName] = method.inArgs.length;
-  });
-  return jsonStableStringify(cp);
 }
 
 /*
@@ -304,6 +286,9 @@ function isGlobbable(objectName) {
  * args (optional): array of arguments for the service method
  */
 function makeRPC(name, methodName, args) {
+  // Adapt the method name to be lowercase again.
+  methodName = vom.MiscUtil.uncapitalize(methodName);
+
   return getRuntime().then(function bindToName(rt) {
     var ctx = veyron.context.Context().withTimeout(RPC_TIMEOUT);
     var client = rt.newClient();

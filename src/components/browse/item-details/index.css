@@ -7,9 +7,19 @@
   margin-bottom: var(--size-space-small);
 }
 
-.field h4 {
+.field.collapsed {
+  border-bottom: var(--border);
+}
+
+.field .header h4 {
   margin: 0;
   color: var(--color-text-secondary);
+  flex: 1;
+}
+
+.field .header {
+  display: flex;
+  flex-direction: row;
 }
 
 paper-icon-button.bookmarked {

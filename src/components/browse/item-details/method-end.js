@@ -1,6 +1,8 @@
 var formatDetail = require('./format-detail');
 
 var smartService = require('../../../services/smart/service');
+var getMethodData =
+  require('../../../services/namespace/service').getMethodData;
 
 var log = require('../../../lib/log')(
   'components:browse:item-details:method-end');
@@ -15,28 +17,27 @@ module.exports = methodEnd;
  * Successful RPCs also update the smartService.
  * data needs to have runID and either (error) or (result and args)
  */
-function methodEnd(state, method, data) {
+function methodEnd(state, method, interface, data) {
   // Simply draw the error message if there was an error.
   if (data.error !== undefined) {
     formatResult(state, method, data.runID, data.error, false);
     return;
   }
 
-  var sig = state.signature;
-
   // Otherwise, we'll have to learn from the results and draw them, if possible.
-  var numInArgs = sig.get(method).inArgs.length;
+  var params = getMethodData(interface, method);
+  var numInArgs = params.inArgs.length;
 
   // Since the RPC was successful, we can assume the inputs were good.
   if (numInArgs > 0) {
-    learnMethodInput(state, method, data.args);
-    learnMethodInvocation(state, method, data.args);
+    learnMethodInput(method, interface, data.args);
+    learnMethodInvocation(method, interface, data.args);
   }
 
   // Do not process results we expect to be empty. Instead, indicate that the
   // RPC terminated successfully.
   // TODO(alexfandrianto): Streaming results are ignored with this logic.
-  var expectedOutArgs = sig.get(method).outArgs.length;
+  var expectedOutArgs = params.outArgs.length;
   if (expectedOutArgs === 0) {
     replaceResult(state, data.runID, h('span', '<ok>'));
     return;
@@ -75,14 +76,13 @@ function replaceResult(state, runID, newResult) {
 /*
  * Learn from the method inputs to be able to suggest them in the future.
  */
-function learnMethodInput(state, method, args) {
-  var sig = state.signature;
+function learnMethodInput(method, interface, args) {
   args.forEach(function(value, i) {
-    var argName = sig.get(method).inArgs[i].name;
+    var argName = getMethodData(interface, method).inArgs[i].name;
     var input = {
       argName: argName,
       methodName: method,
-      signature: sig,
+      interface: interface,
       value: args[i]
     };
     log.debug('Update Input:', input);
@@ -96,11 +96,10 @@ function learnMethodInput(state, method, args) {
 /*
  * Learn from this invocation to be able to suggest them in the future.
  */
-function learnMethodInvocation(state, method, args) {
-  var sig = state.signature;
+function learnMethodInvocation(method, interface, args) {
   var input = {
     methodName: method,
-    signature: sig,
+    interface: interface,
     value: JSON.stringify(args)
   };
   log.debug('Update Invocation:', input);
