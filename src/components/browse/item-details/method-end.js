@@ -2,7 +2,7 @@ var formatDetail = require('./format-detail');
 
 var smartService = require('../../../services/smart/service');
 var getMethodData =
-  require('../../../services/namespace/service').getMethodData;
+  require('../../../services/namespace/interface-util').getMethodData;
 
 var log = require('../../../lib/log')(
   'components:browse:item-details:method-end');
