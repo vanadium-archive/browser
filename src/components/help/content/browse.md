@@ -58,7 +58,15 @@ nodes and edges.
 
 ![Visualize View](helpimg/visualize.png)
 
-You can drag items (nodes) around to rearrange the graph,
-and can zoom in and out (if your mouse has a scroll wheel).
-As in the other views, you can click on items to show details for that item
-(in the right pane).
+You can drag individual items (nodes) around to rearrange the graph,
+and you can select items to show details for that item (in the right pane).
+You can drag the entire visualization around with your mouse,
+or using the arrow keys on your keyboard.
+You can zoom the entire visualization using the action buttons in
+the upper right, using the "Page Up" and "Page Down" keys on
+your keyboard, or using the scroll wheel on your mouse.
+
+The action buttons provide another useful function. If you hold down
+the shift key on your keyboard while pressing one of these buttons,
+it will center the visualization in the window, and then zoom in or out.
+If an item has been selected, then it will center that node.

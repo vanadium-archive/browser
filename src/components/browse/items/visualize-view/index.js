@@ -4,7 +4,10 @@ var vis = require('vis');
 
 var namespaceService = require('../../../../services/namespace/service');
 
-var log = require('../../../../lib/log')('components:browse:items:tree-view');
+// var getServiceIcon = require('../../get-service-icon');
+
+var log = require('../../../../lib/log'
+    )('components:browse:items:visualize-view');
 
 var css = require('./index.css');
 var h = mercury.h;
@@ -28,14 +31,99 @@ function create() {}
 function render(itemsState, browseState, browseEvents, navEvents) {
   insertCss(css);
 
+  // var open = false;
+
   return [
     h('h2', 'Visualize View'),
-    new TreeWidget(browseState, browseEvents)
+    new TreeWidget(browseState, browseEvents),
+    h('div.vismenu', {  // visualization menu
+    }, [
+      // h('paper-fab#expand', {
+      //   attributes: {
+      //     mini: true,
+      //     icon: open ? 'expand-more' : 'chevron-right',
+      //     title: open ? 'expanded' : 'collapsed',
+      //     'aria-label': 'visualization mode',
+      //     'on-tap': 'expander()'
+      //   }
+      // }),
+      // h('paper-menu-button', [
+      //   h('paper-fab.mode', {
+      //     attributes: {
+      //       mini: true,
+      //       icon: 'menu',
+      //       title: 'visualization mode',
+      //       'aria-label': 'visualization mode'
+      //     }
+      //   }),
+      //   h('paper-dropdown.dropdown', {
+      //     attributes: {
+      //       // transition: ''
+      //     }
+      //   }, [
+      //     h('core-menu.menu', [
+      //       h('paper-item', 'Network'),
+      //       h('paper-item', 'Hierarchy')
+      //     ])
+      //   ])
+      // ]),
+      h('paper-fab.zoom', {
+        attributes: {
+          mini: true,
+          icon: 'add',
+          title: 'zoom in',
+          'aria-label': 'zoom in'
+        },
+        'ev-down': zoom.bind(null, true),
+        'ev-up': stopzoom
+      }),
+      h('paper-fab.zoom', {
+        attributes: {
+          mini: true,
+          icon: 'remove',
+          title: 'zoom out',
+          'aria-label': 'zoom out'
+        },
+        'ev-down': zoom.bind(null, false),
+        'ev-up': stopzoom
+      }),
+    ])
   ];
 }
 
+// The visjs visualization
+var network;
+
+var ZOOM_FACTOR = 0.01; // same as network.constants.keyboard.speed.zoom
+
+// start zooming on button press
+function zoom(zin, event) {
+  var zi = zin ? ZOOM_FACTOR : -ZOOM_FACTOR;
+  var selnodes; // selected nodes
+  if (event.shiftKey) {
+    selnodes = network.getSelection();
+    if (selnodes.nodes.length > 0) {
+      network.focusOnNode(selnodes.nodes[0], { animation: true });
+    } else {
+      network.zoomExtent(true);
+    }
+  }
+  network.zoomIncrement = zi;
+  network.start();
+}
+
+// stop zooming on button release
+function stopzoom() {
+  network.zoomIncrement = 0;
+}
+
+// redraw visualization when window resizes
+window.onresize = function redraw(e) {
+  network.redraw();
+};
+
 // Maximum number of levels that are automatically shown
-var MAX_AUTO_LOAD_DEPTH = 5;
+var MAX_AUTO_LOAD_DEPTH = 3;
 
 function TreeWidget(browseState, browseEvents) {
   this.browseState = browseState;
@@ -71,6 +159,7 @@ TreeWidget.prototype.initNetworkElem = function() {
 // We keep track of previous namespace that was browsed to so we can
 // know when navigating to a different namespace happens.
 var previousNamespace;
+
 TreeWidget.prototype.updateNetwork = function() {
   if (previousNamespace === this.browseState.namespace) {
     return;
@@ -101,6 +190,15 @@ TreeWidget.prototype.updateNetwork = function() {
     hover: false,
     selectable: true, // Need this or nodes won't be click-able
     smoothCurves: false,
+    physics: { barnesHut: {
+      gravitationalConstant: -2200,
+      centralGravity: 0.2,
+      springLength: 64,
+      springConstant: 0.075,
+      damping: 0.12
+    }},
+    keyboard: { speed: { x: -2, y: -2, zoom: 0.01 }},
+    // configurePhysics: true,
     edges: {
       width: 1
     },
@@ -112,7 +210,7 @@ TreeWidget.prototype.updateNetwork = function() {
   };
 
   // Start drawing the network.
-  var network = new vis.Network(networkElem, {
+  network = new vis.Network(networkElem, {
     nodes: this.nodes,
     edges: this.edges
   }, options);

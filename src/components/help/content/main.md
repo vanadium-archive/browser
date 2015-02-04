@@ -53,7 +53,8 @@ Relative Names
 
 A relative name does not begin with a slash.
 The meaning of a relative name depends on a root stored in your environment
-(this is similar to the concept of a "current directory").
+(this is similar to the concept of a "current directory", except it can
+be on a different device).
 
 For example, a user can have their own mount table where they store things
 they own. This mount table can contain names like "phone/messages" that
