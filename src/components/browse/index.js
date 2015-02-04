@@ -418,35 +418,31 @@ function renderViewActions(browseState, navEvents) {
   }
 
   var switchGroup = h('div.icon-group', [
-    createActionIcon('Grid view', 'apps',
-      browseRoute.createUrl(browseState, {
-        viewType: 'grid'
-      }),
-      (selectedActionKey === 'grid')
-    ),
     createActionIcon('Tree view', 'list',
       browseRoute.createUrl(browseState, {
         viewType: 'tree'
-      }),
-      (selectedActionKey === 'tree')
+      }), selectedActionKey === 'tree'
+    ),
+    createActionIcon('Grid view', 'apps',
+      browseRoute.createUrl(browseState, {
+        viewType: 'grid'
+      }), selectedActionKey === 'grid'
     ),
     createActionIcon('Visualize view', 'image:grain',
       browseRoute.createUrl(browseState, {
         viewType: 'visualize'
-      }),
-      (selectedActionKey === 'visualize')
+      }), selectedActionKey === 'visualize'
     )
   ]);
   var ruler = h('div.vertical-ruler');
   var bookmarkGroup = h('div.icon-group', [
     createActionIcon('Bookmarks', 'bookmark-outline',
       bookmarksRoute.createUrl(),
-      (selectedActionKey === 'bookmarks')
+      selectedActionKey === 'bookmarks'
     ),
     createActionIcon('Recommendations', 'social:whatshot',
       recommendationsRoute.createUrl(),
-      (selectedActionKey === 'recommendations')
-    )
+      selectedActionKey === 'recommendations')
   ]);
   var searchGroup = renderSearch(browseState, navEvents);
   var view = h('div', {

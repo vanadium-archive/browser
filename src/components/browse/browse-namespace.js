@@ -25,7 +25,7 @@ function browseNamespace(browseState, browseEvents, data) {
     namespace: '',
     globQuery: '',
     subPage: 'items',
-    viewType: 'grid'
+    viewType: 'tree'
   };
 
   data = extendDefaults(defaults, data);

@@ -39,7 +39,7 @@ function create() {
      * Specifies the current view type of the items.
      * One of: grid, tree, visualize
      */
-    viewType: mercury.value('grid'),
+    viewType: mercury.value('tree'),
 
     /*
      * uuid for the current browse-namespace request.
