@@ -44,10 +44,10 @@
 }
 
 .browse-main-wrapper h2 {
-  width: 90%; /* force view onto next line */
-  font-size: var(--size-font-large);
+  font-size: var(--size-font-xxlarge);
   color: var(--color-text-heading);
-  padding: var(--size-space-xsmall);
+  padding: var(--size-space-small);
+  padding-bottom: var(--size-space-xxsmall);
   text-decoration: none;
 }
 
@@ -97,7 +97,7 @@
 
 .breadcrumb-item:first-child:before
 {
-  content: ' ';
+  display: none;
 }
 
 .namespace-box {

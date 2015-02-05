@@ -19,3 +19,8 @@ tree-node::shadow .itemicon {
   color: var(--color-text-secondary);
   transform: scale(0.7);
 }
+
+#tree-container {
+  margin-top: var(--size-space-normal);
+  margin-left: -var(--size-space-xsmall);
+}

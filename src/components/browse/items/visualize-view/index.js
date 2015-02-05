@@ -32,7 +32,6 @@ function render(itemsState, browseState, browseEvents, navEvents) {
   insertCss(css);
 
   return [
-    h('h2', 'Visualize View'),
     new TreeWidget(browseState, browseEvents),
     h('div.vismenu', {  // visualization menu
     }, [

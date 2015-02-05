@@ -89,10 +89,10 @@ function load(state, namespace, globQuery) {
   // -Have a common component between tree and vis to share the childrens map
 
   if (state.viewType() === 'tree') {
-    namespaceService.getNamespaceItem(namespace).then(function(item) {
+    TreeView.expand(state.tree, namespace);
+    return namespaceService.getNamespaceItem(namespace).then(function(item) {
         state.tree.put('rootItem', item); // WooHoo! fixed the bug!
     });
-    return TreeView.expand(state.tree, namespace);
   }
 
   if (state.viewType() !== 'grid') {

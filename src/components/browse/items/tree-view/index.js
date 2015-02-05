@@ -26,11 +26,11 @@ function create() {
     childrenMap: mercury.varhash({}),
 
     /*
-    * Map of objectNames to Boolean flag showing if tree view is expanded
-    * @type {varhash<string,Boolean>}
-    * For each item, says whether it is expanded in the tree view.
-    * If there is no value, assumes false.
-    */
+     * Map of objectNames to Boolean flag showing if tree view is expanded
+     * @type {varhash<string,Boolean>}
+     * For each item, says whether it is expanded in the tree view.
+     * If there is no value, assumes false.
+     */
     expandedMap: mercury.varhash({}),
 
     /*
@@ -50,7 +50,7 @@ function create() {
 
   var events = mercury.input([
     'openChange', // expand / collapse of tree node
-    'activate'    // tap on tree node
+    'activate' // tap on tree node
   ]);
 
   wireUpEvents(state, events);
@@ -64,19 +64,22 @@ function create() {
 function render(state, events, browseState, browseEvents) {
   insertCss(css);
 
-  var item = state.rootItem;  // start at the root
-  if (item === null) { return; }  // TODO(wm) Maybe show "Loading..."?
+  var item = state.rootItem; // start at the root
+  if (item === null) {
+    return;
+  } // TODO(wm) Maybe show "Loading..."?
 
   var rootEvents = { // events to attach to root of tree
     'ev-openchange': polymerEvent(events.openChange),
     'ev-activate': polymerEvent(
-      events.activate,
-      { browseEvents: browseEvents }
+      events.activate, {
+        browseEvents: browseEvents
+      }
     )
   };
-  return h('div#tree-container', [ h('h2', 'Tree View'),
-      createTreeNode(state, browseState.selectedItemName, item, rootEvents)
-      ]);
+  return h('div#tree-container',
+    createTreeNode(state, browseState.selectedItemName, item, rootEvents)
+  );
 }
 
 /*
@@ -89,13 +92,13 @@ function createTreeNode(state, selected, item, extraprops) {
   var descendants = []; // all viewed descendants of this item
   if (childrenArr) {
     descendants = childrenArr.map(function(child) {
-        return createTreeNode(state, selected, child);
+      return createTreeNode(state, selected, child);
     });
   }
   var props = {
     attributes: {
       label: item.mountedName || '<root>',
-      icon:  getServiceIcon(item.isServer ? item.serverInfo.typeInfo.key : ''),
+      icon: getServiceIcon(item.isServer ? item.serverInfo.typeInfo.key : ''),
       itemTitle: item.objectName,
       open: !!state.expandedMap[item.objectName],
       highlight: (item.objectName === selected),
@@ -116,7 +119,7 @@ function wireUpEvents(state, events) {
     var openMe = data.polymerDetail.node.open;
     if (openMe) {
       expand(state, objectName);
-    } else {  // collapse this item
+    } else { // collapse this item
       state.expandedMap.delete(objectName);
     }
   });

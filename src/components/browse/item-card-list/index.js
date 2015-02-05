@@ -30,5 +30,5 @@ function render(items, browseState, browseEvents, navEvents, opts) {
 
   var heading = h('h2', opts.title);
 
-  return h('div.items-container', [heading, view]);
+  return [heading, h('div.items-container', view)];
 }
