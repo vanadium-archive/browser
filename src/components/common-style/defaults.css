@@ -91,6 +91,12 @@ paper-button > core-icon {
   margin-right: var(--size-space-xsmall);
 }
 
+::shadow /deep/ paper-spinner::shadow .circle,
+paper-spinner::shadow .circle {
+  border-color: var(--color-bright);
+  border-width: 2px;
+}
+
 .empty {
   width: 100%;
   padding: 1em;
