@@ -11,13 +11,13 @@
   top: 5px;
   right: 10px;
 }
-/*paper-fab#expand,
-paper-fab.mode,*/
+paper-fab.mode,
 paper-fab.zoom
  {
   background-color: white;
   margin: 5px 3px;
 }
-paper-dropdown.dropdown {
-  top: 50%;
+paper-fab.selected {
+  background-color: #6B0E9C;
+  color: white;
 }

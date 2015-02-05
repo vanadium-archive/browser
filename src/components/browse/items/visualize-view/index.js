@@ -31,42 +31,21 @@ function create() {}
 function render(itemsState, browseState, browseEvents, navEvents) {
   insertCss(css);
 
-  // var open = false;
-
   return [
     h('h2', 'Visualize View'),
     new TreeWidget(browseState, browseEvents),
     h('div.vismenu', {  // visualization menu
     }, [
-      // h('paper-fab#expand', {
+      // to add hierarchy view, add this button and the vismode handler
+      // h('paper-fab.mode', {
       //   attributes: {
       //     mini: true,
-      //     icon: open ? 'expand-more' : 'chevron-right',
-      //     title: open ? 'expanded' : 'collapsed',
-      //     'aria-label': 'visualization mode',
-      //     'on-tap': 'expander()'
-      //   }
+      //     icon: 'image:grain',
+      //     title: 'change mode',
+      //     'aria-label': 'change mode'
+      //   },
+      //   'ev-tap': vismode
       // }),
-      // h('paper-menu-button', [
-      //   h('paper-fab.mode', {
-      //     attributes: {
-      //       mini: true,
-      //       icon: 'menu',
-      //       title: 'visualization mode',
-      //       'aria-label': 'visualization mode'
-      //     }
-      //   }),
-      //   h('paper-dropdown.dropdown', {
-      //     attributes: {
-      //       // transition: ''
-      //     }
-      //   }, [
-      //     h('core-menu.menu', [
-      //       h('paper-item', 'Network'),
-      //       h('paper-item', 'Hierarchy')
-      //     ])
-      //   ])
-      // ]),
       h('paper-fab.zoom', {
         attributes: {
           mini: true,
@@ -74,7 +53,7 @@ function render(itemsState, browseState, browseEvents, navEvents) {
           title: 'zoom in',
           'aria-label': 'zoom in'
         },
-        'ev-down': zoom.bind(null, true),
+        'ev-down': zoom.bind(undefined, true),
         'ev-up': stopzoom
       }),
       h('paper-fab.zoom', {
@@ -84,7 +63,7 @@ function render(itemsState, browseState, browseEvents, navEvents) {
           title: 'zoom out',
           'aria-label': 'zoom out'
         },
-        'ev-down': zoom.bind(null, false),
+        'ev-down': zoom.bind(undefined, false),
         'ev-up': stopzoom
       }),
     ])
@@ -92,7 +71,36 @@ function render(itemsState, browseState, browseEvents, navEvents) {
 }
 
 // The visjs visualization
-var network;
+var network, rootNodeId;
+
+// change visualization between hierarchical and network modes
+// function vismode() {
+//   network._restoreNodes();
+//   var el = document.querySelector('paper-fab.mode');
+//   if (network.constants.hierarchicalLayout.enabled) {
+//     el.className = 'mode';
+//     network.constants.hierarchicalLayout.enabled = false;
+//     network.constants.physics.hierarchicalRepulsion.enabled = false;
+//     network.constants.physics.barnesHut.enabled = true;
+//     network.focusOnNode(rootNodeId, { animation: true });
+//     network.zoomExtent(true);
+//   } else {
+//     el.className = 'mode selected';
+//     network.constants.physics.barnesHut.enabled = false;
+//     network.constants.physics.hierarchicalRepulsion = {
+//       enabled: true,
+//       nodeDistance: 70
+//     };
+//     network.constants.hierarchicalLayout.enabled = true;
+//     network.constants.physics.hierarchicalRepulsion.enabled = true;
+//     network.constants.physics.hierarchicalRepulsion.nodeDistance = 70;
+//     network._setupHierarchicalLayout();
+//     network.zoomExtent(true);
+//   }
+//   network._loadSelectedForceSolver();
+//   network.moving = true;
+//   network.start();
+// }
 
 var ZOOM_FACTOR = 0.01; // same as network.constants.keyboard.speed.zoom
 
@@ -117,13 +125,15 @@ function stopzoom() {
   network.zoomIncrement = 0;
 }
 
-// redraw visualization when window resizes
-window.onresize = function redraw(e) {
-  network.redraw();
-};
+// repaint visualization canvas when window resizes
+window.addEventListener('resize', function redraw(e) {
+  if (network) {
+    network.redraw();
+  }
+});
 
-// Maximum number of levels that are automatically shown
-var MAX_AUTO_LOAD_DEPTH = 3;
+// Maximum number of levels that are automatically loaded below the root
+var MAX_AUTO_LOAD_DEPTH = 4;
 
 function TreeWidget(browseState, browseEvents) {
   this.browseState = browseState;
@@ -148,7 +158,6 @@ TreeWidget.prototype.init = function() {
   return wrapper;
 };
 
-
 TreeWidget.prototype.initNetworkElem = function() {
   if (!networkElem) {
     networkElem = document.createElement('div');
@@ -156,11 +165,15 @@ TreeWidget.prototype.initNetworkElem = function() {
   }
 };
 
-// We keep track of previous namespace that was browsed to so we can
+// Keep track of previous namespace that was browsed to so we can
 // know when navigating to a different namespace happens.
 var previousNamespace;
 
 TreeWidget.prototype.updateNetwork = function() {
+  if (network && network.constants.hierarchicalLayout.enabled) {
+    document.querySelector('paper-fab.mode').className = 'mode selected';
+  }
+
   if (previousNamespace === this.browseState.namespace) {
     return;
   }
@@ -170,7 +183,7 @@ TreeWidget.prototype.updateNetwork = function() {
   var self = this;
 
   // Add the initial node.
-  var rootNodeId = this.browseState.namespace;
+  rootNodeId = this.browseState.namespace;
   this.nodes.add({
     id: rootNodeId,
     label: rootNodeId || '<root>',
@@ -190,15 +203,23 @@ TreeWidget.prototype.updateNetwork = function() {
     hover: false,
     selectable: true, // Need this or nodes won't be click-able
     smoothCurves: false,
-    physics: { barnesHut: {
-      gravitationalConstant: -2200,
-      centralGravity: 0.2,
-      springLength: 64,
-      springConstant: 0.075,
-      damping: 0.12
-    }},
+    physics: {
+      barnesHut: {
+        enabled: true,
+        gravitationalConstant: -2200,
+        centralGravity: 0.2,
+        springLength: 64,
+        springConstant: 0.075,
+        damping: 0.12
+      }
+    },
+    hierarchicalLayout: {
+      enabled: false,
+      direction: 'LR',
+      nodeSpacing: 70,
+      levelSeparation: 180
+    },
     keyboard: { speed: { x: -2, y: -2, zoom: 0.01 }},
-    // configurePhysics: true,
     edges: {
       width: 1
     },
