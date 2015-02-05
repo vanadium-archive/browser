@@ -1,7 +1,10 @@
 var mercury = require('mercury');
 var insertCss = require('insert-css');
 
+var polymerEvent = require('../../../lib/mercury/polymer-event');
+
 var methodNameToVarHashKey = require('./methodNameToVarHashKey');
+var PluginWidgetAdapter = require('./plugin-widget-adapter');
 
 var browseRoute = require('../../../routes/browse');
 
@@ -59,14 +62,10 @@ function create() {
     signature: mercury.value(null),
 
     /*
-     * Which tab to display; 0 is for service details
-     * TODO(alexfandrianto): Once we have more info to display, add more tabs.
-     * We are currently combining service details, methods, and outputs.
-     * TODO(alexfandrianto): Use an enum instead of a comment to clarify the
-     * mapping between tab name and tab index.
-     * @type {integer}
+     * Which tab to display. Key is a unique string e.g. ('details' or <plugin>)
+     * @type {string}
      */
-    selectedTabIndex: mercury.value(0),
+    selectedTabKey: mercury.value(null),
 
     /*
      * An associative array from item names to method outputs.
@@ -100,7 +99,14 @@ function create() {
      * Whether item is bookmarked
      * @type {mercury.value<boolean>}
      */
-    isBookmarked: mercury.value(false)
+    isBookmarked: mercury.value(false),
+
+    /*
+     * List of item plugins supported for this item
+     * @type {itemplugin}
+     * @see {item-plugins/plugin.js.doc}
+     */
+    plugins: mercury.array([])
   });
 
   var events = mercury.input([
@@ -124,12 +130,78 @@ function create() {
   };
 }
 
+var DETAILS_TAB_KEY = 'details';
+
 /*
  * Render the item details page, which includes tabs for details and methods.
  */
 function render(state, events, browseState, navEvents) {
   insertCss(css);
 
+  var tabTitles = renderTabTitles(state, events);
+
+  var selectedTabContent =
+    renderSelectedTabContent(state, events, browseState, navEvents);
+
+  return [
+    h('paper-tabs.tabs', {
+      attributes: {
+        'valueattr': 'tabkey',
+        'selected': (state.selectedTabKey || DETAILS_TAB_KEY),
+        'noink': true
+      }
+    }, tabTitles),
+    selectedTabContent
+  ];
+}
+
+/*
+ * Renders the tab titles such as details and tabs for support plugins
+ * It uses the plugins id as the tab key
+ */
+function renderTabTitles(state, events) {
+  // Details tab
+  var detailsTabTitle = (namespaceUtil.basename(state.itemName) || '<root>');
+  var detailsTab =
+    renderTabTitle(state, events, DETAILS_TAB_KEY, detailsTabTitle);
+
+  // Plugin tabs
+  var pluginTabs = state.plugins.map(function(p) {
+    var pluginTabKey = p.id;
+    return renderTabTitle(state, events, pluginTabKey, p.title);
+  });
+
+  var allTabs = [detailsTab].concat(pluginTabs);
+
+  return allTabs;
+}
+
+/*
+ * Renders the selected tab content.
+ */
+function renderSelectedTabContent(state, events, browseState, navEvents) {
+  var selectedTabKey = state.selectedTabKey || DETAILS_TAB_KEY;
+  switch (selectedTabKey) {
+    case DETAILS_TAB_KEY:
+      return renderDetailsTabContent(state, events, browseState, navEvents);
+    default:
+      // potentially a plugin tab
+      var plugin = state.plugins.filter(function(p) {
+        return p.id === selectedTabKey;
+      })[0];
+      if (plugin) {
+        var view = new PluginWidgetAdapter(state.itemName, plugin);
+        return renderTabContent(view);
+      } else {
+        throw 'Unknown tab key: ' + selectedTabKey;
+      }
+  }
+}
+
+/*
+ * Render tab content for the details tab
+ */
+function renderDetailsTabContent(state, events, browseState, navEvents) {
   var tabContent;
 
   if (state.showLoadingIndicator) {
@@ -154,27 +226,31 @@ function render(state, events, browseState, navEvents) {
 
   var headerContent = renderHeaderContent(state, events, browseState,
     navEvents);
-  var formattedTabTitle = (namespaceUtil.basename(state.itemName) || '<root>');
-  return [h('paper-tabs.tabs', {
-      attributes: {
-        'selected': state.selectedTabIndex,
-        'noink': true
-      }
-    }, [
-      h('paper-tab.tab', {
-        'ev-click': mercury.event(events.tabSelected, {
-          index: 0
-        })
-      }, formattedTabTitle)
-    ]),
-    h('core-selector', {
-      attributes: {
-        'selected': state.selectedTabIndex
-      }
-    }, [
-      h('div.tab-content', [headerContent, tabContent]),
-    ])
-  ];
+
+  return renderTabContent([headerContent, tabContent]);
+}
+
+/*
+ * Render tab title given a title string and tab key
+ */
+function renderTabTitle(state, events, tabKey, title) {
+  return h('paper-tab.tab', {
+    attributes: {
+      'tabkey': tabKey
+    },
+    'ev-click': new polymerEvent(function(data) {
+      events.tabSelected({
+        tabKey: data.target.getAttribute('tabkey')
+      });
+    })
+  }, title);
+}
+
+/*
+ * Render tab content given the tabContent by wrapping it in a container
+ */
+function renderTabContent(tabContent) {
+  return h('div.tab-content', tabContent);
 }
 
 /*
@@ -212,7 +288,7 @@ function renderActions(state, events, browseState, navEvents) {
   // This action only appears if the namespace's parent is not empty.
   var parent = namespaceUtil.stripBasename(browseState.namespace);
   var noParent = (parent === '' && (browseState.namespace[0] === '/' ||
-                                    browseState.namespace === ''));
+    browseState.namespace === ''));
   if (!noParent) {
     var browseUpUrl = browseRoute.createUrl(browseState, {
       namespace: parent
@@ -273,7 +349,6 @@ function renderActions(state, events, browseState, navEvents) {
 
   return h('div.icon-group.item-actions', actions);
 }
-
 
 /*
  * Renders the header which includes actions and name field.
@@ -505,7 +580,7 @@ function renderFieldItem(label, content, options) {
 function wireUpEvents(state, events) {
   events.displayItemDetails(displayItemDetails.bind(null, state, events));
   events.tabSelected(function(data) {
-    state.selectedTabIndex.set(data.index);
+    state.selectedTabKey.set(data.tabKey);
   });
   events.bookmark(bookmark.bind(null, state, events));
   events.toggleMethodForm(function(data) {

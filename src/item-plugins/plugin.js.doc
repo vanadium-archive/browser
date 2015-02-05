@@ -1,0 +1,39 @@
+/*
+ * ItemPlugin is an external, pluggable UI widget that can extend the
+ * functionality of the details view which is displayed when user selects an
+ * item in the Vanadium Viewer.
+ */
+var itemPlugin = {
+
+  /*
+   * Short title for the plugin. This title will be displayed to the end user.
+   * @type {string}
+   */
+  title: 'My Plugin',
+
+  /*
+   * Given a Vanadium object name and its signature, it should return whether
+   * or not this plugin supports that object.
+   * @param {string} name Vanadium object name for the item.
+   * @param {signature} Signature of the item.
+   * @return {boolean} Whether this plugin supports the selected item.
+   */
+  canSupport: function(name, signature) {},
+
+  /*
+   * Given a Vanadium object name, this function needs to render a
+   * single DOM node to display.
+   * Render is only called once per unique name and cached.
+   * Plugin is free to update the DOM at any point.
+   *
+   * WebComponent's attached, detached, ready, etc can be used to handle the
+   * life-cycle of the DOM component.
+   *
+   * Plugin host is free to detach/attach the given DOM arbitrarily and DOM may
+   * not get attached immediately after the render call.
+   *
+   * @param {string} name Vanadium object name for the item.
+   * @return {DOM} A single DOM object to display.
+   */
+  render: function(name) {}
+}

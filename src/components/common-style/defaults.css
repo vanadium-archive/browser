@@ -7,11 +7,17 @@
 
 .tabs::shadow #selectionBar {
   background-color: var(--color-bright);
+  height: 3px;
+}
+
+.tab.core-selected {
+  opacity: 1;
 }
 
 .tab {
+  opacity: 0.85;
   background-color: var(--color-grey-dark);
-  color: var(--color-text-primary-invert);
+  color: var(--color-white);
 }
 
 .tab::shadow #ink {
@@ -20,10 +26,6 @@
 
 .tab-content {
   padding: var(--size-space-xsmall);
-}
-
-:not(.core-selected).tab-content {
-  display: none;
 }
 
 paper-spinner {

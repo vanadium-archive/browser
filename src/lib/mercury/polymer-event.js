@@ -10,5 +10,6 @@ module.exports = new BaseEvent(internalPolymerEvent);
 
 function internalPolymerEvent(ev, broadcast) {
     this.data.polymerDetail = ev._rawEvent.detail;
+    this.data.target = ev._rawEvent.target;
     broadcast(this.data);
 }

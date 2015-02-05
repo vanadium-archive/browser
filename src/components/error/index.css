@@ -3,3 +3,11 @@
 .error-page {
   padding: var(--size-space-normal);
 }
+
+.error-page .error-box-title {
+  font-size: var(--size-font-xxlarge);
+}
+
+.error-page .error-box-details {
+  font-size: var(--size-font-large);
+}

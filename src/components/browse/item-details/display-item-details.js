@@ -9,7 +9,7 @@ var methodForm = require('./method-form/index.js');
 var namespaceService = require('../../../services/namespace/service');
 var bookmarkService = require('../../../services/bookmarks/service');
 var smartService = require('../../../services/smart/service');
-
+var pluginRegistry = require('../../../item-plugins/registry');
 var log = require('../../../lib/log')(
   'components:browse:item-details:display-item-details'
 );
@@ -33,6 +33,8 @@ function displayItemDetails(state, events, data) {
 
   lastRequestedName = name;
 
+  state.put('plugins', mercury.array([]));
+  state.selectedTabKey.set(null);
   state.put('error', null);
   state.itemName.set(name);
 
@@ -99,6 +101,10 @@ function displayItemDetails(state, events, data) {
       return;
     }
 
+    // Load plugins
+    var plugins = pluginRegistry.matches(name, signatureResult);
+    state.put('plugins', plugins);
+
     // Go through each signature method from each interface. Prepare the state
     // needed for the form to be rendered and its events to function.
     signatureResult.forEach(function(interface, i) {
@@ -151,6 +157,7 @@ function displayItemDetails(state, events, data) {
     });
     state.put('item', null);
     state.put('error', err);
+    state.put('plugins', mercury.array([]));
     setIsLoaded();
   });
 

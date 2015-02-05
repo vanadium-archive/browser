@@ -3,6 +3,7 @@ var mercury = require('mercury');
 var addDelegatedEvents = require('./lib/mercury/addDelegatedEvents');
 var onDocumentReady = require('./lib/document-ready');
 var router = require('./router');
+var registerItemPlugins = require('./item-plugins/register-plugins');
 var debug = require('./components/debug/index');
 var browse = require('./components/browse/index');
 var error = require('./components/error/index');
@@ -115,6 +116,9 @@ onDocumentReady(function startApp() {
 
   // Start the router which will register the application routes
   router(state, events);
+
+  // Register the plugins
+  registerItemPlugins();
 
   // Initialize Vanadium
   initVanadium();

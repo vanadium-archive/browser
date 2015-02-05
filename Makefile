@@ -28,6 +28,9 @@ TMPDIR:=$(TMPDIR)/viz
 
 VANADIUM_JS:=$(VANADIUM_ROOT)/release/javascript/core
 
+# ALL HTML and CSS files
+VULCANIZE_FILES = $(shell find src -name "*.html" -o -name "*.css")
+
 # All JS and CSS files except build.js and third party.
 BROWSERIFY_FILES = $(shell find src -name "*.js" -o -name "*.css")
 BROWSERIFY_OPTIONS = --transform ./main-transform --debug
@@ -44,7 +47,7 @@ public/bundle.js: $(BROWSERIFY_FILES) node_modules src/components/help/content/*
 	:;browserify src/app.js $(BROWSERIFY_OPTIONS) $< | exorcist $@.map > $@ # Browserify and generate map file.
 
 # Creating the bundle HTML file.
-public/bundle.html: web-component-dependencies.html node_modules bower_components
+public/bundle.html: $(VULCANIZE_FILES) web-component-dependencies.html node_modules bower_components
 	:;vulcanize --output public/bundle.html web-component-dependencies.html --inline
 
 # Install what we need from NPM.
