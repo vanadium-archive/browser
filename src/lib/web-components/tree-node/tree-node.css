@@ -43,6 +43,9 @@ paper-spinner {
   margin-left: -28px;
   margin-top: 4px;
 }
+paper-spinner::shadow .circle {
+  border-color: #6B0E9C;
+}
 /* how to add content to item on highlight
 span.item.highlight::after {
   content: " \0025B6";
