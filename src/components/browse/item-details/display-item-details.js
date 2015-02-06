@@ -36,6 +36,9 @@ function displayItemDetails(state, events, data) {
   state.put('plugins', mercury.array([]));
   state.selectedTabKey.set(null);
   state.put('error', null);
+  state.put('item', null);
+  state.put('signature', null);
+  state.put('remoteBlessings', null);
   state.itemName.set(name);
 
   // Whether we have finished loading yet.
@@ -49,16 +52,21 @@ function displayItemDetails(state, events, data) {
     state.showLoadingIndicator.set(true);
   }, SHOW_LOADING_THRESHOLD);
 
-  var getItem = Promise.all([
-    //TODO(aghassemi) If isBookmarked fails, we are not showing anything
-    //ideally, we only remove the bookmark related UI and still show the rest.
-    bookmarkService.isBookmarked(name),
-    namespaceService.getNamespaceItem(name)
-  ]);
+  // Asynchronously load the bookmark. It should be quite fast.
+  bookmarkService.isBookmarked(name).then(function setBookmark(isBookmarked) {
+    // Protect this call; this must be the selected item.
+    if (!isCurrentlySelected()) {
+      return;
+    }
+    state.isBookmarked.set(isBookmarked);
+  });
 
-  var isBookmarked;
+  // The main bulk of the work is getting the namespace item and determining
+  // information about it.
+  var getItem = namespaceService.getNamespaceItem(name);
+
   var itemObs;
-  getItem.then(function loadSignature(results) {
+  getItem.then(function loadRemoteBlessings(results) {
     /*
      * Since async call, by the time we are here, a different name
      * might be selected.
@@ -68,18 +76,33 @@ function displayItemDetails(state, events, data) {
       return;
     }
 
-    isBookmarked = results[0];
-    itemObs = results[1];
+    itemObs = results;
     state.put('item', itemObs);
-    state.isBookmarked.set(isBookmarked);
 
+    // Ask for more information if this is a server.
     if (itemObs().isServer) {
+      return namespaceService.getRemoteBlessings(name);
+    } else {
+      return null;
+    }
+  }).then(function loadSignature(remoteBlessings) {
+    log.debug('Received blessings for', name, remoteBlessings);
+    if (!isCurrentlySelected()) {
+      return;
+    }
+
+    // TODO(alexfandrianto): If possible, it would be great to load these
+    // remote blessings in parallel to the signature call. It would be even
+    // better if we could get this data from the same signature call.
+    state.put('remoteBlessings', remoteBlessings);
+
+    // Ask for more information if this is a server (and got blessings).
+    if (remoteBlessings) {
       return namespaceService.getSignature(name);
     } else {
       return null;
     }
   }).then(function setStateAndFinishLoading(signatureResult) {
-
     if (!isCurrentlySelected()) {
       return;
     }
@@ -155,7 +178,6 @@ function displayItemDetails(state, events, data) {
       text: 'Error while getting details for:' + name,
       type: 'error'
     });
-    state.put('item', null);
     state.put('error', err);
     state.put('plugins', mercury.array([]));
     setIsLoaded();

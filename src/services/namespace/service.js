@@ -12,6 +12,7 @@ var log = require('../../lib/log')('services:namespace:service');
 module.exports = {
   getChildren: getChildren,
   getNamespaceItem: getNamespaceItem,
+  getRemoteBlessings: getRemoteBlessings,
   getSignature: getSignature,
   getAccountName: getAccountName,
   makeRPC: makeRPC,
@@ -215,8 +216,38 @@ function search(parentName, pattern) {
 }
 
 /*
+ * remoteBlessingsCache holds (name, []string) cache entry for
+ * REMOTE_BLESSINGS_CACHE_MAX_SIZE items in an LRU cache
+ */
+var REMOTE_BLESSINGS_CACHE_MAX_SIZE = 10000;
+var remoteBlessingsCache = new LRU({
+  max: REMOTE_BLESSINGS_CACHE_MAX_SIZE
+});
+/*
+ * Given an object name, returns a promise of the service's remote blessings.
+ * @param {string} objectName Object name to get remote blessings for
+ * @return {[]string} remoteBlessings The service's remote blessings.
+ */
+function getRemoteBlessings(objectName) {
+  var cacheKey = 'getRemoteBlessings|' + objectName;
+  var cacheHit = remoteBlessingsCache.get(cacheKey);
+  if (cacheHit) {
+    return Promise.resolve(cacheHit);
+  }
+  return getRuntime().then(function invokeRemoteBlessingsMethod(rt) {
+    var ctx = veyron.context.Context().withTimeout(RPC_TIMEOUT);
+    var client = rt.newClient();
+    return client.remoteBlessings(ctx, objectName);
+  }).then(function cacheAndReturnRemoteBlessings(remoteBlessings) {
+    // Remote Blessings is []string representing the principals of the service.
+    remoteBlessingsCache.set(cacheKey, remoteBlessings);
+    return remoteBlessings;
+  });
+}
+
+/*
  * signatureCache holds (name, signature) cache entry for
- * SIGNATURECACHE_MAX_SIZE items in an LRU cache
+ * SIGNATURE_CACHE_MAX_SIZE items in an LRU cache
  */
 var SIGNATURE_CACHE_MAX_SIZE = 10000;
 var signatureCache = new LRU({

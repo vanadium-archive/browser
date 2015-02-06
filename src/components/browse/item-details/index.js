@@ -54,9 +54,14 @@ function create() {
     error: mercury.value(null),
 
     /*
-     * signature for the item.
-     * It's a map with extra information.
-     * @see services/namespace/signature-adapter
+     * remoteBlessings for the item. []string
+     * @type {[]string}
+     */
+    remoteBlessings: mercury.value(null),
+
+    /*
+     * signature for the item. []interface
+     * @see services/namespace/interface-util
      * @type {signature}
      */
     signature: mercury.value(null),
@@ -202,28 +207,37 @@ function renderSelectedTabContent(state, events, browseState, navEvents) {
  * Render tab content for the details tab
  */
 function renderDetailsTabContent(state, events, browseState, navEvents) {
-  var tabContent;
+  var tabContent = [];
 
+  // Details can only be shown if there is an item.
+  if (state.item) {
+    var detailsContent = renderDetailsContent(state, events);
+    tabContent.push(detailsContent);
+  }
+
+  // The method forms can only be shown under these conditions.
+  if (state.item && state.item.isServer && state.signature) {
+    var methodsContent = renderMethodsContent(state, events);
+    tabContent.push(methodsContent);
+  }
+
+  // Show an error if there is one.
+  if (state.error) {
+    var errorTitle = 'Unable to connect to ' + state.itemName;
+    tabContent.push(ErrorBox.render(errorTitle, state.error.toString()));
+  }
+
+  // Show the loading indicator if it's available.
   if (state.showLoadingIndicator) {
-    tabContent = h('paper-spinner', {
+    tabContent.push(h('paper-spinner', {
       attributes: {
         'active': true,
         'aria-label': 'Loading'
       }
-    });
-  } else if (state.item) {
-    var detailsContent = renderDetailsContent(state, events);
-
-    var methodsContent;
-    if (state.item.isServer) {
-      methodsContent = renderMethodsContent(state, events);
-    }
-    tabContent = [detailsContent, methodsContent];
-  } else if (state.error) {
-    var errorTitle = 'Unable to connect to ' + state.itemName;
-    tabContent = ErrorBox.render(errorTitle, state.error.toString());
+    }));
   }
 
+  // The header is always rendered.
   var headerContent = renderHeaderContent(state, events, browseState,
     navEvents);
 
@@ -363,12 +377,12 @@ function renderHeaderContent(state, events, browseState, navEvents) {
     actions,
     renderFieldItem('Full Name', (state.itemName || '<root>')),
   ];
-
   return headerItems;
 }
 
 /*
  * Renders details about the current service object.
+ * Assumes that there is a state.item
  * Note: Currently renders in the same tab as renderMethodsContent.
  */
 function renderDetailsContent(state, events) {
@@ -376,6 +390,9 @@ function renderDetailsContent(state, events) {
   displayItems.push(renderTypeFieldItem(state));
   if (state.item.isServer) {
     displayItems.push(renderEndpointsFieldItem(state));
+    if (state.remoteBlessings) {
+      displayItems.push(renderRemoteBlessingsFieldItem(state));
+    }
   }
   return [
     h('div', displayItems)
@@ -427,8 +444,33 @@ function renderEndpointsFieldItem(state) {
 }
 
 /*
+ * Renders the Remote Blessings Field Item, a list of the server's blessings.
+ * Does not appear until the data has been fetched.
+ */
+function renderRemoteBlessingsFieldItem(state) {
+  var remoteBlessings = state.remoteBlessings;
+  var blessingDivs;
+  if (remoteBlessings.length === 0) {
+    blessingDivs = [
+      h('div', h('span', 'No blessings found'))
+    ];
+  } else {
+    // Show 1 div per blessing.
+    blessingDivs = remoteBlessings.map(function(blessing) {
+      return h('div', h('span', blessing));
+    });
+  }
+  return renderFieldItem('Remote Blessings', h('div', {
+    attributes: {
+      'vertical': true,
+      'layout': true
+    }
+  }, blessingDivs));
+}
+
+/*
  * Renders the method signature forms and the RPC output area.
- * Note: Currently renders in the same tab as renderDetailsContent.
+ * Does not appear until the data has been fetched.
  */
 function renderMethodsContent(state, events) {
   var sig = state.signature;
