@@ -104,8 +104,7 @@ function bookmark(name, isBookmarked) {
 }
 
 /*
- * Check the browseState for the index of the given item. -1 if not present.
- * Note: browseState should be observed.
+ * Check the observe array for the index of the given item. -1 if not present.
  */
 function indexOf(name) {
   return _.findIndex(bookmarksObs(), function(bookmark) {

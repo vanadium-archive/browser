@@ -13,7 +13,9 @@ module.exports.render = render;
  * Renders a namespace item in a card view.
  * @param item {namespaceitem} @see services/namespace/item
  */
-function render(item, browseState, browseEvents, navEvents, showShortName) {
+function render(item, browseState, browseEvents, navEvents, showShortName,
+  hoverActionInfo) {
+
   insertCss(css);
 
   var selected = (browseState.selectedItemName === item.objectName);
@@ -63,6 +65,11 @@ function render(item, browseState, browseEvents, navEvents, showShortName) {
   var cardLabel = (showShortName ? item.mountedName : item.objectName) ||
     '<root>';
 
+  var hoverAction;
+  if (hoverActionInfo) {
+    hoverAction = renderHoverAction(item.objectName, hoverActionInfo);
+  }
+
   return h('div.' + itemClassNames, {
     'title': itemTooltip
   }, [
@@ -76,6 +83,22 @@ function render(item, browseState, browseEvents, navEvents, showShortName) {
       iconNode,
       h('span', cardLabel)
     ]),
-    expandAction
+    expandAction,
+    hoverAction
   ]);
+}
+
+/*
+ * The hover action must have an icon and an event handler.
+ */
+function renderHoverAction(objectName, hoverAction) {
+  return h('div.action-bar', h('paper-fab', {
+    attributes: {
+      'aria-label': hoverAction.description,
+      'title': hoverAction.description,
+      'icon': hoverAction.icon,
+      'mini': true
+    },
+    'ev-click': hoverAction.action.bind(null, objectName)
+  }));
 }

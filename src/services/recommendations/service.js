@@ -1,6 +1,8 @@
 var mercury = require('mercury');
+var _ = require('lodash');
 var EventEmitter = require('events').EventEmitter;
 
+var arraySet = require('../../lib/arraySet');
 var freeze = require('../../lib/mercury/freeze');
 
 var namespaceService = require('../namespace/service');
@@ -12,7 +14,9 @@ var LEARNER_KEY = 'learner-shortcut';
 var MAX_NUM_RECOMMENDATIONS = 10;
 
 module.exports = {
-  getAll: getAll
+  getAll: getAll,
+  getRecommendationScore: getRecommendationScore,
+  setRecommendationScore: setRecommendationScore
 };
 
 // Singleton state for all the bookmarks.
@@ -77,4 +81,54 @@ function addNamespaceItem(name) {
     .then(function(item) {
       recommendationsObs.push(item);
     });
+}
+
+/*
+ * Get the score of a particular recommended object name.
+ */
+function getRecommendationScore(name) {
+  return smartService.predict(LEARNER_KEY, {
+    name: name,
+    penalize: false
+  }).then(function(res) {
+    var match = res.filter(function(rec) {
+      return rec.item === name;
+    })[0];
+    return match ? match.score : 0;
+  });
+}
+
+/*
+ * Set the score of a particular object name.
+ * Note: This will penalize (or boost) parents of the given name.
+ */
+function setRecommendationScore(name, newScore) {
+  if (newScore > 0) {
+    addNamespaceItem(name);
+  } else {
+    arraySet.set(recommendationsObs, null, false, indexOf.bind(null, name));
+  }
+
+  return getRecommendationScore(name).then(function(curScore) {
+    var delta = newScore - curScore;
+    return smartService.update(LEARNER_KEY, {
+      name: name,
+      weight: delta
+    }).then(function() {
+      return curScore;
+    });
+  }).catch(function(err) {
+    log.error('Failed to set the recommendation score of', name, 'to', newScore,
+      err);
+  });
+}
+
+/*
+ * Check the observe array for the index of the given item. -1 if not present.
+ */
+function indexOf(name) {
+  return _.findIndex(recommendationsObs(), function(rec) {
+    // Since recommendations can be assigned out of order, check for undefined.
+    return rec !== undefined && name === rec.objectName;
+  });
 }

@@ -21,8 +21,7 @@ function create() {
      * @see services/namespace/item
      * @type {Array<namespaceitem>}
      */
-    recShortcuts: mercury.array([]),
-
+    recShortcuts: mercury.array([])
   });
 
   return {
@@ -31,6 +30,27 @@ function create() {
 }
 
 function render(state, browseState, browseEvents, navEvents) {
+  // An event used to reduce a recommendation score to 0, or to recover it.
+  var modifyRecommendation = function(score, objectName) {
+    recommendationsService.setRecommendationScore(objectName, score).then(
+      function(oldScore) {
+        var desc = (oldScore === 0 ? 'Restored ' : 'Forgot ');
+        browseEvents.toast({
+          text: desc + ' recommendation ' + objectName,
+          action: modifyRecommendation.bind(null, oldScore, objectName),
+          actionText: 'UNDO'
+        });
+      }
+    ).catch(function(err) {
+      var errText = 'Failed to forget recommendation for ' + objectName;
+      log.error(errText, err);
+      browseEvents.toast({
+        text: errText,
+        type: 'error'
+      });
+    });
+  };
+
   return ItemCardList.render(
     state.recShortcuts,
     browseState,
@@ -38,7 +58,12 @@ function render(state, browseState, browseEvents, navEvents) {
     navEvents, {
       title: 'Recommendations',
       emptyText: 'No recommendations',
-      showShortName: false
+      showShortName: false,
+      hoverActionInfo: {
+        icon: 'clear',
+        description: 'Forget recommendation',
+        action: modifyRecommendation.bind(null, 0)
+      }
     }
   );
 }

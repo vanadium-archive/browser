@@ -7,7 +7,11 @@ module.exports = bookmark;
 
 function bookmark(state, events, data) {
   var wasBookmarked = state.isBookmarked();
-  state.isBookmarked.set(data.bookmark);
+
+  // If this is the current item, set the bookmark flag.
+  if (state.itemName() === data.name) {
+    state.isBookmarked.set(data.bookmark);
+  }
 
   bookmarksService.bookmark(data.name, data.bookmark).then(function() {
     var toastText = 'Bookmark ' +
@@ -18,6 +22,7 @@ function bookmark(state, events, data) {
       name: data.name,
       bookmark: !data.bookmark
     });
+
 
     events.toast({
       text: toastText,
@@ -31,8 +36,10 @@ function bookmark(state, events, data) {
 
     log.error(errText, err);
 
-    // reset state on error back to what it used to be
-    state.isBookmarked.set(wasBookmarked);
+    // If the name is selected on error, reset state back to what it used to be.
+    if (state.itemName() === data.name) {
+      state.isBookmarked.set(wasBookmarked);
+    }
     events.toast({
       text: errText,
       type: 'error'

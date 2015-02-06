@@ -11,7 +11,6 @@
   min-width: 8em;
   margin: 0.75em;
   border-radius: 3px;
-  overflow: hidden;
   position: relative;
   box-shadow: var(--shadow-all-around);
   border: var(--border);
@@ -56,6 +55,33 @@
   border-color: var(--color-text-hint);
 }
 
-.item.card a:hover {
+.item.card a:hover, .item.card .action-bar:hover paper-fab::shadow #icon {
   opacity: 0.7;
+}
+
+.item.card .action-bar {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  visibility: hidden;
+  transition: visibility 0s;
+}
+
+.item.card .action-bar paper-fab {
+  height: 20px;
+  width: 20px;
+  padding: 3px;
+  background: var(--color-button-primary);
+}
+
+.item.card .action-bar paper-fab::shadow #icon {
+  height: 14px;
+  width: 14px;
+  color: var(--color-button-primary-text);
+}
+
+.item.card:hover .action-bar, .item.selected.card .action-bar,
+.item.card:focus .action-bar {
+  visibility: visible;
+  transition-delay: 0.5s; /* show after a short delay */
 }

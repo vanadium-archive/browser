@@ -80,14 +80,16 @@ function shortcutLearnerFeatureExtractor(name) {
 /*
  * Given an input, extract the relevant feature vector and update the weights
  * of the learner.
+ * input contains name and weight (default 1). Note: weight can be negative.
  */
 function shortcutLearnerUpdate(input) {
   var features = this.featureExtractor(input.name);
+  input.weight = input.weight || 1;
   _.forOwn(features, function(value, key) {
     if (this.directoryCount[key] === undefined) {
       this.directoryCount[key] = 0;
     }
-    this.directoryCount[key] += features[key];
+    this.directoryCount[key] += features[key] * input.weight;
   }, this);
 }
 
@@ -99,12 +101,14 @@ function shortcutLearnerPredict(input) {
   // Make sure to set proper defaults for bad input.
   var defaults = {
     name: '',
-    exclude: []
+    exclude: [],
+    penalize: true
   };
   input = _.assign({}, defaults, input);
 
   // Also ensure that k, the number of children to return, is defined.
   var k = this.params.k || 1;
+  var penalize = input.penalize;
 
   log.debug('Predict top', k, 'children under', input.name, 'excluding',
     input.exclude);
@@ -128,14 +132,16 @@ function shortcutLearnerPredict(input) {
   });
 
   // Next, penalize all scoredItems by the excludedItems.
-  excludedItems.forEach(function(excludedItem) {
-    rank.applyDiversityPenalty(
-      scoredItems,
-      excludedItem,
-      shortcutLearnerFeatureExtractor,
-      excludedItem.score
-    );
-  });
+  if (penalize) {
+    excludedItems.forEach(function(excludedItem) {
+      rank.applyDiversityPenalty(
+        scoredItems,
+        excludedItem,
+        shortcutLearnerFeatureExtractor,
+        excludedItem.score
+      );
+    });
+  }
 
   // Then determine the top k items including diversity.
   // TODO(alexfandrianto): This step forces us to take O(kn) runtime. Is there a
@@ -158,12 +164,14 @@ function shortcutLearnerPredict(input) {
       }
 
       // Otherwise, penalize all remaining items.
-      rank.applyDiversityPenalty(
-        scoredItems,
-        topK[i],
-        shortcutLearnerFeatureExtractor,
-        topK[i].score
-      );
+      if (penalize) {
+        rank.applyDiversityPenalty(
+          scoredItems,
+          topK[i],
+          shortcutLearnerFeatureExtractor,
+          topK[i].score
+        );
+      }
     }
   }
 

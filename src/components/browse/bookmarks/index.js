@@ -40,7 +40,19 @@ function render(state, browseState, browseEvents, navEvents) {
     navEvents, {
       title: 'Bookmarks',
       emptyText: 'No bookmarks.',
-      showShortName: false
+      showShortName: false,
+      hoverActionInfo: {
+        icon: 'clear',
+        description: 'Remove bookmark',
+        action: function(objectName) {
+          browseEvents.selectedItemDetails.bookmark(
+            {
+              name: objectName,
+              bookmark: false
+            }
+          );
+        }
+      }
     }
   );
 }

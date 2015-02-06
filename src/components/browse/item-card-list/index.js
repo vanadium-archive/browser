@@ -24,7 +24,7 @@ function render(items, browseState, browseEvents, navEvents, opts) {
   } else {
     view = items.map(function(item) {
       return ItemCard.render(item, browseState, browseEvents, navEvents,
-        opts.showShortName || false);
+        opts.showShortName, opts.hoverActionInfo);
     });
   }
 
