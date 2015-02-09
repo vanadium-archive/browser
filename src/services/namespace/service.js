@@ -52,7 +52,7 @@ function getAccountName() {
  * globCache holds (name + globQuery, result) cache entry for
  * GLOB_CACHE_MAX_SIZE items in an LRU cache
  */
-var GLOB_CACHE_MAX_SIZE = 100;
+var GLOB_CACHE_MAX_SIZE = 10000;
 var globCache = new LRU({
   max: GLOB_CACHE_MAX_SIZE
 });
@@ -277,40 +277,6 @@ function getSignature(objectName) {
 }
 
 /*
- * TODO(aghassemi) Technically right now every server is globbable
- * so our definition of globbable is whether the server in question
- * has any children.
- * We may want to consider exposing some metadata about a service on
- * whether that service actually implements Glob or GetChildren
- * interfaces in a custom way or not.
- *
- * Given a object name, returns whether the service referenced by the name
- * supports globbing.
- * @param {string} objectName Object name to check to see if globbale
- * @return {boolean} Whether the service is globbable
- */
-function isGlobbable(objectName) {
-  return getChildren(objectName).then(function(obs) {
-    return new Promise(function(resolve, reject) {
-      var onEndListener = function() {
-        // no children
-        resolve(false);
-        removeWatch();
-      };
-      // resolve as soon as we find one child
-      var removeWatch = mercury.watch(obs, function(children) {
-        if (children.length > 0) {
-          resolve(true);
-        }
-      });
-      obs.events.once('end', onEndListener);
-    });
-  }).catch(function() {
-    return false;
-  });
-}
-
-/*
  * Make an RPC call on a service object.
  * name: string representing the name of the service
  * methodName: string for the service method name
@@ -370,13 +336,31 @@ function createNamespaceItem(mountEntry) {
     serverInfo: serverInfo
   });
 
-  // find out if the object referenced by name is globbable asynchronously and
-  // update the state when it comes back
-  var onFinishPromise = isGlobbable(name).then(function(isGlobbable) {
-    item.isGlobbable.set(isGlobbable);
-    return true;
-  }).catch(function() {
-    return true;
+  // find out if the object referenced by name is globbable and accessible
+  // asynchronously and update the state when it comes back
+  var onFinishPromise = new Promise(function(resolve, reject) {
+    // glob for 'object/name/*', this will tell is if the name has any children
+    // also the errors can be used to detect if name is accessible or not.
+    var ctx = veyron.context.Context().withTimeout(RPC_TIMEOUT).withCancel();
+    getRuntime().then(function hasChildren(rt) {
+      var ns = rt.namespace();
+      var globStream = ns.glob(ctx, namespaceUtil.join(name, '*')).stream;
+      globStream.on('data', function createItem() {
+        // we have at least one child
+        item.isGlobbable.set(true);
+        ctx.cancel();
+        resolve();
+      });
+      globStream.on('error', function createItem(globResult) {
+        //TODO(aghassemi) Certain types of error can tell us if the name
+        // was not accessible which can be used for the IsAccessible flag.
+        ctx.cancel();
+        resolve();
+      });
+      globStream.on('end', function() {
+        resolve();
+      });
+    });
   });
 
   return {
