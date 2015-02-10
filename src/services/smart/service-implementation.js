@@ -382,7 +382,7 @@ function topKLearnerPredict(input) {
 
   // Rank the scored items and return the top values (limit to maxValues)
   var maxValues = this.params.maxValues;
-  if (maxValues === undefined) {
+  if (maxValues === undefined || maxValues < 0) {
     maxValues = scoredItems.length;
   }
   var bestK = rank.getBestKItems(scoredItems, maxValues);

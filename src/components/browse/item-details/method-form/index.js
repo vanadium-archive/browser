@@ -26,6 +26,10 @@ var h = mercury.h;
 module.exports = create;
 module.exports.render = render;
 
+// While an unlimited # of items are predicted per input, it's a bad idea to
+// show them all. Limit to 4 at a time, and rely on filtering to find the rest.
+var METHOD_INPUT_MAX_ITEMS = 4;
+
 /*
  * Create the base state and events necessary to render a method form.
  * Call the displayMethodForm event to fill this state with more data.
@@ -510,8 +514,11 @@ function renderMethodInput(state, index) {
   // That means spurious 'change' and 'input' events may appear occasionally.
   var elem = h('paper-autocomplete.method-input-item.autocomplete', {
     'key': state.itemName, // Enforce element refresh when switching items
-    'label': argName + ' (' + argTypeStr + ')',
-    'value': args[index],
+    attributes: {
+      'label': argName + ' (' + argTypeStr + ')',
+      'value': args[index],
+      'maxItems': METHOD_INPUT_MAX_ITEMS
+    },
     'ev-change': changeEvent
   }, children);
 

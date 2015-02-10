@@ -29,6 +29,10 @@ module.exports = create;
 module.exports.render = render;
 module.exports.renderHeader = renderHeader;
 
+// While there could be any number of children at the current namespace, only
+// show up to 5 suggestions at a time. Rely on the filter to find the rest.
+var NAMESPACE_AUTOCOMPLETE_MAX_ITEMS = 5;
+
 /*
  * Browse component provides user interfaces for browsing the Veyron namespace
  */
@@ -186,7 +190,7 @@ function loadLearners() {
     'learner-method-input',
     smartService.constants.LEARNER_METHOD_INPUT, {
       minThreshold: 0.2,
-      maxValues: 5
+      maxValues: -1
     }
   ).catch(function(err) {
     log.error(err);
@@ -374,11 +378,12 @@ function renderNamespaceBox(browseState, browseEvents, navEvents) {
         }),
         h('paper-autocomplete', {
           attributes: {
-            'flex': 'true'
+            'name': 'namespace',
+            'value': browseState.namespace,
+            'delimiter': '/',
+            'flex': 'true',
+            'maxItems': NAMESPACE_AUTOCOMPLETE_MAX_ITEMS
           },
-          'name': 'namespace',
-          'value': browseState.namespace,
-          'delimiter': '/',
           'ev-focus': focusEvent,
           'ev-input': inputEvent,
           'ev-change': changeEvent
