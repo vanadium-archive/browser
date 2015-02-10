@@ -22,6 +22,11 @@
   flex-direction: row;
 }
 
+.field .content {
+  white-space: normal;
+  word-break: break-word;
+}
+
 paper-icon-button.bookmarked {
   color: var(--color-bright);
 }
