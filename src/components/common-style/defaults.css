@@ -110,3 +110,14 @@ paper-spinner::shadow .circle {
 .margin-left-xxsmall {
   margin-left: var(--size-space-xxsmall);
 }
+
+/*
+ * Delay the appearance of core tooltips to reduce accidental 'on-hover' spam.
+ */
+core-tooltip::shadow .core-tooltip {
+  transition: visibility 0s;
+}
+core-tooltip[focused]::shadow .core-tooltip,
+core-tooltip:hover:not([disabled])::shadow .core-tooltip {
+  transition-delay: 0.5s;
+}
