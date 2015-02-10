@@ -445,7 +445,7 @@ function renderViewActions(browseState, navEvents) {
       bookmarksRoute.createUrl(),
       selectedActionKey === 'bookmarks'
     ),
-    createActionIcon('Recommendations', 'social:whatshot',
+    createActionIcon('Recent', 'schedule',
       recommendationsRoute.createUrl(),
       selectedActionKey === 'recommendations')
   ]);

@@ -1,9 +1,10 @@
 module.exports = function(routes) {
   routes.addRoute('/recommendation', handleRecommendationRoute);
+  routes.addRoute('/recent', handleRecommendationRoute);
 };
 
 module.exports.createUrl = function() {
-    return '#/recommendation';
+    return '#/recent';
 };
 
 function handleRecommendationRoute(state, events, params) {

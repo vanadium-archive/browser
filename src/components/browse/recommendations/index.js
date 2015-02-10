@@ -36,13 +36,13 @@ function render(state, browseState, browseEvents, navEvents) {
       function(oldScore) {
         var desc = (oldScore === 0 ? 'Restored ' : 'Forgot ');
         browseEvents.toast({
-          text: desc + ' recommendation ' + objectName,
+          text: desc + ' recent item ' + objectName,
           action: modifyRecommendation.bind(null, oldScore, objectName),
           actionText: 'UNDO'
         });
       }
     ).catch(function(err) {
-      var errText = 'Failed to forget recommendation for ' + objectName;
+      var errText = 'Failed to forget recent item ' + objectName;
       log.error(errText, err);
       browseEvents.toast({
         text: errText,
@@ -56,12 +56,12 @@ function render(state, browseState, browseEvents, navEvents) {
     browseState,
     browseEvents,
     navEvents, {
-      title: 'Recommendations',
-      emptyText: 'No recommendations',
+      title: 'Recent',
+      emptyText: 'No recently accessed items.',
       showShortName: false,
       hoverActionInfo: {
         icon: 'clear',
-        description: 'Forget recommendation',
+        description: 'Forget recent item',
         action: modifyRecommendation.bind(null, 0)
       }
     }
