@@ -1,8 +1,10 @@
+var polymer = require('../../../lib/polymer');
+
 var publishedProperties = {
   vname: ''
 };
 
-Polymer('viz-plugins-log-viewer', { // jshint ignore:line
+polymer('viz-plugins-log-viewer', {
   publish: publishedProperties,
   ready: onReady
 });

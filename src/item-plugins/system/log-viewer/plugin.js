@@ -1,6 +1,4 @@
-// TODO(aghassemi): Restore when the Polymer bug is fixed.
-// https://github.com/veyron/release-issues/issues/1001
-// require('./index.js');
+require('./index.js');
 
 module.exports = {
   title: 'Log Viewer',

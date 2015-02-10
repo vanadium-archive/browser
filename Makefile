@@ -27,12 +27,7 @@ ORIG_TMPDIR:=$(TMPDIR)
 TMPDIR:=$(TMPDIR)/viz
 
 VANADIUM_JS:=$(VANADIUM_ROOT)/release/javascript/core
-
-# ALL HTML and CSS files
-VULCANIZE_FILES = $(shell find src -name "*.html" -o -name "*.css")
-
-# All JS and CSS files except build.js and third party.
-BROWSERIFY_FILES = $(shell find src -name "*.js" -o -name "*.css")
+SOURCE_FILES = $(shell find src -name "*")
 BROWSERIFY_OPTIONS = --transform ./main-transform --debug
 
 # All Go and VDL files.
@@ -42,12 +37,12 @@ VDL_FILES = $(shell find go -name "*.vdl")
 default: build
 
 # Creating the bundle JS file.
-public/bundle.js: $(BROWSERIFY_FILES) node_modules src/components/help/content/*.md
+public/bundle.js: $(SOURCE_FILES) node_modules
 	:;jshint src # lint all src JavaScript files.
-	:;browserify src/app.js $(BROWSERIFY_OPTIONS) $< | exorcist $@.map > $@ # Browserify and generate map file.
+	:;browserify src/app.js $(BROWSERIFY_OPTIONS) | exorcist $@.map > $@ # Browserify and generate map file.
 
 # Creating the bundle HTML file.
-public/bundle.html: $(VULCANIZE_FILES) web-component-dependencies.html node_modules bower_components
+public/bundle.html: $(SOURCE_FILES) node_modules bower_components
 	:;vulcanize --output public/bundle.html web-component-dependencies.html --inline
 
 # Install what we need from NPM.
