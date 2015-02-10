@@ -17,6 +17,7 @@ Attributes:
   open: (Boolean) expand to display nested children
   highlight: (Boolean) adds "highlight" CSS class to item
   loading: (Boolean) displays loading spinner
+  isExpandable: (Boolean) displays the expand/collapse icon even if there are no children
 
 Events:
   Attach one event listener to the root (or above),
@@ -74,15 +75,20 @@ author: wmleler@
       itemtitle: 'item',
       open: false,
       highlight: false,
-      loading: false
+      loading: false,
+      isExpandable: false
     },
+    isParent: false,
     ready: function() {
-      this.isParent = !!this.firstElementChild;
+      this.isExpandableChanged();
       this.onMutation(this, this.childrenUpdated);
     },
     childrenUpdated: function(observer, mutations) {
-      this.isParent = !!this.firstElementChild;
+      this.isExpandableChanged();
       this.onMutation(this, this.childrenUpdated);
+    },
+    isExpandableChanged: function() {
+      this.isParent = !!this.firstElementChild || this.isExpandable;
     },
     openme: function(e, d, sender) {
       this.open = !this.open;

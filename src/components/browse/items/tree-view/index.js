@@ -102,7 +102,8 @@ function createTreeNode(state, selected, item, extraprops) {
       itemTitle: item.objectName,
       open: !!state.expandedMap[item.objectName],
       highlight: (item.objectName === selected),
-      loading: item.isGlobbable && state.isLoadingMap[item.objectName]
+      isExpandable: item.isGlobbable,
+      loading: state.isLoadingMap[item.objectName]
     },
     objectName: item.objectName
   };

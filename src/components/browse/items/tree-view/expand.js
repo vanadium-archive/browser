@@ -1,4 +1,3 @@
-var mercury = require('mercury');
 var namespaceService = require('../../../../services/namespace/service');
 
 var log = require('../../../../lib/log')(
@@ -11,16 +10,7 @@ module.exports = expand;
  */
 function expand(state, name) {
   state.expandedMap.put(name, true);
-  return loadChildren(state, name).then(function(childrenObs){
-    mercury.watch(childrenObs, function(children) {
-      // although children would be the full array every time, load children
-      // is smart enough to cache so we don't need to worry about just calling
-      // it for new items.
-      children.map(function(child) {
-        loadChildren(state, child.objectName);
-      });
-    });
-  });
+  return loadChildren(state, name);
 }
 
 /*
