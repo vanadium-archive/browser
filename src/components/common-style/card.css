@@ -5,11 +5,12 @@
   box-sizing: border-box;
   background-color: var(--color-white);
   display: flex;
-  flex-shrink: 0;
-  flex-grow: 0;
+  flex-shrink: 1;
+  flex-grow: 1;
   height: 2.5em;
-  min-width: 8em;
-  margin: 0.75em;
+  min-width: 15em;
+  width: 30%;
+  margin: 0.375em 0.75em;
   border-radius: 3px;
   position: relative;
   box-shadow: var(--shadow-all-around);
