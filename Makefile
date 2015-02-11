@@ -34,7 +34,14 @@ BROWSERIFY_OPTIONS = --transform ./main-transform --debug
 GO_FILES = $(shell find go -name "*.go")
 VDL_FILES = $(shell find go -name "*.vdl")
 
+.DEFAULT_GOAL := default
 default: build
+
+.PHONY: deploy-staging
+deploy-staging: build
+	git rev-parse --verify HEAD >> public/version
+	gcloud config set project vanadium-staging
+	gsutil -m rsync -d -r public gs://staging.namespace.v.io
 
 # Creating the bundle JS file.
 public/bundle.js: $(SOURCE_FILES) node_modules
@@ -113,5 +120,6 @@ clean:
 	rm -rf go/bin
 	rm -rf bower_components
 	rm -rf $(TMPDIR)
+	rm -rf public/version
 
 .PHONY: all build start clean watch test watch-test directories

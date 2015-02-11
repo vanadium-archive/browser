@@ -20,8 +20,6 @@ You will need to install the Vanadium environment and setup the web
 profile to build your own copy of Viz. See the development instructions
 for Vanadium for more information.
 
-### Building Viz for deployment
-
 In order to build your own copy of Viz, simply run:
 
 ```sh
@@ -71,3 +69,18 @@ There are no UI tests yet.
 ## Contributing to Viz
 Coming Soon!
 Meanwhile, you can submit issues and suggestions from Viz itself.
+
+# Deploy
+
+If you do not have access to the vanadium-staging GCE account ping jasoncampbell@. Once you have access you will need to login to the account via the command line.
+
+    gcloud auth login
+
+To deploy the site to https://staging.namespace.v.io use the make target `deploy-staging`.
+
+    make deploy-staging
+
+This will sync the `public` directory to the private Google Storage bucket `gs://staging.namespace.v.io` which gets automatically updated to the nginx front-end servers. Currently all static content is protected by OAuth. For more details on the deployment infrastructure see [this doc][deploy] and the [infrastructure] repository.
+
+[deploy]: http://goo.gl/QfD4gl
+[infrastructure]: https://vanadium.googlesource.com/infrastructure/+/master/nginx/README.md
