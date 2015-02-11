@@ -41,6 +41,7 @@ paper-icon-button.bookmarked {
 .method-input {
   display: inline-block;
   vertical-align: top;
+  width: 16em;
 }
 
 .tooltip.field-tooltip::shadow .core-tooltip, .tooltip.method-tooltip::shadow .core-tooltip {
