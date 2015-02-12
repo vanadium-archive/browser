@@ -399,7 +399,6 @@ function assertIsServer(t, item) {
 
 function assertIsNotServer(t, item) {
   t.equal(item.isServer, false, item.mountedName + ': is not a server');
-  t.notOk(item.serverInfo, item.mountedName + ': does not have server info');
 }
 
 function assertIsGlobbable(t, item) {
