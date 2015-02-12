@@ -15,7 +15,6 @@
     "rework-vars": "^3.1.1",
     "serve": "^1.4.0",
     "through2": "^0.5.1",
-    "postie": "~0.4.5",
     "lru-cache": "~2.5.0",
     "tap-xunit": "~1.1.1",
     "envify": "~3.2.0",
