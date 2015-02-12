@@ -323,10 +323,16 @@ function createNamespaceItem(mountEntry) {
 
   // get server related information.
   var isServer = servers.length > 0;
-  var serverInfo = null;
-  if (isServer) {
-    serverInfo = getServerInfo(name, mountEntry);
-  }
+  // NOTE: servers.length > 0 is not enough
+  // to know if something is a server or not we also have to call resolve()
+  // later to the isServer flag as the could be cases where servers.length === 0
+  // and yet the name is a server.
+  // Also endpoints need to come from resolve() call and not servers[].
+  // See following bug report for details:
+  // https://github.com/veyron/release-issues/issues/1072 to track a proper fix
+  // TODO(aghassemi) make isServer and endpoints synchronous again if/when the
+  // issue above is fixed.
+  var serverInfo = getServerInfo(name, mountEntry);
 
   var item = itemFactory.createItem({
     objectName: name,
@@ -338,7 +344,7 @@ function createNamespaceItem(mountEntry) {
 
   // find out if the object referenced by name is globbable and accessible
   // asynchronously and update the state when it comes back
-  var onFinishPromise = new Promise(function(resolve, reject) {
+  var hasChildrenPromise = new Promise(function(resolve, reject) {
     // glob for 'object/name/*', this will tell is if the name has any children
     // also the errors can be used to detect if name is accessible or not.
     var ctx = veyron.context.Context().withTimeout(RPC_TIMEOUT).withCancel();
@@ -363,6 +369,26 @@ function createNamespaceItem(mountEntry) {
     });
   });
 
+  var resolveCtx = veyron.context.Context().withTimeout(RPC_TIMEOUT);
+  var resolveNamePromise = getRuntime().then(function hasChildren(rt) {
+    var ns = rt.namespace();
+    return ns.resolve(resolveCtx, name).then(function(endpoints) {
+      item.isServer.set(true);
+      endpoints.forEach(function(ep) {
+        serverInfo.endpoints.push(ep);
+      });
+    }, function() {
+      item.isServer.set(false);
+    });
+  });
+
+  var onFinishPromise = Promise.all([hasChildrenPromise, resolveNamePromise])
+  .catch(function(err) {
+    log.error('hasChildren or isServer failed in createNamespaceItem for ' +
+      name, err);
+    // we do not want to rethrow the error here. onFinish is always resolved.
+  });
+
   return {
     item: item,
     onFinish: onFinishPromise
@@ -379,10 +405,9 @@ function createNamespaceItem(mountEntry) {
  */
 function getServerInfo(objectName, mountEntry) {
   var typeInfo = getServerTypeInfo(mountEntry);
-  var endpoints = getEndpoints(mountEntry);
   var serverInfo = itemFactory.createServerInfo({
     typeInfo: typeInfo,
-    endpoints: endpoints
+    endpoints: mercury.array([])
   });
 
   return serverInfo;
@@ -416,20 +441,6 @@ function getServerTypeInfo(mountEntry) {
   } else {
     return createUnknownServiceTypeInfo();
   }
-}
-
-/**
- * Creates an observable array with the endpoints of the mountEntry.
- * @param {MountEntry} mountEntry mount entry with server endpoints.
- * @return {mercury.array} Mercury array containing the endpoints.
- */
-function getEndpoints(mountEntry) {
-  // Convert the endpoints into a mercury list.
-  return mercury.array(
-    mountEntry.servers.map(function(endpoint) {
-      return mercury.value(endpoint.server);
-    })
-  );
 }
 
 function createUnknownServiceTypeInfo() {
