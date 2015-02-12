@@ -17,6 +17,8 @@ function makeRPC(data) {
   // Parse if possible. Otherwise, a string (or invalid JSON) will be used.
   // Solves a problem where booleans did not seem to be parsed properly.
   var args = data.args.map(function(arg) {
+    arg = arg || ''; // 'undefined' input should be treated as ''.
+
     try {
       return JSON.parse(arg);
     } catch(e) {

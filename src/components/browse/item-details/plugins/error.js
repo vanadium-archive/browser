@@ -16,12 +16,18 @@ function shouldFormat(input) {
  * Print the error with a dangerous-looking icon.
  */
 function format(input) {
+  var error;
+  if (input.message) {
+    error = input.message;
+  } else {
+    error = input.toString();
+  }
   return h('div', [
     h('core-icon.error', {
       attributes: {
         'icon': 'error'
       }
     }),
-    h('pre', JSON.stringify(input, null, 2))
+    h('pre', error)
   ]);
 }
