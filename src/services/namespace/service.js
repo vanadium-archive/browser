@@ -286,14 +286,14 @@ function makeRPC(name, methodName, args) {
   // Adapt the method name to be lowercase again.
   methodName = vom.MiscUtil.uncapitalize(methodName);
 
+  var ctx;
   return getRuntime().then(function bindToName(rt) {
-    var ctx = veyron.context.Context().withTimeout(RPC_TIMEOUT);
+    ctx = rt.getContext();
     var client = rt.newClient();
     return client.bindTo(ctx, name);
   }).then(function callMethod(service) {
     log.debug('Calling', methodName, 'on', name, 'with', args);
-    var ctx = veyron.context.Context().withTimeout(RPC_TIMEOUT);
-    args.unshift(ctx);
+    args.unshift(ctx.withTimeout(RPC_TIMEOUT));
     return service[methodName].apply(null, args);
   }).then(function returnResult(result) {
     // If the result was for 0 outArg, then this returns undefined.
