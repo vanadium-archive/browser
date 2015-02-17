@@ -21,7 +21,7 @@ New Attributes:
     allowWhitespace
 
 New Events:
-    none yet
+    delete-item: An event indicating that the user wants a child item removed
 
 -->
 
@@ -128,6 +128,14 @@ New Events:
       highlightIndex: null,
 
       /**
+       * Tracks the highlighted item's label. Used to update the highlight index
+       * when the user types new characters.
+       *
+       * @type: string | null
+       */
+      highlightLabel: null,
+
+      /**
        * Called when this node is added to the DOM. Sets up event listeners
        * through the shadow DOM to its internal paper-input. Additionally,
        * watches for mutations in its light DOM children.
@@ -227,11 +235,6 @@ New Events:
         for (var i = 0; i < childNodes.length; i++) {
           var item = childNodes[i];
 
-          // Remove style if necessary.
-          if (this.highlightIndex !== i) {
-            item.classList.toggle('highlighted', false);
-          }
-
           // Show nodes with a prefix match, as long
           // as the maxItems limit has not been reached.
           if ((this.maxItems === null || showing.length < this.maxItems) &&
@@ -245,7 +248,41 @@ New Events:
         }
         this.showing = showing;
 
+        this.highlightSeekIndex();
         this.showSuggestions(this.shouldShowSuggestions());
+      },
+
+      /**
+       * Update the highlight index, using the highlight label and the shown
+       * items. If there are no matches, reset the highlight variables.
+       * Note: There may be false updates if the suggestion list contains
+       * >1 of the same label.
+       */
+      highlightSeekIndex: function() {
+        var found = false;
+        var childNodes = this.$.items.getDistributedNodes();
+        for (var i = 0; i < this.showing.length; i++) {
+          var itemIndex = this.showing[i];
+          var item = childNodes[itemIndex];
+
+          if (!found && this.getItemLabel(item) === this.highlightLabel) {
+            // There was a match; the new highlightIndex is the showing index.
+            this.highlightIndex = i;
+            found = true;
+            item.classList.toggle('highlighted', true);
+          } else {
+            // This isn't a match, so reset highlighting, just in case.
+            item.classList.toggle('highlighted', false);
+          }
+        }
+
+        // If not found, then nothing should be highlighted.
+        // Note: Cannot use highlightReset since the item may not exist at the
+        // current highlightIndex.
+        if (!found) {
+          this.highlightIndex = null;
+          this.highlightLabel = null;
+        }
       },
 
       /**
@@ -373,6 +410,21 @@ New Events:
       },
 
       /**
+       * Fire the delete-item event with the corresponding child item.
+       */
+      fireDeleteItem: function(item) {
+        this.fire('delete-item', null, item);
+      },
+
+      /**
+       * Obtain the child item that is currently highlighted.
+       */
+      getHighlightedItem: function() {
+        var selected = this.showing[this.highlightIndex];
+        return this.$.items.getDistributedNodes()[selected];
+      },
+
+      /**
        * Remove highlight off the current item and stop tracking it.
        */
       highlightReset: function() {
@@ -385,11 +437,11 @@ New Events:
        */
       highlightItem: function(shouldHighlight) {
           if (this.highlightIndex !== null) {
-            var selected = this.showing[this.highlightIndex];
-            this.$.items.getDistributedNodes()[selected].classList.toggle(
-              'highlighted',
-              shouldHighlight
-            );
+            var item = this.getHighlightedItem();
+            item.classList.toggle('highlighted', shouldHighlight);
+            this.highlightLabel = this.getItemLabel(item);
+          } else {
+            this.highlightLabel = null;
           }
       },
 
@@ -400,6 +452,7 @@ New Events:
        * Pressing any other key will reset highlight.
        */
       keydownAction: function(e) {
+        var KEY_DELETE = 46;
         var KEY_UP = 38;
         var KEY_DOWN = 40;
         var KEY_ENTER = 13;
@@ -417,6 +470,12 @@ New Events:
 
         // The suggest box is open. Handle the keypresses accordingly.
         switch(e.keyCode) {
+          case KEY_DELETE:
+            // Shift+Delete => fire a 'delete-item' event
+            if (e.shiftKey === true && this.highlightIndex !== null) {
+              this.fireDeleteItem(this.getHighlightedItem());
+            }
+            break;
           case KEY_UP: // Highlight the item above the current one.
             e.preventDefault();
 
@@ -447,9 +506,7 @@ New Events:
             if (this.highlightIndex !== null) {
               e.preventDefault(); // do not commit a change
 
-              var highlightIndex = this.showing[this.highlightIndex];
-              var item = this.$.items.getDistributedNodes()[highlightIndex];
-              this.selectItem(e, item);
+              this.selectItem(e, this.getHighlightedItem());
             } else {
               this.showSuggestions(false);
               this.editing = false;
@@ -459,8 +516,6 @@ New Events:
             this.showSuggestions(false);
             this.editing = false;
             break;
-          default: // Reset the current highlight.
-            this.highlightReset();
         }
       }
     });
