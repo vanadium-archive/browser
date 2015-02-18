@@ -1,6 +1,6 @@
 var veyron = require('veyron');
 var mercury = require('mercury');
-var vom = require('veyron').vom;
+var vdl = require('veyron').vdl;
 var LRU = require('lru-cache');
 var EventEmitter = require('events').EventEmitter;
 var namespaceUtil = veyron.namespaceUtil;
@@ -284,7 +284,7 @@ function getSignature(objectName) {
  */
 function makeRPC(name, methodName, args) {
   // Adapt the method name to be lowercase again.
-  methodName = vom.MiscUtil.uncapitalize(methodName);
+  methodName = vdl.MiscUtil.uncapitalize(methodName);
 
   var ctx;
   return getRuntime().then(function bindToName(rt) {
