@@ -89,12 +89,13 @@ function glob(pattern) {
     return Promise.resolve(cacheHit);
   }
 
-  var ctx = veyron.context.Context().withTimeout(RPC_TIMEOUT);
   var globItemsObservArr = mercury.array([]);
   var immutableResult = freeze(globItemsObservArr);
   immutableResult.events = new EventEmitter();
+  var ctx;
   var globItemsObservArrPromise =
     getRuntime().then(function callGlobOnNamespace(rt) {
+      ctx = rt.getContext().withTimeout(RPC_TIMEOUT);
       // TODO(aghassemi) use watchGlob when available
       var namespace = rt.namespace();
       return namespace.glob(ctx, pattern).stream;
@@ -235,7 +236,7 @@ function getRemoteBlessings(objectName) {
     return Promise.resolve(cacheHit);
   }
   return getRuntime().then(function invokeRemoteBlessingsMethod(rt) {
-    var ctx = veyron.context.Context().withTimeout(RPC_TIMEOUT);
+    var ctx = rt.getContext().withTimeout(RPC_TIMEOUT);
     var client = rt.newClient();
     return client.remoteBlessings(ctx, objectName);
   }).then(function cacheAndReturnRemoteBlessings(remoteBlessings) {
@@ -266,7 +267,7 @@ function getSignature(objectName) {
     return Promise.resolve(cacheHit);
   }
   return getRuntime().then(function invokeSignatureMethod(rt) {
-    var ctx = veyron.context.Context().withTimeout(RPC_TIMEOUT);
+    var ctx = rt.getContext().withTimeout(RPC_TIMEOUT);
     var client = rt.newClient();
     return client.signature(ctx, objectName);
   }).then(function cacheAndReturnSignature(signature) {
@@ -347,8 +348,8 @@ function createNamespaceItem(mountEntry) {
   var hasChildrenPromise = new Promise(function(resolve, reject) {
     // glob for 'object/name/*', this will tell is if the name has any children
     // also the errors can be used to detect if name is accessible or not.
-    var ctx = veyron.context.Context().withTimeout(RPC_TIMEOUT).withCancel();
     getRuntime().then(function hasChildren(rt) {
+      var ctx = rt.getContext().withTimeout(RPC_TIMEOUT).withCancel();
       var ns = rt.namespace();
       var globStream = ns.glob(ctx, namespaceUtil.join(name, '*')).stream;
       globStream.on('data', function createItem() {
@@ -369,8 +370,8 @@ function createNamespaceItem(mountEntry) {
     });
   });
 
-  var resolveCtx = veyron.context.Context().withTimeout(RPC_TIMEOUT);
   var resolveNamePromise = getRuntime().then(function hasChildren(rt) {
+    var resolveCtx = rt.getContext().withTimeout(RPC_TIMEOUT);
     var ns = rt.namespace();
     return ns.resolve(resolveCtx, name).then(function(endpoints) {
       item.isServer.set(true);
