@@ -32,7 +32,6 @@ test('getChildren of default namespace root', function(t) {
     // Wait until we finish, we expect 2 top level items: cottage, house
     result.events.on('end', function validate() {
       mercury.watch(result, function(children) {
-        children = _.sortBy(children, 'mountedName');
         assertCottage(children[0]);
         assertHouse(children[1]);
         t.end();
@@ -68,7 +67,6 @@ test('getChildren of cottage/lawn', function(t) {
     // Wait until we finish, we expect 3 items back, front and master-sprinkler
     result.events.on('end', function validate() {
       mercury.watch(result, function(children) {
-        children = _.sortBy(children, 'mountedName');
         assertBack(children[0]);
         assertSprinkler(children[2]);
         t.end();
@@ -102,7 +100,6 @@ test('getChildren of rooted ' + globalRoot + '/house/kitchen', function(t) {
     // Wait until we finish, we expect 2 items, lights and smoke-detector
     result.events.on('end', function validate() {
       mercury.watch(result, function(children) {
-        children = _.sortBy(children, 'mountedName');
         assertLightSwitch(children[0]);
         assertSmokeDetector(children[1]);
         t.end();
@@ -143,7 +140,6 @@ test('getChildren of rooted ' + hostPortRoot + '/kitchen', function(t) {
     // Wait until we finish, we expect 2 items, lights and smoke-detector
     result.events.on('end', function validate() {
       mercury.watch(result, function(children) {
-        children = _.sortBy(children, 'mountedName');
         assertLightSwitch(children[0]);
         assertSmokeDetector(children[1]);
         t.end();

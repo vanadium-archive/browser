@@ -1,6 +1,6 @@
 var uuid = require('uuid');
 var mercury = require('mercury');
-var addDelegatedEvents = require('./lib/mercury/addDelegatedEvents');
+var addDelegatedEvents = require('./lib/mercury/add-delegated-events');
 var router = require('./router');
 var registerItemPlugins = require('./item-plugins/register-plugins');
 var debug = require('./components/debug/index');

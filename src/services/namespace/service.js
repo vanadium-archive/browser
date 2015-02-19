@@ -7,6 +7,7 @@ var namespaceUtil = veyron.namespaceUtil;
 var veyronConfig = require('../../veyron-config');
 var itemFactory = require('./item');
 var freeze = require('../../lib/mercury/freeze');
+var sortedPush = require('../../lib/mercury/sorted-push-array');
 var log = require('../../lib/log')('services:namespace:service');
 
 module.exports = {
@@ -121,7 +122,8 @@ function glob(pattern) {
             globItemsObservArr.put(index, item);
           }
         } else {
-          globItemsObservArr.push(item);
+          var sorter = 'mountedName';
+          sortedPush(globItemsObservArr, item, sorter);
         }
 
         itemPromises.push(onFinishPromise);

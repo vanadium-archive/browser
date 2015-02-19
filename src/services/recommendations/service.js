@@ -4,6 +4,7 @@ var EventEmitter = require('events').EventEmitter;
 
 var arraySet = require('../../lib/arraySet');
 var freeze = require('../../lib/mercury/freeze');
+var sortedPush = require('../../lib/mercury/sorted-push-array');
 
 var namespaceService = require('../namespace/service');
 var smartService = require('../smart/service');
@@ -79,7 +80,8 @@ function getAll() {
 function addNamespaceItem(name) {
   return namespaceService.getNamespaceItem(name)
     .then(function(item) {
-      recommendationsObs.push(item);
+      var sorter = 'objectName';
+      sortedPush(recommendationsObs, item, sorter);
     });
 }
 
