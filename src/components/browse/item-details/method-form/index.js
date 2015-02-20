@@ -91,12 +91,14 @@ function create() {
   });
 
   var events = mercury.input([
-    'displayMethodForm',  // the main event used to prepare the form data
-    'methodStart',        // for parent element to be notified of RPC start
-    'methodEnd',          // for parent element to be notified of RPC end result
-    'runAction',          // run the RPC with given arguments
-    'expandAction',       // show/hide method arguments
-    'starAction',         // star/unstar a method invocation
+    'displayMethodForm',     // the main event used to prepare the form data
+    'methodStart',           // notify parent element of RPC start
+    'methodEnd',             // notify parent element of RPC end result
+    'runAction',             // run the RPC with given arguments
+    'expandAction',          // show/hide method arguments
+    'starAction',            // star/unstar a method invocation
+    'removeRecommendation',  // remove and reload recommended invocations
+    'removeInputSuggestion', // remove and reload input suggestions
     'toast'
   ]);
   wireUpEvents(state, events);
@@ -286,6 +288,58 @@ function wireUpEvents(state, events) {
       log.error('Error while starring invocation', err);
     });
   });
+
+  // This event removes the specified recommendation.
+  // Afterwards, the recommendations are refreshed.
+  events.removeRecommendation(function(args) {
+    var input = {
+      interface: state.interface(),
+      methodName: state.methodName(),
+      value: JSON.stringify(args),
+      reset: true
+    };
+
+    smartService.update('learner-method-invocation', input).then(function() {
+      log.debug('Removing method invocation', input);
+      return refreshRecommendations(state);
+    }).then(function() {
+      return events.toast({
+        text: 'Removed suggestion: ' + getMethodSignature(state(), args),
+        type: 'info'
+      });
+    }).catch(function(err) {
+      var errText = 'Failed to remove suggestion';
+      log.error(errText, err);
+      events.toast({
+        text: errText,
+        type: 'error'
+      });
+    });
+  });
+
+  // This event removes the specified input suggestion for an argument.
+  // Afterwards, all input suggestions are refreshed.
+  events.removeInputSuggestion(function(data) {
+    var input = {
+      interface: state.interface(),
+      methodName: state.methodName(),
+      argName: data.argName,
+      value: data.arg,
+      reset: true
+    };
+
+    smartService.update('learner-method-input', input).then(function() {
+      log.debug('Removing method input', input);
+      return refreshInputSuggestions(state);
+    }).catch(function(err) {
+      var errText = 'Failed to remove suggestion';
+      log.error(errText, err);
+      events.toast({
+        text: errText,
+        type: 'error'
+      });
+    });
+  });
 }
 
 /*
@@ -309,7 +363,7 @@ function render(state, events) {
   // Form for filling up the arguments
   var argForm = []; // contains form elements
   for (var i = 0; i < state.args.length; i++) {
-    argForm.push(renderMethodInput(state, i));
+    argForm.push(renderMethodInput(state, events, i));
   }
 
   // Setup the STAR and RUN buttons.
@@ -375,7 +429,7 @@ function renderMethodHeader(state, events) {
     'ev-click': mercury.event(events.expandAction)
   }, h('core-icon.action-icon', {
     attributes: {
-      'icon': state.expanded ? 'expand-less' : 'expand-more'
+      'icon': state.expanded ? 'expand-more' : 'chevron-right'
     }
   }));
 
@@ -437,7 +491,7 @@ function renderStarsAndRecommendations(state, events) {
   var count = 0;
   state.recommended.forEach(function(rec) {
     if (count < remainingRecommendations && state.starred.indexOf(rec) === -1) {
-      s.push(renderInvocation(state, events, rec));
+      s.push(renderInvocation(state, events, rec, true));
       count++;
     }
   });
@@ -450,7 +504,7 @@ function renderStarsAndRecommendations(state, events) {
  * argsStr is optional and is used for starred and recommended invocations.
  * When given, then the card is smaller and has a star icon.
  */
-function renderInvocation(state, events, argsStr) {
+function renderInvocation(state, events, argsStr, recommended) {
   var noArgs = argsStr === undefined;
   var args = noArgs ? [] : JSON.parse(argsStr);
   var labelText = getMethodSignature(state, args);
@@ -476,7 +530,22 @@ function renderInvocation(state, events, argsStr) {
     })
   }, renderStarIcon(starred));
 
-  return h('div.item.card.invocation', [starButton, label, runButton]);
+  var negFeedback;
+  if (recommended) {
+    negFeedback = h('div.action-bar', h('paper-fab', {
+      attributes: {
+        'aria-label': 'Remove suggestion',
+        'title': 'Remove suggestion',
+        'icon': 'clear',
+        'mini': true
+      },
+      'ev-click': events.removeRecommendation.bind(null, args)
+    }));
+  }
+
+  return h('div.item.card.invocation',
+    [starButton, label, runButton, negFeedback]
+  );
 }
 
 /*
@@ -490,7 +559,7 @@ function makeMethodLabel(labelText) {
  * Draws a single method argument input using the paper-autocomplete element.
  * Includes a placeholder and suggestions from the internal state.
  */
-function renderMethodInput(state, index) {
+function renderMethodInput(state, events, index) {
   var methodName = state.methodName;
   var inArg = getMethodData(state.interface, state.methodName).inArgs[index];
   var argName = inArg.name;
@@ -500,13 +569,29 @@ function renderMethodInput(state, index) {
 
   // The children are the suggestions for this paper-autocomplete input.
   var children = inputSuggestions.map(function(suggestion) {
-    return h('paper-item', suggestion);
+    return h('paper-item', {
+      attributes: {
+        // Attach as an attribute for later retrieval
+        'input-suggestion': suggestion
+      }
+    }, suggestion);
   });
 
+  // Event used to update state when the value is changed.
   var changeEvent = new PropertyValueEvent(function(data) {
     log.debug(methodName, argName, 'value changed.', data);
     args[index] = data;
   }, 'value');
+
+  // TODO(alexfandrianto): It may be nice to link feedback between the
+  // method-input and method-invocation learners.
+  // Event used to remove an input suggestion.
+  var removeEvent = function(e) {
+    events.removeInputSuggestion({
+      argName: argName,
+      arg: e.target.getAttribute('input-suggestion')
+    });
+  };
 
   // TODO(alexfandrianto): Note that Mercury and Polymer create a bug together.
   // Polymer normally captures internal events and stops them from propagating.
@@ -519,7 +604,8 @@ function renderMethodInput(state, index) {
       'value': args[index],
       'maxItems': METHOD_INPUT_MAX_ITEMS
     },
-    'ev-change': changeEvent
+    'ev-change': changeEvent,
+    'ev-delete-item': removeEvent
   }, children);
 
   return elem;

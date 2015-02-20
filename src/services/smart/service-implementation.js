@@ -323,6 +323,10 @@ function methodInvocationLearnerComputeKey(input) {
 /*
  * Given input data, boost the rank of the given value and penalize others.
  * Note: Learners using this predict function need to be similar structurally.
+ * input can contain:
+ * - fields used to compute the key
+ * - value to update for that key
+ * - (optional) reset: a flag that resets the value
  */
 function topKLearnerUpdate(input) {
   var key = this.computeKey(input);
@@ -336,6 +340,12 @@ function topKLearnerUpdate(input) {
   var values = this.inputMap[key];
   if (values[value] === undefined) {
     values[value] = 0;
+  }
+
+  // Reset the value (for negative feedback).
+  if (input.reset) {
+    delete values[value];
+    return;
   }
 
   // Give a reward to the chosen value.
