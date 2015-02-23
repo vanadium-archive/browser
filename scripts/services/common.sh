@@ -9,7 +9,7 @@
 # TODO(aghassemi) This script is becoming too complicated and
 # big for shell scripting, switch to a JavaScript or Go implementation
 
-source "$(v23 go list -f {{.Dir}} v.io/core/shell/lib)/shell.sh"
+source "./shell.sh"
 
 trap 'terminate force' INT TERM
 trap 'terminate' EXIT
