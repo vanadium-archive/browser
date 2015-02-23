@@ -1,5 +1,6 @@
 var veyron = require('veyron');
 var mercury = require('mercury');
+var bluebirdPromise = require('bluebird');
 var vdl = require('veyron').vdl;
 var LRU = require('lru-cache');
 var EventEmitter = require('events').EventEmitter;
@@ -64,7 +65,7 @@ var globCache = new LRU({
  * the changes.
  *
  * The observable result has an events property which is an EventEmitter
- * and emits 'end' and 'streamError' events.
+ * and emits 'end' and 'globError' events.
  *
  * @param {string} pattern Glob pattern
  * @return {Promise.<mercury.array>} Promise of an observable array
@@ -136,12 +137,15 @@ function glob(pattern) {
         };
 
         // Wait until all createItem promises return before triggering has ended
-        Promise.all(itemPromises).then(triggerEnd).catch(triggerEnd);
+        // We are using Bluebird's settle() since Promise.all won't work as
+        // it will get rejected as soon as one is rejected but we want to know
+        // when all have resolved/rejected which is what settle() does.
+        bluebirdPromise.settle(itemPromises).then(triggerEnd).catch(triggerEnd);
       });
 
       globStream.on('error', function invalidateCacheAndLog(err) {
         globCache.del(cacheKey);
-        immutableResult.events.emit('streamError', err);
+        immutableResult.events.emit('globError', err);
         log.error('Glob stream error for', name, err);
       });
 
@@ -169,7 +173,7 @@ function getNamespaceItem(objectName) {
   return glob(objectName).then(function(resultsObs) {
     // Wait until the glob finishes before returning the item
     return new Promise(function(resolve, reject) {
-      resultsObs.events.on('streamError', function(err) {
+      resultsObs.events.on('globError', function(err) {
         reject(err);
       });
       resultsObs.events.on('end', function() {
@@ -354,19 +358,19 @@ function createNamespaceItem(mountEntry) {
       var ctx = rt.getContext().withTimeout(RPC_TIMEOUT).withCancel();
       var ns = rt.namespace();
       var globStream = ns.glob(ctx, namespaceUtil.join(name, '*')).stream;
-      globStream.on('data', function createItem() {
+      globStream.once('data', function createItem() {
         // we have at least one child
         item.isGlobbable.set(true);
         ctx.cancel();
         resolve();
       });
-      globStream.on('error', function createItem(globResult) {
+      globStream.once('error', function createItem(globResult) {
         //TODO(aghassemi) Certain types of error can tell us if the name
         // was not accessible which can be used for the IsAccessible flag.
         ctx.cancel();
         resolve();
       });
-      globStream.on('end', function() {
+      globStream.once('end', function() {
         resolve();
       });
     });
@@ -385,11 +389,19 @@ function createNamespaceItem(mountEntry) {
     });
   });
 
-  var onFinishPromise = Promise.all([hasChildrenPromise, resolveNamePromise])
-  .catch(function(err) {
-    log.error('hasChildren or isServer failed in createNamespaceItem for ' +
-      name, err);
-    // we do not want to rethrow the error here. onFinish is always resolved.
+  // We are using .settle instead of .all because we don't want to resolve the
+  // onFinishPromise if one is rejected early.
+  var onFinishPromise = bluebirdPromise.settle(
+    [hasChildrenPromise, resolveNamePromise]
+  ).then(function(results) {
+    if (results[0].isRejected()) {
+      log.error('hasChildrenPromise failed in createNamespaceItem for ' +
+        name, results[0].reason());
+    }
+    if (results[1].isRejected()) {
+      log.error('resolveNamePromise failed in createNamespaceItem for ' +
+        name, results[1].reason());
+    }
   });
 
   return {

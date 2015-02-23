@@ -37,8 +37,10 @@ test('getChildren of default namespace root', function(t) {
         t.end();
       });
     });
-    result.events.on('streamError', t.end);
-    result.events.on('itemError', t.end);
+    result.events.on('globError', function(error) {
+      t.notOk(error, 'did not expect any globs errors');
+      t.end();
+    });
   }).catch(t.end);
 
   function assertCottage(item) {
@@ -72,8 +74,10 @@ test('getChildren of cottage/lawn', function(t) {
         t.end();
       });
     });
-    result.events.on('streamError', t.end);
-    result.events.on('itemError', t.end);
+    result.events.on('globError', function(error) {
+      t.notOk(error, 'did not expect any globs errors');
+      t.end();
+    });
   }).catch(t.end);
 
   function assertSprinkler(item) {
@@ -105,8 +109,10 @@ test('getChildren of rooted ' + globalRoot + '/house/kitchen', function(t) {
         t.end();
       });
     });
-    result.events.on('streamError', t.end);
-    result.events.on('itemError', t.end);
+    result.events.on('globError', function(error) {
+      t.notOk(error, 'did not expect any globs errors');
+      t.end();
+    });
   }).catch(t.end);
 
   function assertLightSwitch(item) {
@@ -145,8 +151,10 @@ test('getChildren of rooted ' + hostPortRoot + '/kitchen', function(t) {
         t.end();
       });
     });
-    result.events.on('streamError', t.end);
-    result.events.on('itemError', t.end);
+    result.events.on('globError', function(error) {
+      t.notOk(error, 'did not expect any globs errors');
+      t.end();
+    });
   }).catch(t.end);
 
   function assertLightSwitch(item) {
@@ -180,11 +188,10 @@ test('getChildren of non-existing mounttable', function(t) {
         t.end();
       });
     });
-    result.events.on('streamError', function(error) {
-      // we do actually expect an error in this case
+    result.events.on('globError', function(error) {
+      // we do actually expect a glob error in this case
       t.ok(error);
     });
-    result.events.on('itemError', t.end);
   }).catch(t.end);
 });
 
