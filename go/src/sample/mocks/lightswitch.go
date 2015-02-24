@@ -1,7 +1,7 @@
 package mocks
 
 import (
-	"v.io/core/veyron2/ipc"
+	"v.io/v23/ipc"
 )
 
 const (

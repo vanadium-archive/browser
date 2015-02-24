@@ -9,8 +9,8 @@ import (
 
 	"v.io/core/veyron/lib/signals"
 	_ "v.io/core/veyron/profiles/static"
-	"v.io/core/veyron2"
-	"v.io/core/veyron2/security"
+	"v.io/v23"
+	"v.io/v23/security"
 )
 
 func makeServerAlarm() interface{} {
@@ -42,20 +42,20 @@ func (o openAuthorizer) Authorize(_ security.Context) error {
 }
 
 func main() {
-	ctx, shutdown := veyron2.Init()
+	ctx, shutdown := v23.Init()
 	defer shutdown()
 
 	// Create new server and publish the given server under the given name
 	var listenAndServe = func(name string, server interface{}) func() {
 
 		// Create a new server instance.
-		s, err := veyron2.NewServer(ctx)
+		s, err := v23.NewServer(ctx)
 		if err != nil {
 			log.Fatal("failure creating server: ", err)
 		}
 
 		// Create an endpoint and begin listening.
-		if endpoint, err := s.Listen(veyron2.GetListenSpec(ctx)); err == nil {
+		if endpoint, err := s.Listen(v23.GetListenSpec(ctx)); err == nil {
 			fmt.Printf("Listening at: %v\n", endpoint)
 		} else {
 			log.Fatal("error listening to service: ", err)

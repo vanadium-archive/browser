@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"sample"
-	"v.io/core/veyron2/ipc"
+	"v.io/v23/ipc"
 )
 
 const speakerDefaultVolume = uint16(10)
