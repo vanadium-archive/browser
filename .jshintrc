@@ -20,9 +20,7 @@
   "devel": true,
   "expr": true,
   "scripturl": true,
+  "esnext": true,
   "sub": true,
-  "node": true,
-  "globals": {
-    "Promise": true
-  }
+  "node": true
 }
