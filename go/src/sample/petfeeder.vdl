@@ -1,0 +1,32 @@
+package sample
+
+// PetFeeder allows clients to remotely feed their pets.
+type PetFeeder interface {
+  // Status returns the current status of the PetFeeder (how full the bowl is).
+  Status() (float64 | error)
+  // Fill fills the pet feeder bowl with food. Errors if the bowl will overflow.
+  Fill(amount float64) error
+  // Empty removes all food from the pet feeder bowl.
+  Empty() error
+}
+
+// RoboDogStatus represents the status of a robotic dog.
+type RoboDogStatus struct{
+  Name   string // the dog's current name
+  Mood   string // mood improves when played with and not hungry
+  Hunger string // hunger worsens over time. Improves while eating.
+  Eating bool   // the dog is busy while eating.
+}
+
+// RoboDog allows clients to play with a virtual robotic dog.
+type RoboDog interface {
+  // Status returns the state of the robotic dog.
+  Status() (RoboDogStatus | error)
+  // Speak allows a client to speak with the robotic dog.
+  Speak(words string) (string | error)
+  // Play allows a client to play with the robotic dog.
+  // Errors if the dog does not want to play.
+  Play(duration uint32) error
+  // SetName allows a client to set the robotic dog's name.
+  SetName(name string) error
+}

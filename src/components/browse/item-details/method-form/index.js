@@ -143,7 +143,7 @@ function displayMethodForm(state, events, data) {
 function initializeInputArguments(state) {
   var param = getMethodData(state.interface(), state.methodName());
   var startingArgs = _.range(param.inArgs.length).map(function() {
-    return undefined; // Initialize array with undefined values using lodash.
+    return ''; // Initialize array with empty string values using lodash.
   });
   setMercuryArray(state.args, startingArgs);
 }
