@@ -31,6 +31,11 @@ func makeServerSpeaker() interface{} {
 func makeServerSprinkler() interface{} {
 	return sample.SprinklerServer(mocks.NewSprinkler())
 }
+func makePetFeederAndRoboDog() (interface{}, interface{}) {
+	p := mocks.NewPetFeeder()
+	r := mocks.NewRoboDog(p)
+	return sample.PetFeederServer(p), sample.RoboDogServer(r)
+}
 
 // openAuthorizer allows RPCs from all clients.
 // TODO(aghassemi): Write a more strict authorizer with proper ACLs and
@@ -83,6 +88,10 @@ func main() {
 	defer listenAndServe("house/master-bedroom/speaker", makeServerSpeaker())()
 	defer listenAndServe("house/kitchen/lights", makeServerLightSwitch())()
 	defer listenAndServe("house/kitchen/smoke-detector", makeServerSmokeDetector())()
+
+	petfeeder, robodog := makePetFeederAndRoboDog()
+	defer listenAndServe("house/pet-feeder", petfeeder)()
+	defer listenAndServe("house/robo-dog", robodog)()
 
 	defer listenAndServe("cottage/smoke-detector", makeServerSmokeDetector())()
 	defer listenAndServe("cottage/alarm", makeServerAlarm())()

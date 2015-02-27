@@ -26,8 +26,8 @@ func (s *smokeDetector) Status(ipc.ServerContext) (status string, sensitivity in
 
 // Test the SmokeDetector to check if it is working.
 func (s *smokeDetector) Test(ipc.ServerContext) (bool, error) {
-	success := s.sensitivity > 0        // succeed only if sensitivity is positive
 	time.Sleep(1500 * time.Millisecond) // simulate testing for 1.5 seconds
+	success := s.sensitivity > 0        // succeed only if sensitivity is positive
 	return success, nil
 }
 
