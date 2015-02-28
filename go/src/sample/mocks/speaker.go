@@ -19,7 +19,7 @@ type speaker struct {
 }
 
 // Play starts or continues the current song.
-func (s *speaker) Play(ipc.ServerContext) error {
+func (s *speaker) Play(ipc.ServerCall) error {
 	if s.currentSong == "" {
 		return errors.New("no current song")
 	}
@@ -28,7 +28,7 @@ func (s *speaker) Play(ipc.ServerContext) error {
 }
 
 // PlaySong plays back the given song title, if possible.
-func (s *speaker) PlaySong(_ ipc.ServerContext, title string) error {
+func (s *speaker) PlaySong(_ ipc.ServerCall, title string) error {
 	if !s.speakerLibrary[title] {
 		return errors.New(fmt.Sprintf("%q does not exist", title))
 	}
@@ -45,36 +45,36 @@ func (s *speaker) PlayStream(sample.SpeakerPlayStreamContext) error {
 }
 
 // GetSong retrieves the title of the Speaker's current song, if any.
-func (s *speaker) GetSong(ipc.ServerContext) (string, error) {
+func (s *speaker) GetSong(ipc.ServerCall) (string, error) {
 	return s.currentSong, nil
 }
 
 // Pause playback of the Speaker's current song.
-func (s *speaker) Pause(ipc.ServerContext) error {
+func (s *speaker) Pause(ipc.ServerCall) error {
 	s.playing = false
 	return nil
 }
 
 // Stop playback of the Speaker's current song.
-func (s *speaker) Stop(ipc.ServerContext) error {
+func (s *speaker) Stop(ipc.ServerCall) error {
 	s.currentSong = ""
 	s.playing = false
 	return nil
 }
 
 // Volume adjusts the Speaker's volume.
-func (s *speaker) Volume(_ ipc.ServerContext, volume uint16) error {
+func (s *speaker) Volume(_ ipc.ServerCall, volume uint16) error {
 	s.volume = volume
 	return nil
 }
 
 // GetVolume retrieves the Speaker's volume.
-func (s *speaker) GetVolume(ipc.ServerContext) (uint16, error) {
+func (s *speaker) GetVolume(ipc.ServerCall) (uint16, error) {
 	return s.volume, nil
 }
 
 // AddSongs adds the list of given songs to the song library.
-func (s *speaker) AddSongs(_ ipc.ServerContext, songs []string) error {
+func (s *speaker) AddSongs(_ ipc.ServerCall, songs []string) error {
 	for _, song := range songs {
 		s.speakerLibrary[song] = true // No-op if the song is there.
 	}
@@ -82,7 +82,7 @@ func (s *speaker) AddSongs(_ ipc.ServerContext, songs []string) error {
 }
 
 // Delete removes the list of given songs from the song library.
-func (s *speaker) Delete(_ ipc.ServerContext, songs []string) error {
+func (s *speaker) Delete(_ ipc.ServerCall, songs []string) error {
 	for _, song := range songs {
 		delete(s.speakerLibrary, song) // No-op if the song isn't there.
 		if s.currentSong == song {     // Stop playing the current song if it was removed.

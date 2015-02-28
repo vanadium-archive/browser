@@ -20,19 +20,19 @@ type smokeDetector struct {
 }
 
 // Status retrieves the current status and sensitivity of the SmokeDetector.
-func (s *smokeDetector) Status(ipc.ServerContext) (status string, sensitivity int16, err error) {
+func (s *smokeDetector) Status(ipc.ServerCall) (status string, sensitivity int16, err error) {
 	return s.status, s.sensitivity, nil
 }
 
 // Test the SmokeDetector to check if it is working.
-func (s *smokeDetector) Test(ipc.ServerContext) (bool, error) {
+func (s *smokeDetector) Test(ipc.ServerCall) (bool, error) {
 	time.Sleep(1500 * time.Millisecond) // simulate testing for 1.5 seconds
 	success := s.sensitivity > 0        // succeed only if sensitivity is positive
 	return success, nil
 }
 
 // Sensitivity adjusts the SmokeDetector's sensitivity to smoke.
-func (s *smokeDetector) Sensitivity(_ ipc.ServerContext, sensitivity int16) error {
+func (s *smokeDetector) Sensitivity(_ ipc.ServerCall, sensitivity int16) error {
 	s.sensitivity = sensitivity
 	return nil
 }

@@ -42,7 +42,7 @@ func makePetFeederAndRoboDog() (interface{}, interface{}) {
 // identity setup
 type openAuthorizer struct{}
 
-func (o openAuthorizer) Authorize(_ security.Context) error {
+func (o openAuthorizer) Authorize(_ security.Call) error {
 	return nil
 }
 
