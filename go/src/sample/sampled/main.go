@@ -7,10 +7,10 @@ import (
 	"sample"
 	"sample/mocks"
 
-	"v.io/core/veyron/lib/signals"
-	_ "v.io/core/veyron/profiles/static"
 	"v.io/v23"
 	"v.io/v23/security"
+	"v.io/x/ref/lib/signals"
+	_ "v.io/x/ref/profiles/static"
 )
 
 func makeServerAlarm() interface{} {
