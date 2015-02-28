@@ -376,6 +376,8 @@ function createNamespaceItem(mountEntry) {
     });
   });
 
+  //TODO(aghassemi) current workaround for knowing if a name is an intermediary
+  //service or not. See https://github.com/veyron/release-issues/issues/1072
   var resolveNamePromise = getRuntime().then(function hasChildren(rt) {
     var resolveCtx = rt.getContext().withTimeout(RPC_TIMEOUT);
     var ns = rt.namespace();
@@ -384,8 +386,17 @@ function createNamespaceItem(mountEntry) {
       endpoints.forEach(function(ep) {
         serverInfo.endpoints.push(ep);
       });
-    }, function() {
-      item.isServer.set(false);
+    }, function(err) {
+      // TODO(aghassemi) Glob probably should not return items when their parent
+      // is inaccessible. https://github.com/veyron/release-issues/issues/1161
+      // For now we inspect the error as a work-around.
+      if (err.id === 'v.io/v23/naming.nameDoesntExist') {
+        item.isServer.set(false);
+      } else {
+        //TODO(aghassemi) this should make the node inaccessible do that when
+        //working on https://github.com/veyron/release-issues/issues/969
+        item.isServer.set(true);
+      }
     });
   });
 
