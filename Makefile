@@ -70,8 +70,8 @@ bower_components: bower.json node_modules
 
 go/bin: directories
 	v23 go install v.io/x/ref/services/mounttable/mounttabled
-	v23 go install v.io/x/ref/tools/principal
-	v23 go install v.io/x/ref/tools/servicerunner
+	v23 go install v.io/x/ref/cmd/principal
+	v23 go install v.io/x/ref/cmd/servicerunner
 	v23 go install sample/sampled
 
 # PHONY targets:
