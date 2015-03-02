@@ -18,15 +18,16 @@
   /* Hint text such as inline help text. Lighter grey than text-secondary */
   --color-text-hint: rgba(0, 0, 0, 0.26);
 
-  /* Invert of text-primary to be used for regular text on darker backgrounds or to indicate highlighting. white */
+  /* Invert of text-primary to be used for regular text on darker backgrounds or to indicate highlighting. White */
   --color-text-primary-invert: var(--color-white);
 
-  /* Link text. Light Blue and a lighter hover version */
-  --color-text-link: #0288D1;
-  --color-text-link-hover: #03A9F4;
+  /* Link text. */
+  --color-text-link: var(--color-secondary-800);
+  /* Link hover text. */
+  --color-text-link-hover: var(--color-secondary-700);
 
-  /* Heading text. Same as the main dark color. Dark purple */
-  --color-text-heading: var(--color-dark);
+  /* Heading text. */
+  --color-text-heading: var(--color-secondary-700);
 
   /*
    * Layout colors
@@ -34,29 +35,31 @@
   /* White. Use where-ever traditionally regular white is used such as reading backgrounds. White */
   --color-white: #ffffff;
 
-  /* Dark Primary background color for top-level status bar and primary buttons. Dark purple */
-  --color-dark: #4A068E;
+  /* Primary brand color. Use this icons and icon */
+  --color-primary-600: #00ACC1;
 
-  /* Bright accent background color for highlighting. Bright purple */
-  --color-bright: #6B0E9C;
+  /* Secondary color 1. Use this for navbar backgrounds, primary buttons */
+  --color-secondary-800: #00838F;
 
-  /* Divider color for separators and borders. Grey */
+  /* Secondary color 2. Use this for header text, tabs, and contrasting backgrounds */
+  --color-secondary-700: #0097A7;
+
+  /* Bright accent background color for highlighting */
+  --color-bright: #FF6E40;
+
+  /* Divider color for separators and borders */
   --color-divider: rgba(0, 0, 0, 0.12);
 
   /*
    * Button colors
    */
   /* Primary button colors, main dark color background with white text */
-  --color-button-primary: var(--color-dark);
+  --color-button-primary: var(--color-secondary-800);
   --color-button-primary-text: var(--color-white);
 
   /* Primary button colors, white background with main dark color text */
   --color-button-secondary: var(--color-white);
-  --color-button-secondary-text: var(--color-dark);
-
-
-  /* Dark Grey for secondary boxes like tabs. */
-  --color-grey-dark: #263238;
+  --color-button-secondary-text: var(--color-secondary-800);
 
   /* Very Light Grey. Use as background color where-ever darker shade of white is needed such as toolbars and secondary reading backgrounds */
   --color-grey-very-light: #ECEFF1;
