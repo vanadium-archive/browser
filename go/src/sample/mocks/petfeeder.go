@@ -177,7 +177,7 @@ func (r *RoboDog) Status(ipc.ServerCall) (sample.RoboDogStatus, error) {
 }
 
 // Speak allows a client to speak with the robotic dog.
-func (r *RoboDog) Speak(ctx ipc.ServerCall, words string) (string, error) {
+func (r *RoboDog) Speak(call ipc.ServerCall, words string) (string, error) {
 	// If dog is eating, the dog cannot listen or respond.
 	if r.eating {
 		return "*munch* *munch*", nil
