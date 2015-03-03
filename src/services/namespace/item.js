@@ -1,4 +1,5 @@
 var mercury = require('mercury');
+var ItemTypes = require('./item-types');
 
 module.exports = {
   createItem: createItem,
@@ -16,8 +17,10 @@ module.exports = {
  * when it was mounted to a mounttable. e.g. "foo"
  * @param {boolean} obj.isGlobbable. Whether the item supports globbing.
  * Any server that supports .glob() is considered globbale.
- * @param {boolean} obj.isServer. Whether the item points a mounted server or
- * is just an intermediary node.
+ * @param {ItemTypes} obj.itemType. The type of the item. One of the values
+ * defined in the ItemTypes enum.
+ * @param {string} obj.itemError. Any error messages for the item, only set if
+ * itemType === ItemTypes.Inaccessible
  * @param {mercury.struct} [obj.serverInfo]. Struct representing information
  * about the server. null if !isServer.
  * @see #createServerInfo method for details on serverInfo
@@ -28,7 +31,8 @@ function createItem(obj) {
     objectName: mercury.value(obj.objectName),
     mountedName: mercury.value(obj.mountedName),
     isGlobbable: mercury.value(obj.isGlobbable),
-    isServer: mercury.value(obj.isServer),
+    itemType: mercury.value(obj.itemType || ItemTypes.loading),
+    itemError: mercury.value(obj.itemError || ''),
     serverInfo: obj.serverInfo
   });
 }

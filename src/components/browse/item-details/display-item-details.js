@@ -8,6 +8,7 @@ var methodForm = require('./method-form/index.js');
 
 var namespaceService = require('../../../services/namespace/service');
 var bookmarkService = require('../../../services/bookmarks/service');
+var ItemTypes = require('../../../services/namespace/item-types');
 var smartService = require('../../../services/smart/service');
 var pluginRegistry = require('../../../item-plugins/registry');
 var log = require('../../../lib/log')(
@@ -80,7 +81,7 @@ function displayItemDetails(state, events, data) {
     state.put('item', itemObs);
 
     // Ask for more information if this is a server.
-    if (itemObs().isServer) {
+    if (itemObs().itemType === ItemTypes.server) {
       return namespaceService.getRemoteBlessings(name);
     } else {
       return null;
@@ -119,8 +120,8 @@ function displayItemDetails(state, events, data) {
     setIsLoaded();
 
     state.put('signature', signatureResult);
-
-    if (!itemObs().isServer || !signatureResult) {
+    var isServer = (itemObs().itemType === ItemTypes.server);
+    if (!isServer || !signatureResult) {
       return;
     }
 

@@ -3,7 +3,7 @@ var mercury = require('mercury');
 var itemDetailsComponent =
 require('../../../../../src/components/browse/item-details/index');
 var proxyquire = require('proxyquireify')(require);
-
+var ItemTypes = require('../../../../../src/services/namespace/item-types');
 /*
  * Create mocks for browse-service used by browseNamespace.
  * One mock that resolves in both glob and signature methods.
@@ -13,7 +13,7 @@ var mockName = 'foo/bar/mockItem';
 var mockItem = {
   mountedName: 'mockItem',
   name: mockName,
-  isServer: false
+  itemType: ItemTypes.intermediary
 };
 var namespaceServiceMock = {
   getNamespaceItem: function() {

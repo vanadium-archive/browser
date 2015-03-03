@@ -6,6 +6,8 @@ var polymerEvent = require('../../../../lib/mercury/polymer-event');
 var expand = require('./expand');
 var getServiceIcon = require('../../get-service-icon');
 
+var ItemTypes = require('../../../../services/namespace/item-types');
+
 var css = require('./index.css');
 var h = mercury.h;
 
@@ -95,11 +97,13 @@ function createTreeNode(state, selected, item, extraprops) {
       return createTreeNode(state, selected, child);
     });
   }
+  var clName = (item.itemType === ItemTypes.inaccessible ? '.grayed-out' : '');
+  var iconInfo = getServiceIcon(item);
   var props = {
     attributes: {
       label: item.mountedName || '<root>',
-      icon: getServiceIcon(item.isServer ? item.serverInfo.typeInfo.key : ''),
-      itemTitle: item.objectName,
+      icon: iconInfo.icon,
+      itemTitle: iconInfo.title,
       open: !!state.expandedMap[item.objectName],
       highlight: (item.objectName === selected),
       isExpandable: item.isGlobbable,
@@ -110,7 +114,7 @@ function createTreeNode(state, selected, item, extraprops) {
   if (extraprops) { // root of tree
     extend(props, extraprops);
   }
-  return h('tree-node', props, descendants);
+  return h('tree-node' + clName , props, descendants);
 }
 
 function wireUpEvents(state, events) {

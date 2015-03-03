@@ -15,6 +15,7 @@ var methodForm = require('./method-form/index');
 var ErrorBox = require('../../error/error-box/index');
 
 var namespaceUtil = require('../../../services/namespace/service').util;
+var ItemTypes = require('../../../services/namespace/item-types');
 
 var css = require('./index.css');
 var h = mercury.h;
@@ -216,15 +217,25 @@ function renderDetailsTabContent(state, events, browseState, navEvents) {
   }
 
   // The method forms can only be shown under these conditions.
-  if (state.item && state.item.isServer && state.signature) {
+  if (state.item && state.item.itemType === ItemTypes.server &&
+    state.signature) {
     var methodsContent = renderMethodsContent(state, events);
     tabContent.push(methodsContent);
   }
 
-  // Show an error if there is one.
+  // Show any errors from getting the details and/or the item itself
+  var error;
+  if (state.item && state.item.itemType === ItemTypes.inaccessible &&
+    state.item.itemError) {
+    error = state.item.itemError;
+  }
   if (state.error) {
+    error = error + '\n\n' + state.error.toString();
+  }
+
+  if (error) {
     var errorTitle = 'Unable to connect to ' + state.itemName;
-    tabContent.push(ErrorBox.render(errorTitle, state.error.toString()));
+    tabContent.push(ErrorBox.render(errorTitle, error));
   }
 
   // Show the loading indicator if it's available.
@@ -388,7 +399,7 @@ function renderHeaderContent(state, events, browseState, navEvents) {
 function renderDetailsContent(state, events) {
   var displayItems = [];
   displayItems.push(renderTypeFieldItem(state));
-  if (state.item.isServer) {
+  if (state.item.itemType === ItemTypes.server) {
     displayItems.push(renderEndpointsFieldItem(state));
     if (state.remoteBlessings) {
       displayItems.push(renderRemoteBlessingsFieldItem(state));
@@ -407,11 +418,15 @@ function renderTypeFieldItem(state) {
   var item = state.item;
   var typeName;
   var typeDescription;
-  if (item.isServer) {
+  if (item.itemType === ItemTypes.server) {
     typeName = item.serverInfo.typeInfo.typeName;
     typeDescription = item.serverInfo.typeInfo.description;
-  } else {
+  } else if(item.itemType === ItemTypes.intermediary) {
     typeName = 'Intermediary Name';
+  } else if(item.itemType === ItemTypes.inaccessible) {
+    typeName = 'Inaccessible';
+  } else {
+    typeName = 'Loading';
   }
 
   return renderFieldItem('Type', typeName, {
