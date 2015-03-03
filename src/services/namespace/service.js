@@ -10,6 +10,7 @@ var itemFactory = require('./item');
 var freeze = require('../../lib/mercury/freeze');
 var sortedPush = require('../../lib/mercury/sorted-push-array');
 var log = require('../../lib/log')('services:namespace:service');
+var ItemTypes = require('./item-types');
 
 module.exports = {
   getChildren: getChildren,
@@ -118,7 +119,7 @@ function glob(pattern) {
         }).get(0);
         if (existingItem) {
           // override the old one if new item is a server
-          if (item().isServer) {
+          if (item().itemType === ItemTypes.server) {
             var index = globItemsObservArr.indexOf(existingItem);
             globItemsObservArr.put(index, item);
           }
@@ -328,16 +329,21 @@ function createNamespaceItem(mountEntry) {
   var mountedName = namespaceUtil.basename(name);
   var servers = mountEntry.servers;
 
+  var itemType = ItemTypes.unknown;
+
   // get server related information.
-  var isServer = servers.length > 0;
-  // NOTE: servers.length > 0 is not enough
-  // to know if something is a server or not we also have to call resolve()
-  // later to the isServer flag as the could be cases where servers.length === 0
-  // and yet the name is a server.
+  if (servers.length > 0) {
+    // NOTE: servers.length > 0 is not enough
+    // to know if something is a server or not we also have to call resolve()
+    // later to determine the itemType better as it could be that
+    // servers.length === 0 and yet the name is a server
+    itemType = ItemTypes.server;
+  }
+
   // Also endpoints need to come from resolve() call and not servers[].
   // See following bug report for details:
   // https://github.com/veyron/release-issues/issues/1072 to track a proper fix
-  // TODO(aghassemi) make isServer and endpoints synchronous again if/when the
+  // TODO(aghassemi) make itemType and endpoints synchronous again if/when the
   // issue above is fixed.
   var serverInfo = getServerInfo(name, mountEntry);
 
@@ -345,7 +351,7 @@ function createNamespaceItem(mountEntry) {
     objectName: name,
     mountedName: mountedName,
     isGlobbable: false,
-    isServer: isServer,
+    itemType: itemType,
     serverInfo: serverInfo
   });
 
@@ -365,8 +371,10 @@ function createNamespaceItem(mountEntry) {
         resolve();
       });
       globStream.once('error', function createItem(globResult) {
-        //TODO(aghassemi) Certain types of error can tell us if the name
-        // was not accessible which can be used for the IsAccessible flag.
+        //TODO(aghassemi) should we check the name on the error to match
+        //the root name before setting inaccessible?
+        item.itemType.set(ItemTypes.inaccessible);
+        item.itemError.set(globResult.toString());
         ctx.cancel();
         resolve();
       });
@@ -382,20 +390,21 @@ function createNamespaceItem(mountEntry) {
     var resolveCtx = rt.getContext().withTimeout(RPC_TIMEOUT);
     var ns = rt.namespace();
     return ns.resolve(resolveCtx, name).then(function(endpoints) {
-      item.isServer.set(true);
+      // it resolved to an endpoint, type is a server
+      item.itemType.set(ItemTypes.server);
       endpoints.forEach(function(ep) {
         serverInfo.endpoints.push(ep);
       });
     }, function(err) {
-      // TODO(aghassemi) Glob probably should not return items when their parent
-      // is inaccessible. https://github.com/veyron/release-issues/issues/1161
-      // For now we inspect the error as a work-around.
       if (err.id === 'v.io/v23/naming.nameDoesntExist') {
-        item.isServer.set(false);
+        // we got nameDoesntExist error, it must be an intermediary node.
+        item.itemType.set(ItemTypes.intermediary);
       } else {
-        //TODO(aghassemi) this should make the node inaccessible do that when
-        //working on https://github.com/veyron/release-issues/issues/969
-        item.isServer.set(true);
+        // TODO(aghassemi) Glob probably should not return items if their parent
+        // is inaccessible. https://github.com/veyron/release-issues/issues/1161
+        // For now we inspect the error as a work-around.
+        item.itemType.set(ItemTypes.inaccessible);
+        item.itemError.set(err.toString());
       }
     });
   });

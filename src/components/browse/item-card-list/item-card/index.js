@@ -3,6 +3,7 @@ var insertCss = require('insert-css');
 var getServiceIcon = require('../../get-service-icon');
 
 var browseRoute = require('../../../../routes/browse');
+var ItemTypes = require('../../../../services/namespace/item-types');
 
 var css = require('./index.css');
 var h = mercury.h;
@@ -42,25 +43,19 @@ function render(item, browseState, browseEvents, navEvents, showShortName,
   var itemTooltip = item.objectName;
   var iconCssClass = '.service-type-icon';
   var iconAttributes = {};
-
-  if (item.isServer) {
-    iconAttributes.attributes = {
-      title: item.serverInfo.typeInfo.typeName,
-      icon: getServiceIcon(item.serverInfo.typeInfo.key)
-    };
-  } else {
-    iconAttributes.attributes = {
-      title: 'Intermediary Name',
-      icon: getServiceIcon('')
-    };
-  }
+  var iconInfo = getServiceIcon(item);
+  iconAttributes.attributes = {
+    title: iconInfo.title,
+    icon: iconInfo.icon
+  };
 
   // Construct the service icon.
   var iconNode = h('core-icon' + iconCssClass, iconAttributes);
 
   // Put the item card's pieces together.
   var itemClassNames = 'item.card' +
-    (selected ? '.selected' : '');
+    (selected ? '.selected' : '') +
+    (item.itemType === ItemTypes.inaccessible ? '.grayed-out' : '');
 
   var cardLabel = (showShortName ? item.mountedName : item.objectName) ||
     '<root>';

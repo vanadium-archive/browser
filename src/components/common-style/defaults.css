@@ -99,6 +99,10 @@ paper-spinner::shadow .circle {
   color: var(--color-text-secondary);
 }
 
+.grayed-out, tree-node.grayed-out::shadow .item {
+  opacity: 0.5;
+}
+
 /*
  * Applies a tiny margin to the left of the element.
  */

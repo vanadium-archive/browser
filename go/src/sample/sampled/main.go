@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"time"
 
 	"sample"
 	"sample/mocks"
@@ -102,6 +103,14 @@ func main() {
 	defer listenAndServe("cottage/lawn/front/sprinkler", makeServerSprinkler())()
 	defer listenAndServe("cottage/lawn/back/sprinkler", makeServerSprinkler())()
 	defer listenAndServe("cottage/lawn/master-sprinkler", makeServerSprinkler())()
+
+	// Add bunch of inaccessible names
+	ns := v23.GetNamespace(ctx)
+	nextYear := time.Now().AddDate(1, 0, 0)
+	ttl := nextYear.Sub(time.Now())
+	ns.Mount(ctx, "house/master-bedroom/personal/toothbrush", "/does.not.exist.v.io:9898", ttl)
+	// TODO(aghassemi) Add a name with mounttable ACLs set so it can not be resolved
+	// waiting for: https://github.com/veyron/release-issues/issues/1249
 
 	// Wait forever.
 	<-signals.ShutdownOnSignals(ctx)

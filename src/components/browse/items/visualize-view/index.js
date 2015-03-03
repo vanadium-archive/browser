@@ -18,9 +18,7 @@ module.exports.render = render;
 // Matches HEX value of --color-text-primary in theme.css
 var TEXT_COLOR = '#333333';
 // Matches --color-bright in theme.css
-var INTER_NODE_COLOR = '#6B0E9C';
-// Matches --color-text-link-hover in theme.css
-var SERVER_NODE_COLOR = '#03A9F4';
+var NODE_COLOR = '#6B0E9C';
 // Matches --color-grey-dark in theme.css
 var NODE_BORDER = '#263238';
 // Matches --color-dark in theme.css
@@ -277,9 +275,10 @@ TreeWidget.prototype.loadSubNodes = function(node) {
         return isNew;
       });
       var newNodes = nodesToAdd.map(function(item) {
-        var shape = (item.isServer ? 'triangle' : 'dot');
+
+        var shape = 'dot';
         var color = {
-          background: (item.isServer ? SERVER_NODE_COLOR : INTER_NODE_COLOR),
+          background: NODE_COLOR,
           border: NODE_BORDER
         };
         return {

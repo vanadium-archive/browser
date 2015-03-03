@@ -3,6 +3,7 @@ var mercury = require('mercury');
 var _ = require('lodash');
 var proxyquire = require('proxyquireify')(require);
 var mockLRUCache = require('./mocks/lru-cache');
+var ItemTypes = require('../../../../src/services/namespace/item-types');
 
 // @noCallThru ensures this completely overrdies the original config
 // instead of inheriting the properties that are not defined here from
@@ -176,6 +177,29 @@ test('getChildren of rooted ' + hostPortRoot + '/kitchen', function(t) {
   }
 });
 
+test('getChildren of' + globalRoot + '/house/master-bedroom/personal' +
+  ' - all inaccessible nodes',
+  function(t) {
+    namespaceService.getChildren(globalRoot + '/house/master-bedroom/personal').
+    then(function assertResult(result) {
+      assertIsImmutable(t, result);
+      // Wait until we finish, we expect 1 inaccessible toothbrush
+      result.events.on('end', function validate() {
+        mercury.watch(result, function(children) {
+          var toothbrush = children[0];
+          assertMountedName(t, toothbrush, 'toothbrush');
+          assertIsInaccessible(t, toothbrush);
+          assertIsNotGlobbable(t, toothbrush);
+          t.end();
+        });
+      });
+      result.events.on('globError', function(error) {
+        t.notOk(error, 'did not expect any globs errors');
+        t.end();
+      });
+    }).catch(t.end);
+  });
+
 test('getChildren of non-existing mounttable', function(t) {
   // TODO(aghassemi) why does namespace library return empty results instead of
   // error when globbing rooted names that don't exist?
@@ -277,7 +301,7 @@ test('getSignature uses caching', function(t) {
   }).then(function() {
     t.notOk(mockLRUCache.wasCacheHit(
       'getSignature|house/kitchen/smoke-detector'
-    ),'third getSignature call to a different name is not a cache hit');
+    ), 'third getSignature call to a different name is not a cache hit');
     t.end();
   }).catch(t.end);
 });
@@ -291,13 +315,15 @@ test('getSignature uses caching', function(t) {
 
 // Make RPC: good inputs => no error
 var okRPCs = {
-  'no input':     ['house/alarm', 'status', []],
-  'bool input':   ['house/living-room/lights', 'flipSwitch', [true]],
-  'int input':    ['cottage/smoke-detector', 'sensitivity', [2]],
-  'float input':  ['house/alarm', 'delayArm', [2.5]],
+  'no input': ['house/alarm', 'status', []],
+  'bool input': ['house/living-room/lights', 'flipSwitch', [true]],
+  'int input': ['cottage/smoke-detector', 'sensitivity', [2]],
+  'float input': ['house/alarm', 'delayArm', [2.5]],
   'string input': ['cottage/pool/speaker', 'playSong', ['Happy Birthday']],
-  'slice input':  ['house/master-bedroom/speaker', 'addSongs', [['A', 'B']]],
-  '2+ inputs':    ['cottage/pool/heater', 'start', [70, 5]],
+  'slice input': ['house/master-bedroom/speaker', 'addSongs', [
+    ['A', 'B']
+  ]],
+  '2+ inputs': ['cottage/pool/heater', 'start', [70, 5]],
 };
 
 _.forOwn(okRPCs, function run(params, inputType) {
@@ -311,11 +337,11 @@ _.forOwn(okRPCs, function run(params, inputType) {
 var badRPCs = {
   //TODO(aghassemi) re-enable after #483
   //'no service':    ['mansion/smoke-detector', 'status', []],
-  'no method':     ['cottage/pool/speaker', 'status', []],
-  'no input':      ['cottage/lights','flipSwitch', null],
-  'bad type':      ['cottage/lights','flipSwitch', ['notBool']],
-  'lacks input':   ['cottage/pool/heater','start', [80]],
-  'invalid input': ['house/living-room/blast-speaker','playSong', ['notThere']]
+  'no method': ['cottage/pool/speaker', 'status', []],
+  'no input': ['cottage/lights', 'flipSwitch', null],
+  'bad type': ['cottage/lights', 'flipSwitch', ['notBool']],
+  'lacks input': ['cottage/pool/heater', 'start', [80]],
+  'invalid input': ['house/living-room/blast-speaker', 'playSong', ['notThere']]
 };
 
 _.forOwn(badRPCs, function run(params, inputType) {
@@ -361,9 +387,10 @@ function assertServer(t, item, vals) {
   assertMountedName(t, item, vals.name);
   assertObjectName(t, item, vals.objectName);
   assertIsServer(t, item);
+  assertIsAccessible(t, item);
   if (vals.isGlobbable === true) {
     assertIsGlobbable(t, item);
-  } else if(vals.isGlobbable === false) {
+  } else if (vals.isGlobbable === false) {
     assertIsNotGlobbable(t, item);
   }
 
@@ -379,8 +406,23 @@ function assertServer(t, item, vals) {
 function assertIntermediaryName(t, item, vals) {
   assertMountedName(t, item, vals.name);
   assertObjectName(t, item, vals.objectName);
-  assertIsNotServer(t, item);
   assertIsGlobbable(t, item);
+  assertIsAccessible(t, item);
+  t.equal(item.itemType, ItemTypes.intermediary, item.mountedName +
+    ': is intermediary node');
+}
+
+function assertIsAccessible(t, item) {
+  t.notEqual(item.itemType, ItemTypes.inaccessible, item.mountedName +
+    ': is accessible');
+  t.notOk(item.itemError, item.mountedName + ': has no item erros');
+}
+
+function assertIsInaccessible(t, item) {
+  t.equal(item.itemType, ItemTypes.inaccessible, item.mountedName +
+    ': is inaccessible');
+  t.ok(typeof item.itemError === 'string',
+    item.mountedName + ': has item error');
 }
 
 function assertMountedName(t, item, val) {
@@ -394,14 +436,10 @@ function assertObjectName(t, item, val) {
 }
 
 function assertIsServer(t, item) {
-  t.equal(item.isServer, true, item.mountedName + ': is a server');
+  t.equal(item.itemType, ItemTypes.server, item.mountedName + ': is a server');
   t.ok(item.serverInfo, item.mountedName + ': has server info');
   t.ok(item.serverInfo.endpoints.length > 0, item.mountedName +
     ': has at least 1 endpoint');
-}
-
-function assertIsNotServer(t, item) {
-  t.equal(item.isServer, false, item.mountedName + ': is not a server');
 }
 
 function assertIsGlobbable(t, item) {
@@ -435,19 +473,19 @@ function assertUnknownServiceTypeInfo(t, item) {
  * Asserts that a ServiceTypeInfo is of predefined type of mounttable.
  */
 function assertMounttableServiceTypeInfo(t, item) {
-  var typeInfo = item.serverInfo.typeInfo;
-  t.equal(typeInfo.key, 'veyron-mounttable',
-    item.mountedName + ': mounttable type info has the right key');
+    var typeInfo = item.serverInfo.typeInfo;
+    t.equal(typeInfo.key, 'veyron-mounttable',
+      item.mountedName + ': mounttable type info has the right key');
 
-  t.equal(typeInfo.typeName, 'Mount Table',
-    item.mountedName + ': mounttable type info has the type name');
+    t.equal(typeInfo.typeName, 'Mount Table',
+      item.mountedName + ': mounttable type info has the type name');
 
-  t.ok(typeInfo.description,
-    item.mountedName + ': mounttable type info has a description');
-}
-/*
- * Runs a test to ensure the makeRPC call terminates without error.
- */
+    t.ok(typeInfo.description,
+      item.mountedName + ': mounttable type info has a description');
+  }
+  /*
+   * Runs a test to ensure the makeRPC call terminates without error.
+   */
 function testMakeRPCNoError(args, t) {
   namespaceService.makeRPC.apply(null, args).then(function(result) {
     t.pass('completed without error');
