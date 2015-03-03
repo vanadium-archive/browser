@@ -210,7 +210,7 @@ function loadLearners() {
  * Renders the top bar of Viz where the user can specify a namespace root.
  */
 function renderHeader(browseState, browseEvents, navEvents) {
-  return h('div', [
+  return h('div.header-content', [
     renderNamespaceBox(browseState, browseEvents, navEvents)
   ]);
 }
@@ -363,7 +363,7 @@ function renderNamespaceBox(browseState, browseEvents, navEvents) {
         attributes: {
           'label': 'Enter a name to browse, e.g. house/living-room'
         },
-        'position': 'right'
+        'position': 'bottom'
       },
       h('div', {
         attributes: {
@@ -371,9 +371,13 @@ function renderNamespaceBox(browseState, browseEvents, navEvents) {
           'horizontal': 'true'
         }
       }, [
-        h('core-icon.icon', {
+        h('paper-icon-button.icon', {
           attributes: {
-            'icon': 'explore'
+            'icon': 'refresh',
+            'label': 'Reload'
+          },
+          'ev-click': function() {
+            location.reload();
           }
         }),
         h('paper-autocomplete', {

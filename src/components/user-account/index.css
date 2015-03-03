@@ -3,8 +3,8 @@
 
 .account-name {
   position: absolute;
-  right: var(--size-space-xxsmall);
+  right: var(--size-space-small);
   top: var(--size-space-xxsmall);
   color: var(--color-text-primary-invert);
-  font-size: var(--size-font-xsmall);
+  font-size: var(--size-font-xxsmall);
 }

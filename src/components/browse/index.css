@@ -103,13 +103,17 @@
 .namespace-box {
   background: var(--color-grey-very-light);
   font-size: var(--size-font-xsmall);
-  padding: var(--size-space-xxsmall) var(--size-space-small);
-  margin-left: var(--size-space-xxlarge) !important;
+  padding: 0 var(--size-space-xsmall);
+  margin-left: var(--size-space-xlarge) !important;
   border-radius: 1px;
 }
 
 .namespace-box /deep/ input {
   color: inherit
+}
+
+.namespace-box core-tooltip {
+  width: 100%;
 }
 
 .icon-group {
@@ -152,7 +156,7 @@
 .search-box .icon, .namespace-box .icon {
   align-self: flex-end;
   color: var(--color-text-secondary);
-  margin-right: var(--size-space-xxsmall);
+  margin-right: var(--size-space-xsmall);
 }
 
 .search-box .input {
@@ -172,8 +176,12 @@
   padding-right: 0.75em;
 }
 
+.header-content {
+  flex: 1;
+}
+
 paper-autocomplete {
-  width: var(--size-input-width-normal);
+  width: 100%;
 }
 
 paper-autocomplete::shadow #suggest-box {

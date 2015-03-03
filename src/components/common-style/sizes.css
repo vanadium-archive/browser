@@ -2,6 +2,7 @@
 :root {
 
   /* font-size */
+  --size-font-xxsmall: 0.5em;
   --size-font-xsmall: 0.7em;
   --size-font-small: 0.9em;
   --size-font-normal: 1em;
