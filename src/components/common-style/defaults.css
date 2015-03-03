@@ -10,13 +10,8 @@
   height: 3px;
 }
 
-.tab.core-selected {
-  opacity: 1;
-}
-
 .tab {
-  opacity: 0.85;
-  background-color: var(--color-grey-dark);
+  background-color: var(--color-secondary-700);
   color: var(--color-white);
 }
 

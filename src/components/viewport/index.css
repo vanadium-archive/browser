@@ -16,7 +16,7 @@ body {
 }
 
 .drawer .toolbar {
-  background-color: var(--color-dark);
+  background-color: var(--color-secondary-800);
 }
 
 .toolbar {
