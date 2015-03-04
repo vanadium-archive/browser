@@ -38,7 +38,7 @@ func (s *speaker) PlaySong(_ ipc.ServerCall, title string) error {
 }
 
 // PlayStream plays the given stream of music data.
-func (s *speaker) PlayStream(sample.SpeakerPlayStreamContext) error {
+func (s *speaker) PlayStream(sample.SpeakerPlayStreamServerCall) error {
 	s.currentSong = ""
 	s.playing = true
 	return nil
