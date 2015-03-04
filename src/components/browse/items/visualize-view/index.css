@@ -1,9 +1,17 @@
+@import "common-style/sizes.css";
+@import "common-style/theme.css";
+
 .network {
   position: absolute;
+  overflow: hidden;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
+}
+
+.network svg.overlay {
+  overflow: hidden;
 }
 
 .vismenu {
@@ -11,13 +19,62 @@
   top: 5px;
   right: 10px;
 }
-paper-fab.mode,
-paper-fab.zoom
+
+paper-fab.zoom, paper-fab.rotate, paper-fab.menubutton
  {
-  background-color: white;
+  background-color: var(--color-white);
   margin: 5px 3px;
 }
-paper-fab.selected {
+/*paper-fab.selected {
   background-color: #6B0E9C;
-  color: white;
+  color: var(--color-white);
+}*/
+
+paper-shadow.dropdown {
+  background-color: var(--color-white);
+  display: none;
+  position: absolute;
+  width: 11em;
+  right: 10px;
+  top: 55px;
+}
+
+paper-shadow.dropdown paper-item::shadow .button-content {
+  padding: 5px 10px;
+  font-size: var(--size-font-small);
+}
+
+paper-shadow.dropdown paper-item div.sc {
+  position: absolute;
+  right: 10px;
+}
+
+/* d3 */
+.node {
+    cursor: pointer;
+}
+
+.node circle {
+  fill: var(--color-white);
+}
+
+.node text {
+    font-size: 12px;
+    font-family: var(--font-family);
+    text-shadow: 4px 4px 3px var(--color-white),
+      -4px -4px 3px var(--color-white);
+}
+.node text:hover {
+  font-size: var(--size-font-large);
+  transition: font-size 0.1s;
+}
+.node text:not(:hover) {
+  transition: font-size 1s;
+  transition-delay: 0.5s;
+}
+
+.link {
+  fill: none;
+  stroke: #ccc;
+  stroke-width: 1.5px;
 }
