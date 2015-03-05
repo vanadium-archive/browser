@@ -210,3 +210,17 @@ paper-icon-button.selected:hover {
   box-shadow: var(--shadow-all-around);
   border-radius: 999px; /* Any square with sufficiently rounded corner is indistinguishable from a circle */
 }
+
+.side-panel-toggle {
+  position: absolute;
+  z-index: 1;
+  left: -18px;
+  top: 2px;
+  transform: scale(0.6);
+  background-color: var(--color-bright);
+  color: var(--color-white);
+}
+
+.side-panel-toggle.collapsed {
+  left: -24px;
+}
