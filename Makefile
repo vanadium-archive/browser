@@ -73,6 +73,7 @@ go/bin: directories
 	v23 go install v.io/x/ref/cmd/principal
 	v23 go install v.io/x/ref/cmd/servicerunner
 	v23 go install sample/sampled
+	v23 go install runner
 
 # PHONY targets:
 
@@ -83,7 +84,7 @@ all: go/bin build
 build: directories public/bundle.js public/bundle.html
 
 # Run unit and integration tests.
-test: all
+test2: all
 	:;jshint test # lint all test JavaScript files.
 	# Set the TMPDIR back to ORIG_TMPDIR before calling "make test-runner" so
 	# that we don't add "viz" suffix to TMPDIR twice.
@@ -95,19 +96,30 @@ test-runner: directories
 	$(MAKE) -C $(VANADIUM_JS)/extension build-test
 	:;./scripts/services/run-tests.sh
 
+test: all
+	:;jshint test # lint all test JavaScript files.
+	:;./go/bin/runner -v=3 -log_dir=$(VANADIUM_ROOT)/release/projects/namespace_browser/tmp/log -runSample=true -runTests=true -alsologtostderr=false
+
 # Continuously watch for changes to .js, .html or .css files.
 # Rebundles the appropriate bundles when local files change.
 watch:
 	watch -n 1 make build
 
 # Continuously reruns the tests as they change.
-watch-test: go/bin
+watch-test2: go/bin
 	:;PROVA_WATCH=true ./scripts/services/run-tests.sh
+
+# Continuously reruns the tests as they change.
+watch-test: go/bin
+	:;./go/bin/runner -v=3 -log_dir=$(VANADIUM_ROOT)/release/projects/namespace_browser/tmp/log -runSample=true -runTests=true -runTestsWatch=true -alsologtostderr=false
 
 # Serves the needed daemons and starts a server at http://localhost:9000
 # CTRL-C to stop
-start: all go/bin
+start2: all go/bin
 	:;./scripts/services/run-webapp.sh
+
+start: all go/bin
+	:;./go/bin/runner -runSample=true -serveHTTP=true -portHTTP=9001 -rootHTTP=$(VANADIUM_ROOT)/release/projects/namespace_browser/public/ -alsologtostderr=false
 
 # Create needed directories like TMPDIR.
 directories:

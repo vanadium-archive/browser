@@ -415,7 +415,7 @@ function assertIntermediaryName(t, item, vals) {
 function assertIsAccessible(t, item) {
   t.notEqual(item.itemType, ItemTypes.inaccessible, item.mountedName +
     ': is accessible');
-  t.notOk(item.itemError, item.mountedName + ': has no item erros');
+  t.notOk(item.itemError, item.mountedName + ': has no item errors');
 }
 
 function assertIsInaccessible(t, item) {
