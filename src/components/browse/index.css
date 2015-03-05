@@ -193,12 +193,14 @@ paper-autocomplete::shadow #suggest-box {
   box-shadow: var(--shadow-all-around);
 }
 
-paper-autocomplete paper-item.highlighted,
-paper-autocomplete paper-item:hover {
+/* Needed to have an extra class (.autocomplete) to have more CSS specificity
+ * than the paper-autocomplete's default content style. */
+paper-autocomplete.autocomplete paper-item.highlighted,
+paper-autocomplete.autocomplete paper-item:hover {
   background-color: var(--color-bright);
 }
 
-paper-autocomplete paper-item {
+paper-autocomplete.autocomplete paper-item {
   color: var(--color-text-primary);
 }
 

@@ -380,7 +380,7 @@ function renderNamespaceBox(browseState, browseEvents, navEvents) {
             location.reload();
           }
         }),
-        h('paper-autocomplete', {
+        h('paper-autocomplete.autocomplete', {
           attributes: {
             'name': 'namespace',
             'value': browseState.namespace,
