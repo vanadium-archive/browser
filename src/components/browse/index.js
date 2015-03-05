@@ -110,7 +110,13 @@ function create() {
      * Specifies what sub page is currently displayed.
      * One of: items, bookmarks, recommendations
      */
-    subPage: mercury.value('items')
+    subPage: mercury.value('items'),
+
+    /*
+     * Whether the details panel on the sidebar is collapsed or expanded
+     * @type {Boolean}
+     */
+    sidePanelCollapsed: mercury.value(false),
 
   });
 
@@ -166,7 +172,12 @@ function create() {
           actionText: 'UNDO'
      * }
      */
-    'toast'
+    'toast',
+
+    /*
+     * Event for toggling the expand/collapse state of the sidebar details panel
+     */
+    'toggleSidePanel'
   ]);
 
   wireUpEvents(state, events);
@@ -215,6 +226,25 @@ function renderHeader(browseState, browseEvents, navEvents) {
   ]);
 }
 
+function renderSidePanelToggle(browseState, browseEvents) {
+  var cssClass = '.core-header.side-panel-toggle';
+  if(browseState.sidePanelCollapsed) {
+    cssClass += '.collapsed';
+  }
+  return h('paper-fab' + cssClass, {
+    attributes: {
+      'mini': true,
+      'title': browseState.sidePanelCollapsed ?
+        'Show side panel' : 'Hide side panel',
+      'icon': browseState.sidePanelCollapsed ?
+        'chevron-left' : 'chevron-right',
+    },
+    'ev-click': mercury.event(browseEvents.toggleSidePanel, {
+      collapsed: !browseState.sidePanelCollapsed
+    })
+  });
+}
+
 /*
  * Renders the main body of Viz.
  * A toolbar is rendered on top of the mainView and sideView showing the current
@@ -225,7 +255,10 @@ function renderHeader(browseState, browseEvents, navEvents) {
 function render(browseState, browseEvents, navEvents) {
   insertCss(css);
 
+  var expandCollapse = renderSidePanelToggle(browseState, browseEvents);
+
   var sideView = [
+    expandCollapse,
     ItemDetails.render(
       browseState.selectedItemDetails,
       browseEvents.selectedItemDetails,
@@ -274,6 +307,9 @@ function render(browseState, browseEvents, navEvents) {
   ]);
 
   var sideViewWidth = '50%';
+  if (browseState.sidePanelCollapsed) {
+    sideViewWidth = '0%';
+  }
   var view = [
     h('core-toolbar.browse-toolbar', [
       renderBreadcrumbs(browseState, navEvents),
@@ -605,5 +641,20 @@ function wireUpEvents(state, events) {
   events.selectItem(function(data) {
     state.selectedItemName.set(data.name);
     events.selectedItemDetails.displayItemDetails(data);
+  });
+  events.toggleSidePanel(function(data) {
+    state.sidePanelCollapsed.set(data.collapsed);
+    //Fire a window resize event so components can adjust based on the new
+    //view port size
+    setTimeout(function fireResizeEvent() {
+      //TODO(aghassemi) 300ms is the duration of the animation, we want to
+      //fire resize after animation is finished. Ideally core-drawer-panel would
+      //have exposed a on-animation-complete but it does not and listening
+      //on webkitAnimationEnd does not work since a DOM in shadow root is
+      //being animated, hence the not-so-nice solution of using timeouts.
+      var evt = document.createEvent('UIEvents');
+      evt.initUIEvent('resize', true, false, window, 0);
+      window.dispatchEvent(evt);
+    }, 300);
   });
 }
