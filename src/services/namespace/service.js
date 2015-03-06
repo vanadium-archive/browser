@@ -144,10 +144,9 @@ function glob(pattern) {
         bluebirdPromise.settle(itemPromises).then(triggerEnd).catch(triggerEnd);
       });
 
-      globStream.on('error', function invalidateCacheAndLog(err) {
-        globCache.del(cacheKey);
+      globStream.on('error', function emitGlobErrorAndLog(err) {
         immutableResult.events.emit('globError', err);
-        log.error('Glob stream error for', name, err);
+        log.warn('Glob stream error for', name, err);
       });
 
     }).then(function cacheAndReturnResult() {
@@ -174,9 +173,6 @@ function getNamespaceItem(objectName) {
   return glob(objectName).then(function(resultsObs) {
     // Wait until the glob finishes before returning the item
     return new Promise(function(resolve, reject) {
-      resultsObs.events.on('globError', function(err) {
-        reject(err);
-      });
       resultsObs.events.on('end', function() {
         var results = resultsObs();
         if (results.length === 0) {
@@ -360,6 +356,9 @@ function createNamespaceItem(mountEntry) {
   var hasChildrenPromise = new Promise(function(resolve, reject) {
     // glob for 'object/name/*', this will tell is if the name has any children
     // also the errors can be used to detect if name is accessible or not.
+    //TODO(aghassemi) we no longer need to do this since glob tells us
+    //if something is globbable or not in the GlobError, switch to that
+    //See https://github.com/veyron/release-issues/issues/1307
     getRuntime().then(function hasChildren(rt) {
       var ctx = rt.getContext().withTimeout(RPC_TIMEOUT).withCancel();
       var ns = rt.namespace();
@@ -371,12 +370,15 @@ function createNamespaceItem(mountEntry) {
         resolve();
       });
       globStream.once('error', function createItem(globResult) {
-        //TODO(aghassemi) should we check the name on the error to match
-        //the root name before setting inaccessible?
-        item.itemType.set(ItemTypes.inaccessible);
-        item.itemError.set(globResult.toString());
-        ctx.cancel();
-        resolve();
+
+        if (globResult.name === name &&
+          globResult.error instanceof veyron.errors.NoServersError) {
+
+          item.itemType.set(ItemTypes.inaccessible);
+          item.itemError.set(globResult.toString());
+          ctx.cancel();
+          resolve();
+        }
       });
       globStream.once('end', function() {
         resolve();
