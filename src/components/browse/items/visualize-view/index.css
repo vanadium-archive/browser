@@ -17,7 +17,7 @@
 .vismenu {
   position: absolute;
   top: 5px;
-  right: 10px;
+  right: 15px;
 }
 
 paper-fab.zoom, paper-fab.rotate, paper-fab.menubutton
@@ -31,12 +31,13 @@ paper-fab.zoom, paper-fab.rotate, paper-fab.menubutton
 }*/
 
 paper-shadow.dropdown {
-  background-color: var(--color-white);
   display: none;
+  background-color: var(--color-white);
   position: absolute;
-  width: 11em;
-  right: 10px;
+  /*width: 10em;*/
+  font-family: var(--font-family);
   top: 55px;
+  right: 15px;
 }
 
 paper-shadow.dropdown paper-item::shadow .button-content {
@@ -44,10 +45,34 @@ paper-shadow.dropdown paper-item::shadow .button-content {
   font-size: var(--size-font-small);
 }
 
-paper-shadow.dropdown paper-item div.sc {
+.pathitem.highlight {
+  font-weight: bold;
+  font-style: italic;
+  color: var(--color-secondary-800);
+}
+
+paper-shadow.contextmenu {
+  display: none;
+  background-color: var(--color-white);
+  position: absolute;
+  width: 13em;
+  font-family: var(--font-family);
+}
+
+paper-shadow.contextmenu paper-item::shadow .button-content {
+  padding: 5px 10px;
+  font-size: var(--size-font-small);
+}
+
+paper-shadow.contextmenu paper-item div.ksc {
   position: absolute;
   right: 10px;
 }
+
+.contextmenu paper-item:hover, .dropdown paper-item:hover {
+  background-color: var(--color-divider);
+}
+
 
 /* d3 */
 .node {
