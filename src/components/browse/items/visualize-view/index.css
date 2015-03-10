@@ -8,6 +8,7 @@
   left: 0;
   right: 0;
   bottom: 0;
+  font-family: var(--font-family);
 }
 
 .network svg.overlay {
@@ -34,8 +35,6 @@ paper-shadow.dropdown {
   display: none;
   background-color: var(--color-white);
   position: absolute;
-  /*width: 10em;*/
-  font-family: var(--font-family);
   top: 55px;
   right: 15px;
 }
@@ -56,7 +55,6 @@ paper-shadow.contextmenu {
   background-color: var(--color-white);
   position: absolute;
   width: 13em;
-  font-family: var(--font-family);
 }
 
 paper-shadow.contextmenu paper-item::shadow .button-content {
@@ -70,7 +68,7 @@ paper-shadow.contextmenu paper-item div.ksc {
 }
 
 .contextmenu paper-item:hover, .dropdown paper-item:hover {
-  background-color: var(--color-divider);
+  background-color: var(--color-menu-hover);
 }
 
 

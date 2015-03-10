@@ -90,4 +90,7 @@
 
   /* Blueish color used to indicate neutral information */
   --color-info: #0277BD;
+
+  /* hover color for menus, like context menus */
+  --color-menu-hover: rgba(236, 239, 241, 0.8);
 }
