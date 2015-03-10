@@ -228,7 +228,7 @@ function renderHeader(browseState, browseEvents, navEvents) {
 
 function renderSidePanelToggle(browseState, browseEvents) {
   var cssClass = '.core-header.side-panel-toggle';
-  if(browseState.sidePanelCollapsed) {
+  if (browseState.sidePanelCollapsed) {
     cssClass += '.collapsed';
   }
   return h('paper-fab' + cssClass, {
@@ -317,6 +317,7 @@ function render(browseState, browseEvents, navEvents) {
     ]),
     h('core-drawer-panel', {
       attributes: {
+        'id': 'sidebarDrawer',
         'rightDrawer': true,
         'drawerWidth': sideViewWidth,
         'responsiveWidth': '0px'
@@ -644,17 +645,18 @@ function wireUpEvents(state, events) {
   });
   events.toggleSidePanel(function(data) {
     state.sidePanelCollapsed.set(data.collapsed);
-    //Fire a window resize event so components can adjust based on the new
-    //view port size
-    setTimeout(function fireResizeEvent() {
-      //TODO(aghassemi) 300ms is the duration of the animation, we want to
-      //fire resize after animation is finished. Ideally core-drawer-panel would
-      //have exposed a on-animation-complete but it does not and listening
-      //on webkitAnimationEnd does not work since a DOM in shadow root is
-      //being animated, hence the not-so-nice solution of using timeouts.
+    var animatedNode = document.querySelector('#sidebarDrawer');
+    if (!animatedNode) {
+      return;
+    }
+    //Fire a window resize event when animation ends so components can adjust
+    //based on the new view port size
+    animatedNode.addEventListener('webkitTransitionEnd', fireResizeEvent);
+    function fireResizeEvent() {
       var evt = document.createEvent('UIEvents');
       evt.initUIEvent('resize', true, false, window, 0);
       window.dispatchEvent(evt);
-    }, 300);
+      animatedNode.removeEventListener('webkitTransitionEnd', fireResizeEvent);
+    }
   });
 }
