@@ -1,11 +1,10 @@
-var veyron = require('veyron');
+var vanadium = require('vanadium');
 var mercury = require('mercury');
 var bluebirdPromise = require('bluebird');
-var vdl = require('veyron').vdl;
 var LRU = require('lru-cache');
 var EventEmitter = require('events').EventEmitter;
-var namespaceUtil = veyron.namespaceUtil;
-var veyronConfig = require('../../veyron-config');
+var namespaceUtil = vanadium.namespaceUtil;
+var vanadiumConfig = require('../../vanadium-config');
 var itemFactory = require('./item');
 var freeze = require('../../lib/mercury/freeze');
 var sortedPush = require('../../lib/mercury/sorted-push-array');
@@ -36,7 +35,7 @@ var _runtimePromiseInstance;
 
 function getRuntime() {
   if (!_runtimePromiseInstance) {
-    _runtimePromiseInstance = veyron.init(veyronConfig);
+    _runtimePromiseInstance = vanadium.init(vanadiumConfig);
   }
   return _runtimePromiseInstance;
 }
@@ -288,7 +287,7 @@ function getSignature(objectName) {
  */
 function makeRPC(name, methodName, args) {
   // Adapt the method name to be lowercase again.
-  methodName = vdl.MiscUtil.uncapitalize(methodName);
+  methodName = methodName[0].toLowerCase() + methodName.substr(1);
 
   var ctx;
   return getRuntime().then(function bindToName(rt) {
@@ -372,7 +371,7 @@ function createNamespaceItem(mountEntry) {
       globStream.once('error', function createItem(globResult) {
 
         if (globResult.name === name &&
-          globResult.error instanceof veyron.errors.NoServersError) {
+          globResult.error instanceof vanadium.errors.NoServersError) {
 
           item.itemType.set(ItemTypes.inaccessible);
           item.itemError.set(globResult.toString());

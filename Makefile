@@ -58,7 +58,7 @@ node_modules: package.json
 	:;npm install --quiet
 	# TODO(aghassemi) Temporarily use local release/javascript/core add github/npm to package.json later
 	cd "$(VANADIUM_ROOT)/release/javascript/core" && npm link
-	:;npm link veyron
+	:;npm link vanadium
 
 	touch node_modules
 
