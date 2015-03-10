@@ -8,7 +8,7 @@ var ItemTypes = require('../../../../src/services/namespace/item-types');
 // @noCallThru ensures this completely overrdies the original config
 // instead of inheriting the properties that are not defined here from
 // the original dependency
-var veyronConfigForTest = {
+var vanadiumConfigForTest = {
   '@noCallThru': true
 };
 
@@ -20,7 +20,7 @@ var globalRoot = process.env.NAMESPACE_ROOT;
 // Require namespaceService but using test specific mocks and configs
 var namespaceService =
   proxyquire('../../../../src/services/namespace/service.js', {
-    '../../veyron-config': veyronConfigForTest,
+    '../../vanadium-config': vanadiumConfigForTest,
     'lru-cache': function() {
       return mockLRUCache;
     }
@@ -183,13 +183,21 @@ test('getChildren of' + globalRoot + '/house/master-bedroom/personal' +
     namespaceService.getChildren(globalRoot + '/house/master-bedroom/personal').
     then(function assertResult(result) {
       assertIsImmutable(t, result);
-      // Wait until we finish, we expect 1 inaccessible toothbrush
+      // Wait until we finish, we expect inaccessible toothbrush and hairbrush
       result.events.on('end', function validate() {
         mercury.watch(result, function(children) {
-          var toothbrush = children[0];
+          children.sort();
+
+          var hairbrush = children[0];
+          assertMountedName(t, hairbrush, 'hairbrush');
+          assertIsInaccessible(t, hairbrush);
+          assertIsNotGlobbable(t, hairbrush);
+
+          var toothbrush = children[1];
           assertMountedName(t, toothbrush, 'toothbrush');
           assertIsInaccessible(t, toothbrush);
           assertIsNotGlobbable(t, toothbrush);
+
           t.end();
         });
       });

@@ -11,6 +11,7 @@ import (
 	"v.io/v23"
 	"v.io/v23/context"
 	"v.io/v23/security"
+	"v.io/v23/services/security/access"
 	"v.io/x/ref/lib/signals"
 )
 
@@ -102,12 +103,55 @@ func RunSampleWorld(ctx *context.T) {
 	defer listenAndServe("cottage/lawn/master-sprinkler", makeServerSprinkler())()
 
 	// Add bunch of inaccessible names
+	var nobody = []security.BlessingPattern{""}
+	var everybody = []security.BlessingPattern{"..."}
+	var nobodyCanResolve = access.TaggedACLMap{
+		"Resolve": access.ACL{
+			In: nobody,
+		},
+		"Read": access.ACL{
+			In: nobody,
+		},
+		"Admin": access.ACL{
+			In: nobody,
+		},
+		"Create": access.ACL{
+			In: nobody,
+		},
+		"Mount": access.ACL{
+			In: everybody,
+		},
+	}
+	var everybodyCanList = access.TaggedACLMap{
+		"Resolve": access.ACL{
+			In: everybody,
+		},
+		"Read": access.ACL{
+			In: everybody,
+		},
+		"Admin": access.ACL{
+			In: everybody,
+		},
+		"Create": access.ACL{
+			In: everybody,
+		},
+		"Mount": access.ACL{
+			In: everybody,
+		},
+	}
+
 	ns := v23.GetNamespace(ctx)
+	// Make everyone see stuff in house/master-bedroom/personal.
+	ns.SetACL(ctx, "house/master-bedroom/personal", everybodyCanList, "")
+
+	// Toothbrush is inaccessible because of bad endpoint.
 	nextYear := time.Now().AddDate(1, 0, 0)
 	ttl := nextYear.Sub(time.Now())
 	ns.Mount(ctx, "house/master-bedroom/personal/toothbrush", "/does.not.exist.v.io:9898", ttl)
-	// TODO(aghassemi) Add a name with mounttable ACLs set so it can not be resolved
-	// waiting for: https://github.com/veyron/release-issues/issues/1249
+
+	// Hairbrush is inaccessible because of mounttable ACLs on it do not allow anyone to resolve the name.
+	ns.SetACL(ctx, "house/master-bedroom/personal/hairbrush", nobodyCanResolve, "")
+	defer listenAndServe("house/master-bedroom/personal/hairbrush", makeServerSprinkler())()
 
 	// Wait forever.
 	<-signals.ShutdownOnSignals(ctx)

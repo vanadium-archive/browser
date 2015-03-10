@@ -3,13 +3,13 @@ var mercury = require('mercury');
 var bluebirdPromise = require('bluebird');
 var LRU = require('lru-cache');
 var EventEmitter = require('events').EventEmitter;
-var namespaceUtil = vanadium.namespaceUtil;
 var vanadiumConfig = require('../../vanadium-config');
 var itemFactory = require('./item');
 var freeze = require('../../lib/mercury/freeze');
 var sortedPush = require('../../lib/mercury/sorted-push-array');
 var log = require('../../lib/log')('services:namespace:service');
 var ItemTypes = require('./item-types');
+var namespaceUtil = vanadium.namespaceUtil;
 
 module.exports = {
   getChildren: getChildren,
@@ -29,7 +29,7 @@ module.exports = {
 var RPC_TIMEOUT = 15 * 1000;
 
 /*
- * Lazy getter and initializer for Veyron runtime
+ * Lazy getter and initializer for Vanadium runtime
  */
 var _runtimePromiseInstance;
 
