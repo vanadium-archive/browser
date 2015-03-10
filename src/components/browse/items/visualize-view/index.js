@@ -288,8 +288,8 @@ function initD3() {
   // console.log('initD3');
 
   // size of the diagram
-  width = networkElem.offsetWidth - 20;
-  height = networkElem.offsetHeight - 20;
+  width = networkElem.offsetWidth;
+  height = networkElem.offsetHeight;
 
   // current pan, zoom, and rotation
   curX = width / 2;
@@ -887,8 +887,10 @@ function showContextMenu(d) {
   d3.event.preventDefault();
   d3.select('.ecnode').text(
       (d.children ? 'Collapse ' : 'Expand ') + 'Node' );
-  d3.select('.contextmenu').style({
-    left: (d3.event.offsetX + 3) + 'px',
+  var cmenu = d3.select('.contextmenu');
+  cmenu.style({
+    left: Math.min(d3.event.offsetX + 3,
+        width - cmenu.style('width').replace('px', '') - 5) + 'px',
     top: (d3.event.offsetY + 8) + 'px',
     display: 'block'
   });
