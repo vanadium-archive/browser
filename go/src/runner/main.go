@@ -99,7 +99,7 @@ func sampleWorld(stdin io.Reader, stdout, stderr io.Writer, env map[string]strin
 }
 
 func main() {
-	if modules.IsModulesProcess() {
+	if modules.IsModulesChildProcess() {
 		panicOnError(modules.Dispatch())
 		return
 	}
