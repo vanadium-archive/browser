@@ -35,8 +35,6 @@ var PAN_INC = 3;  //  pan per animation frame
 var ROT_INC = 0.5;  // rotation per animation frame
 
 var networkElem;  // DOM element for visualization
-var pathElem; // DOM element for path widget
-var selPath;  // array of nodes in the path to the currently selected node
 
 var selNode;  // currently selected node
 var selectItem;  // function to select item in app
@@ -51,8 +49,6 @@ var svgBase, svgGroup;  // svg elements
 
 var root;  // data trees
 var rootIndex = {}; // index id to nodes
-
-var pathWidget; // object for browseinto
 
 // keyboard key codes
 var KEY_PLUS = 187;     // + (zoom in)
@@ -85,6 +81,9 @@ function render(itemsState, browseState, browseEvents, navEvents) {
     selNode = newSel;
     selNode.selected = true;
   }
+
+  browseinto.browseState = browseState;
+  browseinto.navEvents = navEvents;
 
   return [
     new D3Widget(browseState, browseEvents),
@@ -131,17 +130,16 @@ function render(itemsState, browseState, browseEvents, navEvents) {
         'ev-down': polydown.bind(undefined, KEY_PAGEDOWN),
         'ev-up': polyup.bind(undefined, KEY_PAGEDOWN)
       }),
-      h('paper-fab.menubutton', {
+      h('paper-fab.expand', {
         attributes: {
           mini: true,
-          icon: 'more-vert',
-          title: 'Browse Into Path',
-          'aria-label': 'browse into path'
+          icon: 'image:exposure-plus-1',
+          title: 'Expand +1 Level (Return)',
+          'aria-label': 'expand +1 level'
         },
-        'ev-click': dropmenu
-        })
+        'ev-click': menu.bind(undefined, KEY_RETURN, false)
+      })
     ] ),
-    (pathWidget = new PathWidget(browseState, navEvents)), // browseinto widget
     h('paper-shadow.contextmenu', { // context menu
           attributes: { z: 3 }  // height above background
       }, [  // context menu
@@ -237,52 +235,6 @@ D3Widget.prototype.updateRoot = function() {
   }
 };
 
-function PathWidget(browseState, navEvents) {
-  // console.log('new PathWidget');
-  this.browseState = browseState;
-  this.navEvents = navEvents;
-}
-
-PathWidget.prototype.type = 'Widget';
-
-PathWidget.prototype.init = function() {
-  // console.log('PathWidget.init');
-  if (!pathElem) {
-    pathElem = document.createElement('paper-shadow');
-    pathElem.className = 'dropdown';
-    pathElem.setAttribute('z', 3);  // height above background
-  }
-
-  var wrapper = document.createElement('div');
-  wrapper.appendChild(pathElem);
-  return wrapper;
-};
-
-PathWidget.prototype.update = function(prev, pathElem) {
-  // console.log('PathWidget.update', prev, pathElem);
-  d3.select('.dropdown').html(fullpath(selNode));
-};
-
-// for displaying full path of node in tree
-function fullpath(d, idx) {
-  // console.log('fullpath', d);
-  if (idx === undefined) {
-    idx = 0;
-    selPath = [];
-  }
-  selPath.push(d);
-  return (d.parent ? fullpath(d.parent, selPath.length) : '') +
-    '<paper-item class="pathitem'+ (d.name === root.name ? ' highlight' : '') +
-    '" data-sel="'+ idx +'">' + d.name + '</paper-item>';
-}
-
-PathWidget.prototype.browseinto = function(node) {
-  var browseUrl = browseRoute.createUrl(this.browseState, {
-    namespace: node.id
-  });
-  this.navEvents.navigate({ path: browseUrl });
-};
-
 // initialize d3 HTML elements
 function initD3() {
   // console.log('initD3');
@@ -335,7 +287,6 @@ function initD3() {
       networkElem.focus();
     });
   d3.select(window).on('resize', resize);
-  d3.select('.dropdown').on('mousedown', dropselection);
 }
 
 // draw tree using d3js
@@ -617,6 +568,13 @@ function selectNode(node) { // highlight node and show details
   selectItem({ name: node.id });
 }
 
+function browseinto(node) {
+  var browseUrl = browseRoute.createUrl(browseinto.browseState, {
+    namespace: node.id
+  });
+  browseinto.navEvents.navigate({ path: browseUrl });
+}
+
 // set view with no animation
 function setview() {
   svgGroup.attr('transform',
@@ -869,19 +827,6 @@ function keyup() {  // d3 keyup event
   actionUp(evt.which);
 }
 
-var menudisplayed = false;
-
-function dropmenu() { // display the dropdown menu
-  document.querySelector('paper-shadow.dropdown').style.display =
-    menudisplayed ? 'none' : 'block';
-  menudisplayed = !menudisplayed;
-  networkElem.focus();
-}
-
-function dropselection() {  // dropdown selection
-  pathWidget.browseinto(selPath[d3.event.target.dataset.sel]);
-}
-
 // right click, show context menu and select this node
 function showContextMenu(d) {
   d3.event.preventDefault();
@@ -925,7 +870,7 @@ function actionDown(key, shift, alt) {
       moveZ = -ZOOM_INC * slow;
       break;
     case KEY_SLASH: // toggle root to selection
-      pathWidget.browseinto(selNode);
+      browseinto(selNode);
       return;
     case KEY_PAGEUP: // rotate counterclockwise
       moveR = -ROT_INC * slow;
