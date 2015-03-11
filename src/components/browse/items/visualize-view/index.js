@@ -73,14 +73,8 @@ function render(itemsState, browseState, browseEvents, navEvents) {
   // console.log('render');
   insertCss(css);
 
-  var newSel = rootIndex[browseState.selectedItemName];
-  if (newSel) {
-    if (selNode && newSel.id !== selNode.id) {
-      delete selNode.selected;
-    }
-    selNode = newSel;
-    selNode.selected = true;
-  }
+  // handle changed selection
+  selNode = rootIndex[browseState.selectedItemName] || selNode;
 
   browseinto.browseState = browseState;
   browseinto.navEvents = navEvents;
@@ -104,7 +98,7 @@ function render(itemsState, browseState, browseEvents, navEvents) {
         attributes: {
           mini: true,
           icon: 'remove',
-          title: 'Zoom Out (&minus;)',
+          title: 'Zoom Out (\u2212)',
           'aria-label': 'zoom out'
         },
         'ev-down': polydown.bind(undefined, KEY_MINUS),
@@ -356,11 +350,14 @@ function updateD3(subroot, doTransition) {
           HAS_CHILDREN_COLOR : NO_CHILDREN_COLOR;
     }).
     attr('stroke', function(d) {
-        return d.selected ? SELECTED_COLOR : CIRCLE_STROKE_COLOR;
+        return d === selNode ? SELECTED_COLOR : CIRCLE_STROKE_COLOR;
     }).
     attr('stroke-width', function(d) {
-        return d.selected ? 3 : 1.5;
+        return d === selNode ? 3 : 1.5;
     });
+
+  gnode.select('title').
+      text(function(d) { return d.title + ': ' + d.id; });
 
   gnode.select('text').
     attr('text-anchor', function(d) {
@@ -373,7 +370,7 @@ function updateD3(subroot, doTransition) {
           ) + reduceZ(curZ) +')';
     }).
     attr('fill', function(d) {
-        return d.selected ? SELECTED_COLOR : 'black';
+        return d === selNode ? SELECTED_COLOR : 'black';
     }).attr('dy', '.35em');
 
   var nodeUpdate = gnode.transition().duration(duration).
@@ -520,6 +517,7 @@ function loadSubItems(node) {
             if (item._diff.itemType !== undefined &&
                 item._diff.itemType !== ch.itemType) {
               ch.itemType = item._diff.itemType;
+              ch.title = ItemTypes[ch.itemType];
               batchUpdates(node);
             }
             return true;
@@ -559,13 +557,16 @@ function batchUpdates(node) {
 }
 
 function selectNode(node) { // highlight node and show details
-  if (selNode) {
-    if (node.id === selNode.id) { return; }
-    delete selNode.selected;
-  }
+  if (node === selNode) { return; }
   selNode = node;
-  selNode.selected = true;
-  selectItem({ name: node.id });
+  selectItem({ name: node.id });  // notify rest of app
+}
+
+function browseinto(node) {
+  var browseUrl = browseRoute.createUrl(browseinto.browseState, {
+    namespace: node.id
+  });
+  browseinto.navEvents.navigate({ path: browseUrl });
 }
 
 function browseinto(node) {
