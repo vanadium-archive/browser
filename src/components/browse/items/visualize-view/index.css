@@ -18,10 +18,10 @@
 .vismenu {
   position: absolute;
   top: 5px;
-  right: 15px;
+  left: 10px;
 }
 
-paper-fab.zoom, paper-fab.rotate, paper-fab.menubutton
+paper-fab.zoom, paper-fab.rotate, paper-fab.expand, paper-fab.menubutton
  {
   background-color: var(--color-white);
   margin: 5px 3px;
