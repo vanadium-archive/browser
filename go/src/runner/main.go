@@ -9,7 +9,9 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"os/signal"
 	"strings"
+	"syscall"
 	"time"
 
 	"sample/sampleworld"
@@ -103,6 +105,17 @@ func main() {
 		panicOnError(modules.Dispatch())
 		return
 	}
+
+	// If we ever get a SIGHUP (terminal closes), then end the program.
+	signalChannel := make(chan os.Signal)
+	signal.Notify(signalChannel, syscall.SIGHUP)
+	go func() {
+		sig := <-signalChannel
+		switch sig {
+		case syscall.SIGHUP:
+			os.Exit(1)
+		}
+	}()
 
 	// Try running the program; on failure, exit with error status code.
 	if !run() {
@@ -222,7 +235,6 @@ func run() bool {
 	// Not in a test, so run until the program is killed.
 	<-signals.ShutdownOnSignals(ctx)
 	return true
-
 }
 
 // Run the prova tests and convert its tap output to xunit.
