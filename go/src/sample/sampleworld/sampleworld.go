@@ -105,44 +105,44 @@ func RunSampleWorld(ctx *context.T) {
 	// Add bunch of inaccessible names
 	var nobody = []security.BlessingPattern{""}
 	var everybody = []security.BlessingPattern{"..."}
-	var nobodyCanResolve = access.TaggedACLMap{
-		"Resolve": access.ACL{
+	var nobodyCanResolve = access.Permissions{
+		"Resolve": access.AccessList{
 			In: nobody,
 		},
-		"Read": access.ACL{
+		"Read": access.AccessList{
 			In: nobody,
 		},
-		"Admin": access.ACL{
+		"Admin": access.AccessList{
 			In: nobody,
 		},
-		"Create": access.ACL{
+		"Create": access.AccessList{
 			In: nobody,
 		},
-		"Mount": access.ACL{
+		"Mount": access.AccessList{
 			In: everybody,
 		},
 	}
-	var everybodyCanList = access.TaggedACLMap{
-		"Resolve": access.ACL{
+	var everybodyCanList = access.Permissions{
+		"Resolve": access.AccessList{
 			In: everybody,
 		},
-		"Read": access.ACL{
+		"Read": access.AccessList{
 			In: everybody,
 		},
-		"Admin": access.ACL{
+		"Admin": access.AccessList{
 			In: everybody,
 		},
-		"Create": access.ACL{
+		"Create": access.AccessList{
 			In: everybody,
 		},
-		"Mount": access.ACL{
+		"Mount": access.AccessList{
 			In: everybody,
 		},
 	}
 
 	ns := v23.GetNamespace(ctx)
 	// Make everyone see stuff in house/master-bedroom/personal.
-	ns.SetACL(ctx, "house/master-bedroom/personal", everybodyCanList, "")
+	ns.SetPermissions(ctx, "house/master-bedroom/personal", everybodyCanList, "")
 
 	// Toothbrush is inaccessible because of bad endpoint.
 	nextYear := time.Now().AddDate(1, 0, 0)
@@ -150,7 +150,7 @@ func RunSampleWorld(ctx *context.T) {
 	ns.Mount(ctx, "house/master-bedroom/personal/toothbrush", "/does.not.exist.v.io:9898", ttl)
 
 	// Hairbrush is inaccessible because of mounttable ACLs on it do not allow anyone to resolve the name.
-	ns.SetACL(ctx, "house/master-bedroom/personal/hairbrush", nobodyCanResolve, "")
+	ns.SetPermissions(ctx, "house/master-bedroom/personal/hairbrush", nobodyCanResolve, "")
 	defer listenAndServe("house/master-bedroom/personal/hairbrush", makeServerSprinkler())()
 
 	// Wait forever.
