@@ -1,5 +1,6 @@
 var uuid = require('uuid');
 var mercury = require('mercury');
+var vanadium = require('vanadium');
 var addDelegatedEvents = require('./lib/mercury/add-delegated-events');
 var router = require('./router');
 var registerItemPlugins = require('./item-plugins/register-plugins');
@@ -187,8 +188,12 @@ function initVanadium() {
     viewport.setSplashMessage('Initialized');
     state.initialized.set(true);
   }).catch(function(err) {
-    var isError = true;
-    viewport.setSplashMessage(err.toString(), isError);
+    if (err instanceof vanadium.errors.ExtensionNotInstalledError) {
+      vanadium.extension.promptUserToInstallExtension();
+    } else {
+      var isError = true;
+      viewport.setSplashMessage(err.toString(), isError);
+    }
   });
 }
 
