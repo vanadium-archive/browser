@@ -5,6 +5,7 @@ var d3 = require('d3');
 var namespaceService = require('../../../../services/namespace/service');
 var browseRoute = require('../../../../routes/browse');
 var ItemTypes = require('../../../../services/namespace/item-types');
+var getServiceIcon = require('../../get-service-icon');
 
 // var getServiceIcon = require('../../get-service-icon');
 
@@ -182,9 +183,9 @@ D3Widget.prototype.init = function() {
 
   // wrap in a new element, needed for Mercury vdom to patch properly.
   var wrapper = document.createElement('div');
+  wrapper.className = 'networkParent';
   wrapper.appendChild(networkElem);
 
-  // this.updateRoot();
   requestAnimationFrame(this.updateRoot.bind(this));
 
   return wrapper;
@@ -202,15 +203,17 @@ D3Widget.prototype.update = function(prev, networkElem) {
 
 // build new data tree
 D3Widget.prototype.updateRoot = function() {
-  // console.log('D3Widget.updateRoot',
-      // previousNamespace === this.browseState.namespace);
+  var rootNodeId = this.browseState.namespace;
+  // console.log('D3Widget.updateRoot');
 
-  if (previousNamespace === this.browseState.namespace) { return; }
-  previousNamespace = this.browseState.namespace;
+  if (width !== networkElem.offsetWidth) {
+    resize();
+  }
+
+  if (previousNamespace === rootNodeId) { return; }
+  previousNamespace = rootNodeId;
 
   // Add the initial node
-  // console.log('browseState', this.browseState);
-  var rootNodeId = this.browseState.namespace;
   var basename = namespaceService.util.basename(rootNodeId);
 
   root = rootIndex[rootNodeId];
@@ -218,7 +221,9 @@ D3Widget.prototype.updateRoot = function() {
     rootIndex[rootNodeId] = root = {
       id: rootNodeId,
       name: basename || '<root>',
-      title: '',
+      status: ItemTypes.service,
+      expandable: true,
+      icon: { title: 'Mount Table' },
       x0: curY,
       y0: 0
     };
@@ -227,11 +232,12 @@ D3Widget.prototype.updateRoot = function() {
   if (selNode === undefined) {
     selectNode(root);
   }
+  updateD3(root, true);
 };
 
 // initialize d3 HTML elements
 function initD3() {
-  // console.log('initD3');
+  // console.log('initD3', networkElem.offsetWidth);
 
   // size of the diagram
   width = networkElem.offsetWidth;
@@ -318,12 +324,12 @@ function updateD3(subroot, doTransition) {
     on('contextmenu', showContextMenu);
 
   nodeEnter.append('title').
-      text(function(d) { return d.title + ': ' + d.id; });
+      text(function(d) { return d.icon.title + ': ' + d.id; });
 
   nodeEnter.append('circle').
     attr('r', 1e-6).
     style('fill', function(d) {
-      return d._children || d.isExpandable && !d.children ?
+      return d._children || d.expandable && !d.children ?
           HAS_CHILDREN_COLOR : NO_CHILDREN_COLOR;
     });
 
@@ -346,7 +352,7 @@ function updateD3(subroot, doTransition) {
   gnode.select('circle').
     attr('r', NODE_DIAMETER * reduceZ(curZ)).
     style('fill', function(d) {
-      return d._children || d.isExpandable && !d.children ?
+      return d._children || d.expandable && !d.children ?
           HAS_CHILDREN_COLOR : NO_CHILDREN_COLOR;
     }).
     attr('stroke', function(d) {
@@ -357,7 +363,7 @@ function updateD3(subroot, doTransition) {
     });
 
   gnode.select('title').
-      text(function(d) { return d.title + ': ' + d.id; });
+      text(function(d) { return d.icon.title + ': ' + d.id; });
 
   gnode.select('text').
     attr('text-anchor', function(d) {
@@ -453,7 +459,35 @@ function updateD3(subroot, doTransition) {
 // find place to insert new node in children
 var bisectfun = d3.bisector(function(d) { return d.name; }).right;
 
-// load children items
+// create node or merge new data into it
+function mergeNode(item, parent) {
+  var nn = rootIndex[item.objectName] || {};
+  var exists = nn.id !== undefined;
+  var name = nn.name = item.mountedName;
+  nn.id = item.objectName;
+  nn.parent = parent || nn.parent;
+  nn.expandable = item.isGlobbable;
+  nn.status = item.itemType;
+  nn.error = item.itemError;
+  nn.icon = getServiceIcon(item);
+  // console.log('icon', nn.icon, nn.icon.title);
+  // if (nn.typeName !== 'Service' && nn.typeName !== 'Mount Table') {
+  //   console.log('** typeName', nn.typeName);
+  // }
+  nn.x0 = nn.x0 | parent.x;
+  nn.y0 = nn.y0 | parent.y;
+  if (!exists) { // insert node in proper place
+    rootIndex[nn.id] = nn;
+    if (parent.children === undefined) {
+      parent.children = [nn];
+    } else {
+      parent.children.splice(bisectfun(parent.children, name), 0, nn);
+    }
+  }
+  updateD3(parent, true);
+} // end mergeNode
+
+// load children items asynchronously
 function loadSubItems(node) {
   if (node.subNodesLoaded) { return; }
   // console.log('loadSubItems', node);
@@ -465,96 +499,23 @@ function loadSubItems(node) {
   node.subNodesLoaded = true;
 
   namespaceService.getChildren(namespace).then(function(resultObservable) {
-    // var initialValues = resultObservable();
-    // resultObservable(result);
-
-    mercury.watch(resultObservable, function(results) {
-    // function result() {
-
-      // TODO(wmleler) support removed and updated nodes for watchGlob
-
-      // console.log('getChildren', namespace, results);
-
-      var item = results._diff[0][2]; // changed item from Mercury
-      var name = item.mountedName;
-      var children = node.children;
-      var newNode;
-      // console.log('subNodesLoaded', results);
-
-      if (item._diff === undefined) { // create new child node
-        newNode = rootIndex[item.objectName];
-        if (!newNode) { // does node exist?
-          newNode = {
-            parent: node,
-            id: item.objectName,
-            name: name,
-            // level: node.level + 1,
-            isExpandable: item.isGlobbable,
-            itemType: item.itemType,
-            title: ItemTypes[item.itemType],
-            x0: node.x,
-            y0: node.y
-          };
-          rootIndex[item.objectName] = newNode; // put in index
-        }
-        if (children === undefined) {  // first child
-          node.children = [ newNode ];
-        } else {  // insert in order
-          children.splice(bisectfun(children, name), 0, newNode);
-        }
-        // if (newNode.level - root.level < MAX_AUTO_LOAD_DEPTH) {
-        //   loadSubItems(newNode);
-        // }
-        batchUpdates(node);
-      } else {  // update existing child node
-        children.some(function(ch) {
-          if (ch.name === name) {
-            if (item._diff.isGlobbable !== undefined &&
-                item._diff.isGlobbable !== ch.isExpandable) {
-              ch.isExpandable = item._diff.isGlobbable;
-              batchUpdates(node);
-            }
-            if (item._diff.itemType !== undefined &&
-                item._diff.itemType !== ch.itemType) {
-              ch.itemType = item._diff.itemType;
-              ch.title = ItemTypes[ch.itemType];
-              batchUpdates(node);
-            }
-            return true;
-          }
-          return false;
-        });
-      }
+    var initialValues = resultObservable();
+    // console.log('initialValues', namespace, initialValues);
+    initialValues.forEach(function(item) {
+        mergeNode(item, node);
     });
+
+    resultObservable(updatedValues);
+
+    function updatedValues(results) {
+      // TODO(wmleler) support removed and updated nodes for watchGlob
+      var item = results._diff[0][2]; // changed item from Mercury
+      mergeNode(item, node);
+    } // end updatedValues
   }).catch(function(err) {
     log.error('glob failed', err);
   });
 } // end loadSubItems
-
-var batchNode = null;
-var batchTimer = null;
-
-// batch together updates for a single node
-function batchUpdates(node) {
-  if (node === batchNode) {
-    if (batchTimer === null && batchNode) {
-      batchTimer = setTimeout(function() {
-        var n = batchNode;
-        batchNode = null;
-        updateD3(n, true);
-      }, 500);
-    }
-    return;
-  }
-  if (batchNode !== null) {
-    if (batchTimer) {
-      clearTimeout(batchTimer);
-      batchTimer = null;
-    }
-    updateD3(batchNode, true);
-  }
-  batchNode = node;
-}
 
 function selectNode(node) { // highlight node and show details
   if (node === selNode) { return; }
@@ -660,7 +621,6 @@ function expandTree(d) {
 
 // expand one level of tree using breadth first search
 function expand1Level(d) {
-  // console.log('expand1Level', d);
   var q = [d]; // non-recursive using queue
   var cn;
   var done = null;
@@ -672,7 +632,7 @@ function expand1Level(d) {
       cn.children = cn._children;
       cn._children = null;
       cn.children.forEach(collapse);
-    } else if (cn.isExpandable && !cn.subNodesLoaded) {
+    } else if (cn.expandable && !cn.subNodesLoaded) {
       done = cn.depth;
       loadSubItems(cn);
     }
@@ -724,10 +684,12 @@ function reduceZ(z) {
 //
 
 function resize() { // window resize
+  // console.log('resize', networkElem.offsetWidth);
+  if (networkElem.offsetWidth === 0) { return; }
   var oldwidth = width;
   var oldheight = height;
-  width = networkElem.offsetWidth - 20;
-  height = networkElem.offsetHeight - 20;
+  width = networkElem.offsetWidth;
+  height = networkElem.offsetHeight;
   treeD3.size([360, Math.min(width, height) / 2 - 120]);
   svgBase.attr('width', width).attr('height', height);
   curX += (width - oldwidth) / 2;
