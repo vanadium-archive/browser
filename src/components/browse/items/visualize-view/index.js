@@ -351,6 +351,7 @@ function updateD3(subroot, doTransition) {
   // set circle fill depending on whether it has children and is collapsed
   gnode.select('circle').
     attr('r', NODE_DIAMETER * reduceZ(curZ)).
+    attr('class', function(d) { return d.loading ? 'loading' : ''; }).
     style('fill', function(d) {
       return d._children || d.expandable && !d.children ?
           HAS_CHILDREN_COLOR : NO_CHILDREN_COLOR;
@@ -497,6 +498,7 @@ function loadSubItems(node) {
     node._children = null;
   }
   node.subNodesLoaded = true;
+  showLoading(node, true);  // node is loading
 
   namespaceService.getChildren(namespace).then(function(resultObservable) {
     var initialValues = resultObservable();
@@ -504,6 +506,10 @@ function loadSubItems(node) {
     initialValues.forEach(function(item) {
         mergeNode(item, node);
     });
+    resultObservable.events.once('end', function() {
+      showLoading(node, false); // node no longer loading
+    });
+
 
     resultObservable(updatedValues);
 
@@ -555,6 +561,13 @@ function setview() {
       });
   svgGroup.selectAll('circle').
     attr('r', NODE_DIAMETER * reduceZ(curZ));
+}
+
+// show nodes that are loading
+function showLoading(node, v) {
+  node.loading = v;
+  svgGroup.selectAll('circle').
+    attr('class', function(d) { return d.loading ? 'loading' : ''; });
 }
 
 //

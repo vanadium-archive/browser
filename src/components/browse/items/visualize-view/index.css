@@ -31,24 +31,6 @@ paper-fab.zoom, paper-fab.rotate, paper-fab.expand, paper-fab.menubutton
   color: var(--color-white);
 }*/
 
-paper-shadow.dropdown {
-  display: none;
-  background-color: var(--color-white);
-  position: absolute;
-  top: 55px;
-  right: 15px;
-}
-
-paper-shadow.dropdown paper-item::shadow .button-content {
-  padding: 5px 10px;
-  font-size: var(--size-font-small);
-}
-
-.pathitem.highlight {
-  font-weight: bold;
-  font-style: italic;
-  color: var(--color-secondary-800);
-}
 
 paper-shadow.contextmenu {
   display: none;
@@ -67,7 +49,7 @@ paper-shadow.contextmenu paper-item div.ksc {
   right: 10px;
 }
 
-.contextmenu paper-item:hover, .dropdown paper-item:hover {
+.contextmenu paper-item:hover {
   background-color: var(--color-menu-hover);
 }
 
@@ -82,10 +64,10 @@ paper-shadow.contextmenu paper-item div.ksc {
 }
 
 .node text {
-    font-size: 12px;
-    font-family: var(--font-family);
-    text-shadow: 4px 4px 3px var(--color-white),
-      -4px -4px 3px var(--color-white);
+  font-size: 12px;
+  font-family: var(--font-family);
+  text-shadow: 4px 4px 3px var(--color-white),
+              -4px -4px 3px var(--color-white);
 }
 .node text:hover {
   font-size: var(--size-font-large);
@@ -100,4 +82,24 @@ paper-shadow.contextmenu paper-item div.ksc {
   fill: none;
   stroke: #ccc;
   stroke-width: 1.5px;
+}
+
+/* loading animation */
+@-webkit-keyframes blinking {
+  0% { opacity: 1; }
+  25% { opacity: 0.1; }
+  50% { opacity: 1; }
+  100% { opacity: 1; }
+}
+
+@keyframes blinking {
+  0% { opacity: 1; }
+  20% { opacity: 0.1; }
+  40% { opacity: 1; }
+  100% { opacity: 1; }
+}
+
+.node circle.loading {
+  -webkit-animation: blinking 0.7s ease infinite;
+  animation: blinking 0.7s ease infinite;
 }
