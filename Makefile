@@ -1,9 +1,9 @@
 ##
-# Provides targets to build, test and run the Viz Vanadium Viewer application.
+# Provides targets to build, test and run the Namespace Browser application.
 #
 # make  # Builds the project.
 # make test  # Runs unit and integration tests.
-# make start  # Starts the services and http server needed to run the application at http://localhost:9000
+# make start  # Starts the services and http server needed to run the application at http://localhost:9001
 # make clean  # Deleted all build, testing and other artifacts.
 #
 # Note: :; at the beginning of commands is a work-around for an issue in MacOS version of GNU `make` where
@@ -20,15 +20,34 @@ export GOBIN:=$(VANADIUM_ROOT)/release/projects/namespace_browser/go/bin
 PATH:=$(VANADIUM_ROOT)/environment/cout/node/bin:$(PATH)
 PATH:=node_modules/.bin:$(GOBIN):$(PATH)
 
+VANADIUM_JS:=$(VANADIUM_ROOT)/release/javascript/core
+SOURCE_FILES = $(shell find src -name "*")
+
 ifndef TMPDIR
 	export TMPDIR:=/tmp
 endif
 ORIG_TMPDIR:=$(TMPDIR)
-TMPDIR:=$(TMPDIR)/viz
+TMPDIR:=$(TMPDIR)/nsb
 
-VANADIUM_JS:=$(VANADIUM_ROOT)/release/javascript/core
-SOURCE_FILES = $(shell find src -name "*")
+# Names that should not be mangled by minification.
+RESERVED_NAMES := 'context,ctx,callback,cb,$$stream'
+# Don't mangle RESERVED_NAMES, and screw ie8.
+MANGLE_OPTS := --mangle [--except $(RESERVED_NAMES) --screw_ie8 ]
+# Don't remove unused variables from function arguments, which could mess up signatures.
+# Also don't evaulate constant expressions, since we rely on them to conditionally require modules only in node.
+COMPRESS_OPTS := --compress [ --no-unused --no-evaluate ]
+
 BROWSERIFY_OPTIONS = --transform ./main-transform --debug
+
+# Browserify and extract sourcemap, but do not minify.
+define BROWSERIFY
+	browserify $1 $(BROWSERIFY_OPTIONS) | exorcist $2.map > $2
+endef
+
+# Browserify, minify, and extract sourcemap.
+define BROWSERIFY-MIN
+	browserify $1 $(BROWSERIFY_OPTIONS) --g [ uglifyify $(MANGLE_OPTS) $(COMPRESS_OPTS) ] | exorcist $2.map > $2
+endef
 
 # All Go and VDL files.
 GO_FILES = $(shell find go -name "*.go")
@@ -46,7 +65,11 @@ deploy-staging: build
 # Creating the bundle JS file.
 public/bundle.js: $(SOURCE_FILES) node_modules
 	:;jshint src # lint all src JavaScript files.
-	:;browserify src/app.js $(BROWSERIFY_OPTIONS) | exorcist $@.map > $@ # Browserify and generate map file.
+ifdef NOMINIFY
+	$(call BROWSERIFY,src/app.js,$@)
+else
+	$(call BROWSERIFY-MIN,src/app.js,$@)
+endif
 
 # Creating the bundle HTML file.
 public/bundle.html: $(SOURCE_FILES) node_modules bower_components
@@ -77,47 +100,30 @@ go/bin: directories
 
 # PHONY targets:
 
-# Builds the viz bundle and go binaries.
+# Builds the bundle and go binaries.
 all: go/bin build
 
-# Builds the viz bundle.
+# Builds the bundle.
 build: directories public/bundle.js public/bundle.html
 
 # Run unit and integration tests.
-test2: all
-	:;jshint test # lint all test JavaScript files.
-	# Set the TMPDIR back to ORIG_TMPDIR before calling "make test-runner" so
-	# that we don't add "viz" suffix to TMPDIR twice.
-	TMPDIR=$(ORIG_TMPDIR) node $(VANADIUM_JS)/test/integration/runner.js -- \
-	make test-runner
-
-test-runner: directories
-	@$(RM) -fr $(VANADIUM_JS)/extension/build-test
-	$(MAKE) -C $(VANADIUM_JS)/extension build-test
-	:;./scripts/services/run-tests.sh
-
 test: all
 	:;jshint test # lint all test JavaScript files.
 	:;./go/bin/runner -v=3 -log_dir=$(VANADIUM_ROOT)/release/projects/namespace_browser/tmp/log -runSample=true -runTests=true -alsologtostderr=false
 
 # Continuously watch for changes to .js, .html or .css files.
 # Rebundles the appropriate bundles when local files change.
+watch: NOMINIFY=true
 watch:
 	watch -n 1 make build
 
 # Continuously reruns the tests as they change.
-watch-test2: go/bin
-	:;PROVA_WATCH=true ./scripts/services/run-tests.sh
-
-# Continuously reruns the tests as they change.
+watch-test: NOMINIFY=true
 watch-test: go/bin
 	:;./go/bin/runner -v=3 -log_dir=$(VANADIUM_ROOT)/release/projects/namespace_browser/tmp/log -runSample=true -runTests=true -runTestsWatch=true -alsologtostderr=false
 
 # Serves the needed daemons and starts a server at http://localhost:9000
 # CTRL-C to stop
-start2: all go/bin
-	:;./scripts/services/run-webapp.sh
-
 start: all go/bin
 	:;./go/bin/runner -runSample=true -serveHTTP=true -portHTTP=9001 -rootHTTP=$(VANADIUM_ROOT)/release/projects/namespace_browser/public/ -alsologtostderr=false
 
