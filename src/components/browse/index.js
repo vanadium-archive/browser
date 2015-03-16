@@ -585,11 +585,15 @@ function renderBreadcrumbs(browseState, navEvents) {
   }
 
   var isRooted = namespaceService.util.isRooted(browseState.namespace);
-  var namespaceParts = browseState.namespace.split('/').filter(
-    function(n) {
-      return n.trim() !== '';
-    }
-  );
+  var splitName = namespaceService.util.splitAddressName(browseState.namespace);
+  var namespaceParts = [];
+  if (splitName.address) {
+    namespaceParts.push(splitName.address);
+  }
+  if (splitName.suffix) {
+    var suffixParts = splitName.suffix.split('/');
+    namespaceParts = namespaceParts.concat(suffixParts);
+  }
   var breadCrumbs = [];
   if (!isRooted) {
     // Add a relative root (empty namespace)

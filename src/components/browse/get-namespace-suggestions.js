@@ -8,7 +8,6 @@ module.exports = getNamespaceSuggestions;
  * Updates the necessary states when getNamespaceSuggestions is triggered.
  * Only does this if the browseState's namespacePrefix has changed.
  * Namespace is the target namespace whose children are to be retrieved.
- * TODO(alexfandrianto): Update this when we switch to the new glob service.
  */
 function getNamespaceSuggestions(browseState, namespace) {
   // Get children of the chosen prefix.
@@ -17,7 +16,6 @@ function getNamespaceSuggestions(browseState, namespace) {
   var len = namespace.length;
   var lastSlashIndex = namespace.lastIndexOf('/');
   if (len > 1 && lastSlashIndex === len - 1) {
-
     prefix = namespace.substring(0, lastSlashIndex);
   } else {
     prefix = namespaceService.util.stripBasename(namespace);
