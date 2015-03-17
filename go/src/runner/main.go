@@ -6,6 +6,7 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"net"
 	"net/http"
 	"os"
 	"os/exec"
@@ -52,10 +53,11 @@ func init() {
 	flag.BoolVar(&runTestsWatch, "runTestsWatch", false, "if true && runTests, runs the tests in watch mode")
 }
 
-// Helper function to simply panic on error.
-func panicOnError(err error) {
+// Helper function to simply print an error and then exit.
+func exitOnError(err error, desc string) {
 	if err != nil {
-		panic(err)
+		fmt.Fprintln(os.Stderr, desc, err)
+		os.Exit(1)
 	}
 }
 
@@ -102,7 +104,7 @@ func sampleWorld(stdin io.Reader, stdout, stderr io.Writer, env map[string]strin
 
 func main() {
 	if modules.IsModulesChildProcess() {
-		panicOnError(modules.Dispatch())
+		exitOnError(modules.Dispatch(), "Failed to dispatch module")
 		return
 	}
 
@@ -123,6 +125,36 @@ func main() {
 	}
 }
 
+// Returns the first ipv4 address found or an error
+func getFirstIPv4Address() (string, error) {
+	ifaces, err := net.Interfaces()
+	if err != nil {
+		return "", fmt.Errorf("No net interfaces found")
+	}
+	for _, i := range ifaces {
+		addrs, err := i.Addrs()
+		if err != nil {
+			continue
+		}
+
+		for _, addr := range addrs {
+			var ip net.IP
+			if v, ok := addr.(*net.IPNet); ok {
+				ip = v.IP
+			}
+			if ip == nil || ip.IsLoopback() {
+				continue
+			}
+			ip = ip.To4()
+			if ip == nil {
+				continue // not an ipv4 address
+			}
+			return ip.String(), nil
+		}
+	}
+	return "", fmt.Errorf("no ipv4 addresses were found")
+}
+
 // Runs the services and cleans up afterwards.
 // Returns true if the run was successful.
 func run() bool {
@@ -130,13 +162,20 @@ func run() bool {
 	defer shutdown()
 
 	// In order to prevent conflicts, tests and webapp use different mounttable ports.
-	port := 5180
-	cottagePort := 5181
-	housePort := 5182
-	if runTests {
-		port = 8884
-		cottagePort = 8885
-		housePort = 8886
+	port := 8884
+	cottagePort := 8885
+	housePort := 8886
+	host := "localhost"
+	if !runTests {
+		port = 5180
+		cottagePort = 5181
+		housePort = 5182
+
+		// Get the IP address to serve at, since this is external-facing.
+		sampleHost, err := getFirstIPv4Address()
+		exitOnError(err, "Could not get host IP address")
+		fmt.Printf("Using host %s\n", sampleHost)
+		host = sampleHost
 	}
 
 	// Start a new shell module.
@@ -148,24 +187,24 @@ func run() bool {
 
 	// Collect the output of this shell on termination.
 	err = os.MkdirAll("tmp", 0750)
-	panicOnError(err)
+	exitOnError(err, "Could not make temp directory")
 	outFile, err := os.Create(stdoutLog)
-	panicOnError(err)
+	exitOnError(err, "Could not open stdout log file")
 	defer outFile.Close()
 	errFile, err := os.Create(stderrLog)
-	panicOnError(err)
+	exitOnError(err, "Could not open stderr log file")
 	defer errFile.Close()
 	defer sh.Cleanup(outFile, errFile)
 
 	// Determine the hostname; this name will be used for mounting.
 	hostName, err := exec.Command("hostname", "-s").Output()
-	panicOnError(err)
+	exitOnError(err, "Failed to obtain hostname")
 
 	// Run the host mounttable.
 	rootName := fmt.Sprintf("%s-home", strings.TrimSpace(string(hostName))) // Must trim; hostname has \n at the end.
-	hRoot, err := sh.Start(core.MTCommand, nil, "--veyron.tcp.protocol=ws", fmt.Sprintf("--veyron.tcp.address=127.0.0.1:%d", port), rootName)
-	panicOnError(err)
-	panicOnError(updateVars(hRoot, vars, "MT_NAME"))
+	hRoot, err := sh.Start(core.MTCommand, nil, "--veyron.tcp.protocol=wsh", fmt.Sprintf("--veyron.tcp.address=%s:%d", host, port), rootName)
+	exitOnError(err, "Failed to start root mount table")
+	exitOnError(updateVars(hRoot, vars, "MT_NAME"), "Failed to get MT_NAME")
 	defer hRoot.Shutdown(outFile, errFile)
 
 	// Set consts.NamespaceRootPrefix env var, consumed downstream.
@@ -173,22 +212,22 @@ func run() bool {
 	v23.GetNamespace(ctx).SetRoots(vars["MT_NAME"])
 
 	// Run the cottage mounttable at host/cottage.
-	hCottage, err := sh.Start(core.MTCommand, nil, "--veyron.tcp.protocol=ws", fmt.Sprintf("--veyron.tcp.address=127.0.0.1:%d", cottagePort), "cottage")
-	panicOnError(err)
+	hCottage, err := sh.Start(core.MTCommand, nil, "--veyron.tcp.protocol=wsh", fmt.Sprintf("--veyron.tcp.address=%s:%d", host, cottagePort), "cottage")
+	exitOnError(err, "Failed to start cottage mount table")
 	expect.NewSession(nil, hCottage.Stdout(), 30*time.Second)
 	defer hCottage.Shutdown(outFile, errFile)
 
 	// run the house mounttable at host/house.
-	hHouse, err := sh.Start(core.MTCommand, nil, "--veyron.tcp.protocol=ws", fmt.Sprintf("--veyron.tcp.address=127.0.0.1:%d", housePort), "house")
-	panicOnError(err)
+	hHouse, err := sh.Start(core.MTCommand, nil, "--veyron.tcp.protocol=wsh", fmt.Sprintf("--veyron.tcp.address=%s:%d", host, housePort), "house")
+	exitOnError(err, "Failed to start house mount table")
 	expect.NewSession(nil, hHouse.Stdout(), 30*time.Second)
 	defer hHouse.Shutdown(outFile, errFile)
 
 	// Possibly run the sample world.
 	if runSample {
 		fmt.Println("Running Sample World")
-		hSample, err := sh.Start(SampleWorldCommand, nil, "--veyron.tcp.protocol=ws", "--veyron.tcp.address=127.0.0.1:0")
-		panicOnError(err)
+		hSample, err := sh.Start(SampleWorldCommand, nil, "--veyron.tcp.protocol=wsh", fmt.Sprintf("--veyron.tcp.address=%s:0", host))
+		exitOnError(err, "Failed to start sample world")
 		expect.NewSession(nil, hSample.Stdout(), 30*time.Second)
 		defer hSample.Shutdown(outFile, errFile)
 	}
@@ -201,22 +240,22 @@ func run() bool {
 
 	// Just print out the collected variables. This is for debugging purposes.
 	bytes, err := json.Marshal(vars)
-	panicOnError(err)
+	exitOnError(err, "Failed to marshal the collected variables")
 	fmt.Println(string(bytes))
 
 	// Possibly run the tests in Prova.
 	if runTests {
 		// Also set HOUSE_MOUNTTABLE (used in the tests)
-		os.Setenv("HOUSE_MOUNTTABLE", fmt.Sprintf("/127.0.0.1:%d", housePort))
+		os.Setenv("HOUSE_MOUNTTABLE", fmt.Sprintf("/%s:%d", host, housePort))
 
-		proxyShutdown, proxyEndpoint, err := profiles.NewProxy(ctx, "ws", "127.0.0.1:0", "", "test/proxy")
-		panicOnError(err)
+		proxyShutdown, proxyEndpoint, err := profiles.NewProxy(ctx, "wsh", ":0", "", "test/proxy")
+		exitOnError(err, "Failed to start proxy")
 		defer proxyShutdown()
 		vars["PROXY_NAME"] = proxyEndpoint.Name()
 
-		hIdentityd, err := sh.Start(core.TestIdentitydCommand, nil, "--veyron.tcp.protocol=ws", "--veyron.tcp.address=127.0.0.1:0", "--veyron.proxy=test/proxy", "--host=localhost", "--httpaddr=localhost:0")
-		panicOnError(err)
-		panicOnError(updateVars(hIdentityd, vars, "TEST_IDENTITYD_NAME", "TEST_IDENTITYD_HTTP_ADDR"))
+		hIdentityd, err := sh.Start(core.TestIdentitydCommand, nil, "--veyron.tcp.protocol=wsh", "--veyron.tcp.address=:0", "--veyron.proxy=test/proxy", "--host=localhost", "--httpaddr=localhost:0")
+		exitOnError(err, "Failed to start identityd")
+		exitOnError(updateVars(hIdentityd, vars, "TEST_IDENTITYD_NAME", "TEST_IDENTITYD_HTTP_ADDR"), "Failed to obtain identityd address")
 		defer hIdentityd.Shutdown(outFile, errFile)
 
 		// Setup a lot of environment variables; these are used for the tests and building the test extension.
@@ -253,18 +292,18 @@ func runProva() bool {
 
 	// Make sure we're in the right folder when we run make test-extension.
 	vbroot, err := os.Open(VANADIUM_BROWSER)
-	panicOnError(err)
+	exitOnError(err, "Failed to open vanadium browser dir")
 	err = vbroot.Chdir()
-	panicOnError(err)
+	exitOnError(err, "Failed to change to vanadium browser dir")
 
 	// Make the test-extension, this should also remove the old one.
 	fmt.Println("Rebuilding test extension...")
 	cmdExtensionClean := exec.Command("rm", "-fr", fmt.Sprintf("%s/extension/build-test", VANADIUM_JS))
 	err = cmdExtensionClean.Run()
-	panicOnError(err)
+	exitOnError(err, "Failed to clean test extension")
 	cmdExtensionBuild := exec.Command("make", "-C", fmt.Sprintf("%s/extension", VANADIUM_JS), "build-test")
 	err = cmdExtensionBuild.Run()
-	panicOnError(err)
+	exitOnError(err, "Failed to build test extension")
 
 	// These are the basic prova options.
 	options := []string{
@@ -304,14 +343,14 @@ func runProva() bool {
 
 	// Collect the prova stdout. This information needs to be sent to xunit.
 	provaOut, err := cmdProva.StdoutPipe()
-	panicOnError(err)
+	exitOnError(err, "Failed to get prova stdout pipe")
 
 	// Setup the tap to xunit command. It uses Prova's stdout as input.
 	// The output will got the xunit output file.
 	cmdTap := exec.Command(TAP_XUNIT, TAP_XUNIT_OPTIONS)
 	cmdTap.Stdin = io.TeeReader(provaOut, os.Stdout) // Tee the prova output to see it on the console too.
 	outfile, err := os.Create(XUNIT_OUTPUT_FILE)
-	panicOnError(err)
+	exitOnError(err, "Failed to create xunit output file")
 	defer outfile.Close()
 	bufferedWriter := bufio.NewWriter(outfile)
 	cmdTap.Stdout = bufferedWriter
@@ -319,7 +358,7 @@ func runProva() bool {
 
 	// We start the tap command...
 	err = cmdTap.Start()
-	panicOnError(err)
+	exitOnError(err, "Failed to start tap to xunit command")
 
 	// Meanwhile, run Prova to completion. If there was an error, print ERROR, otherwise PASS.
 	err = cmdProva.Run()
@@ -335,7 +374,7 @@ func runProva() bool {
 	// Wait for tap to xunit to finish itself off. This file will be ready for reading by Jenkins.
 	fmt.Println("Converting Tap output to XUnit")
 	err = cmdTap.Wait()
-	panicOnError(err)
+	exitOnError(err, "Failed tap to xunit conversion")
 
 	return testsOk
 }
