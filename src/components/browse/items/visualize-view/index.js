@@ -129,8 +129,8 @@ function render(itemsState, browseState, browseEvents, navEvents) {
         attributes: {
           mini: true,
           icon: 'image:exposure-plus-1',
-          title: 'Expand +1 Level (Return)',
-          'aria-label': 'expand +1 level'
+          title: 'Load +1 Level (Return)',
+          'aria-label': 'load +1 level'
         },
         'ev-click': menu.bind(undefined, KEY_RETURN, false)
       })
@@ -143,16 +143,16 @@ function render(itemsState, browseState, browseEvents, navEvents) {
             [ h('div.ecnode', 'Expand Node'), h('div.ksc', 'Space') ]),
         h('paper-item',
             { 'ev-mouseup': menu.bind(undefined, KEY_RETURN, false) },
-            [ h('div', 'Expand +1 Level'), h('div.ksc', 'Return') ]),
+            [ h('div', 'Load +1 Level'), h('div.ksc', 'Return') ]),
         h('paper-item',
             { 'ev-mouseup': menu.bind(undefined, KEY_RETURN, true) },
             [ h('div', 'Show Loaded'), h('div.ksc', '\u21E7 Return') ]),
         h('paper-item',
             { 'ev-mouseup': menu.bind(undefined, KEY_END, false) },
-            [ h('div', 'Center Node'), h('div.ksc', 'End') ]),
+            [ h('div', 'Center View Node'), h('div.ksc', 'End') ]),
         h('paper-item',
             { 'ev-mouseup': menu.bind(undefined, KEY_HOME, false) },
-            [ h('div', 'Center Root'), h('div.ksc', 'Home') ]),
+            [ h('div', 'Center View Root'), h('div.ksc', 'Home') ]),
         h('paper-item',
             { 'ev-mouseup': menu.bind(undefined, KEY_SLASH, false) },
             [ h('div', 'Browse Into'), h('div.ksc', '/') ])

@@ -24,6 +24,7 @@
 .browse-toolbar {
   background-color: var(--color-grey-very-light);
   box-shadow: none;
+  height: 50px;
 }
 .browse-details-sidebar::shadow #dropShadow {
   display: none;
@@ -215,12 +216,21 @@ paper-icon-button.selected:hover {
 
 .side-panel-toggle {
   position: absolute;
-  z-index: 1;
+  z-index: 2;
   left: -18px;
   top: 2px;
   transform: scale(0.6);
   background-color: var(--color-bright);
   color: var(--color-white);
+}
+
+.resize-handle {
+  position: fixed;
+  z-index: 1;
+  left: -3px;
+  width: 5px;
+  height: 100000px;
+  cursor: ew-resize;
 }
 
 .side-panel-toggle.collapsed {
