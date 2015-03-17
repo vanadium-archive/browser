@@ -9,7 +9,7 @@ var freeze = require('../../lib/mercury/freeze');
 var sortedPush = require('../../lib/mercury/sorted-push-array');
 var log = require('../../lib/log')('services:namespace:service');
 var ItemTypes = require('./item-types');
-var namespaceUtil = vanadium.namespaceUtil;
+var namespaceUtil = vanadium.naming.util;
 
 module.exports = {
   getChildren: getChildren,
