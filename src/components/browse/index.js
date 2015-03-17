@@ -4,6 +4,7 @@ var insertCss = require('insert-css');
 var PropertyValueEvent = require('../../lib/mercury/property-value-event');
 
 var exists = require('../../lib/exists');
+var store = require('../../lib/store');
 
 var namespaceService = require('../../services/namespace/service');
 var smartService = require('../../services/smart/service');
@@ -113,11 +114,24 @@ function create() {
     subPage: mercury.value('items'),
 
     /*
-     * Whether the details panel on the sidebar is collapsed or expanded
+     * Whether the side panel is collapsed or expanded
      * @type {Boolean}
      */
     sidePanelCollapsed: mercury.value(false),
 
+    /*
+     * Width of the side panel
+     * @type {String}
+     */
+    sidePanelWidth: mercury.value('50%')
+
+  });
+
+  // get sidePanelWidth from persistent storage
+  store.getValue('sidePanelWidth').then(function(val) {
+    if (val) {
+      state.sidePanelWidth.set(val);
+    }
   });
 
   var events = mercury.input([
@@ -177,7 +191,12 @@ function create() {
     /*
      * Event for toggling the expand/collapse state of the sidebar details panel
      */
-    'toggleSidePanel'
+    'toggleSidePanel',
+
+    /*
+     * Drag to resize the side details panel
+     */
+    'slideSidePanel'
   ]);
 
   wireUpEvents(state, events);
@@ -306,12 +325,8 @@ function render(browseState, browseEvents, navEvents) {
     mainView
   ]);
 
-  var sideViewWidth = '50%';
-  if (browseState.sidePanelCollapsed) {
-    sideViewWidth = '0%';
-  }
   var view = [
-    h('core-toolbar.browse-toolbar', [
+    h('core-toolbar.browse-toolbar.core-narrow', [
       renderBreadcrumbs(browseState, navEvents),
       renderViewActions(browseState, navEvents)
     ]),
@@ -319,7 +334,8 @@ function render(browseState, browseEvents, navEvents) {
       attributes: {
         'id': 'sidebarDrawer',
         'rightDrawer': true,
-        'drawerWidth': sideViewWidth,
+        'drawerWidth': browseState.sidePanelCollapsed ?
+          '0%' : browseState.sidePanelWidth,
         'responsiveWidth': '0px'
       }
     }, [
@@ -335,6 +351,12 @@ function render(browseState, browseEvents, navEvents) {
           'drawer': true
         }
       }, [
+        h('div.resize-handle', {
+          'ev-mousedown': function(e) {
+            browseEvents.slideSidePanel({ rawEvent: e,
+                collapsed: browseState.sidePanelCollapsed });
+          }
+        }),
         sideView
       ])
     ])
@@ -647,20 +669,65 @@ function wireUpEvents(state, events) {
     state.selectedItemName.set(data.name);
     events.selectedItemDetails.displayItemDetails(data);
   });
-  events.toggleSidePanel(function(data) {
+
+  events.toggleSidePanel(function(data) { // hide side panel
     state.sidePanelCollapsed.set(data.collapsed);
-    var animatedNode = document.querySelector('#sidebarDrawer');
-    if (!animatedNode) {
+    var drawer = document.querySelector('#sidebarDrawer');
+    if (!drawer) {
       return;
     }
     //Fire a window resize event when animation ends so components can adjust
     //based on the new view port size
-    animatedNode.addEventListener('webkitTransitionEnd', fireResizeEvent);
-    function fireResizeEvent() {
-      var evt = document.createEvent('UIEvents');
-      evt.initUIEvent('resize', true, false, window, 0);
-      window.dispatchEvent(evt);
-      animatedNode.removeEventListener('webkitTransitionEnd', fireResizeEvent);
-    }
+    // TODO(aghassemi): specific to webkit
+    drawer.addEventListener('webkitTransitionEnd', fireResizeEvent);
   });
+
+  events.slideSidePanel(function(data) { // resize side panel
+    // ignore if not primary button, or if side panel is collapsed
+    if (data.rawEvent.button !== 0 || data.collapsed) {
+      return;
+    }
+    var dragX = data.rawEvent.clientX; // initial position of drag target
+    var drawer = document.querySelector('#sidebarDrawer');
+    var oldP = +drawer.getAttribute('drawerWidth').replace('%', '');
+    var oldW = drawer.offsetWidth; // width of both panels in pixels
+    drawer.querySelector('::shadow core-selector').
+    classList.remove('transition');
+    window.addEventListener('mousemove', slideMove);
+    window.addEventListener('mouseup', slideEnd);
+
+    function slideMove(e) { // move
+      var dx = e.clientX - dragX;
+      var newP = Math.min(Math.max(oldP - (dx * 100 / oldW), 10), 90);
+      drawer.setAttribute('drawerWidth', newP + '%');
+      e.preventDefault(); // avoid selecting text
+    }
+
+    function slideEnd(e) { // release
+      window.removeEventListener('mouseup', slideEnd);
+      window.removeEventListener('mousemove', slideMove);
+      drawer.querySelector('::shadow core-selector').
+      classList.add('transition');
+      var drawerWidth = drawer.getAttribute('drawerWidth');
+      store.setValue('sidePanelWidth', drawerWidth
+      ).catch(function(err) {
+        log.error(err);
+      });
+      state.sidePanelWidth.set(drawerWidth);
+      state.sidePanelCollapsed.set(false);
+      fireResizeEvent(null);
+    } // end slideEnd
+  }); // end events.slideSidePanel
+
+  function fireResizeEvent(e) { // resize on end animation
+    var evt = document.createEvent('UIEvents');
+    evt.initUIEvent('resize', true, false, window, 0);
+    window.dispatchEvent(evt);
+    if (e !== null) { // not if called by slideEnd
+      // TODO(aghassemi): specific to webkit
+      document.querySelector('#sidebarDrawer').
+      removeEventListener('webkitTransitionEnd', fireResizeEvent);
+    }
+  }
+
 }
