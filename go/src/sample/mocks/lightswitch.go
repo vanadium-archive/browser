@@ -1,7 +1,7 @@
 package mocks
 
 import (
-	"v.io/v23/ipc"
+	"v.io/v23/rpc"
 )
 
 const (
@@ -16,12 +16,12 @@ type lightSwitch struct {
 }
 
 // Status indicates whether the light is on or off.
-func (l *lightSwitch) Status(ipc.ServerCall) (string, error) {
+func (l *lightSwitch) Status(rpc.ServerCall) (string, error) {
 	return l.status, nil
 }
 
 // FlipSwitch sets the light to on or off, depending on the input.
-func (l *lightSwitch) FlipSwitch(_ ipc.ServerCall, toOn bool) error {
+func (l *lightSwitch) FlipSwitch(_ rpc.ServerCall, toOn bool) error {
 	if toOn {
 		l.status = lightSwitchOn
 	} else {
