@@ -466,7 +466,7 @@ function getServerTypeInfo(mountEntry) {
   // either duck typing and have a special __meta route that provides metadata
   // information about a service.
 
-  var isMounttable = mountEntry.mT;
+  var isMounttable = mountEntry.servesMountTable;
   if (isMounttable) {
     return itemFactory.createServerTypeInfo({
       key: 'veyron-mounttable',
