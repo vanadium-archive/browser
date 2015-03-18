@@ -7,8 +7,6 @@ var browseRoute = require('../../../../routes/browse');
 var ItemTypes = require('../../../../services/namespace/item-types');
 var getServiceIcon = require('../../get-service-icon');
 
-// var getServiceIcon = require('../../get-service-icon');
-
 var log = require('../../../../lib/log'
     )('components:browse:items:visualize-view');
 
@@ -77,8 +75,8 @@ function render(itemsState, browseState, browseEvents, navEvents) {
   // handle changed selection
   selNode = rootIndex[browseState.selectedItemName] || selNode;
 
-  browseinto.browseState = browseState;
-  browseinto.navEvents = navEvents;
+  browseInto.browseState = browseState;
+  browseInto.navEvents = navEvents;
 
   return [
     new D3Widget(browseState, browseEvents),
@@ -221,14 +219,15 @@ D3Widget.prototype.updateRoot = function() {
     rootIndex[rootNodeId] = root = {
       id: rootNodeId,
       name: basename || '<root>',
-      status: ItemTypes.service,
+      status: ItemTypes.loading,
       expandable: true,
       icon: { title: 'Mount Table' },
       x0: curY,
       y0: 0
     };
   }
-  loadSubItems(root); // Load the children
+  loadSubItems(root); // load the children
+  loadItem(root); // load rest of information for this node
   if (selNode === undefined) {
     selectNode(root);
   }
@@ -244,7 +243,7 @@ function initD3() {
   height = networkElem.offsetHeight;
 
   // current pan, zoom, and rotation
-  curX = width / 2;
+  curX = width / 2; // center
   curY = height / 2;
   curZ = 1.0; // current zoom
   curR = 270; // current rotation
@@ -463,30 +462,39 @@ var bisectfun = d3.bisector(function(d) { return d.name; }).right;
 // create node or merge new data into it
 function mergeNode(item, parent) {
   var nn = rootIndex[item.objectName] || {};
-  var exists = nn.id !== undefined;
-  var name = nn.name = item.mountedName;
+  var isNew = nn.id === undefined; // not found in rootIndex
   nn.id = item.objectName;
+  nn.name = item.mountedName;
   nn.parent = parent || nn.parent;
   nn.expandable = item.isGlobbable;
   nn.status = item.itemType;
   nn.error = item.itemError;
   nn.icon = getServiceIcon(item);
-  // console.log('icon', nn.icon, nn.icon.title);
-  // if (nn.typeName !== 'Service' && nn.typeName !== 'Mount Table') {
-  //   console.log('** typeName', nn.typeName);
-  // }
-  nn.x0 = nn.x0 | parent.x;
-  nn.y0 = nn.y0 | parent.y;
-  if (!exists) { // insert node in proper place
+  if (parent === undefined) { // hack to set correct type!
+    nn.icon.title = 'Mount Table';
+  }
+  nn.x0 = nn.x0 || parent.x;  // keep old value
+  nn.y0 = nn.y0 || parent.y;
+  if (isNew && parent !== undefined) { // insert node in proper place
     rootIndex[nn.id] = nn;
     if (parent.children === undefined) {
       parent.children = [nn];
     } else {
-      parent.children.splice(bisectfun(parent.children, name), 0, nn);
+      parent.children.splice(bisectfun(parent.children, nn.name), 0, nn);
     }
   }
-  updateD3(parent, true);
+  return isNew; // need to animate it in
 } // end mergeNode
+
+function loadItem(node) { // load a single item (used for root of tree)
+  namespaceService.getNamespaceItem(node.id). then(function(observable) {
+    mercury.watch(observable, updateItem);
+
+    function updateItem(item) { // currently only gets called once (no updates)
+      updateD3(node, mergeNode(item, undefined));
+    }
+  });
+}
 
 // load children items asynchronously
 function loadSubItems(node) {
@@ -502,14 +510,12 @@ function loadSubItems(node) {
 
   namespaceService.getChildren(namespace).then(function(resultObservable) {
     var initialValues = resultObservable();
-    // console.log('initialValues', namespace, initialValues);
     initialValues.forEach(function(item) {
-        mergeNode(item, node);
+        updateD3(node, mergeNode(item, node));
     });
     resultObservable.events.once('end', function() {
       showLoading(node, false); // node no longer loading
     });
-
 
     resultObservable(updatedValues);
 
@@ -517,6 +523,7 @@ function loadSubItems(node) {
       // TODO(wmleler) support removed and updated nodes for watchGlob
       var item = results._diff[0][2]; // changed item from Mercury
       mergeNode(item, node);
+      updateD3(node, true); // force animation
     } // end updatedValues
   }).catch(function(err) {
     log.error('glob failed', err);
@@ -529,18 +536,11 @@ function selectNode(node) { // highlight node and show details
   selectItem({ name: node.id });  // notify rest of app
 }
 
-function browseinto(node) {
-  var browseUrl = browseRoute.createUrl(browseinto.browseState, {
+function browseInto(node) { // make this node the root
+  var browseUrl = browseRoute.createUrl(browseInto.browseState, {
     namespace: node.id
   });
-  browseinto.navEvents.navigate({ path: browseUrl });
-}
-
-function browseinto(node) {
-  var browseUrl = browseRoute.createUrl(browseinto.browseState, {
-    namespace: node.id
-  });
-  browseinto.navEvents.navigate({ path: browseUrl });
+  browseInto.navEvents.navigate({ path: browseUrl });
 }
 
 // set view with no animation
@@ -846,7 +846,7 @@ function actionDown(key, shift, alt) {
       moveZ = -ZOOM_INC * slow;
       break;
     case KEY_SLASH: // toggle root to selection
-      browseinto(selNode);
+      browseInto(selNode);
       return;
     case KEY_PAGEUP: // rotate counterclockwise
       moveR = -ROT_INC * slow;

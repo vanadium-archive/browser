@@ -699,7 +699,7 @@ function wireUpEvents(state, events) {
     function slideMove(e) { // move
       var dx = e.clientX - dragX;
       var newP = Math.min(Math.max(oldP - (dx * 100 / oldW), 10), 90);
-      drawer.setAttribute('drawerWidth', newP + '%');
+      drawer.setAttribute('drawerWidth', newP.toFixed(2) + '%');
       e.preventDefault(); // avoid selecting text
     }
 
