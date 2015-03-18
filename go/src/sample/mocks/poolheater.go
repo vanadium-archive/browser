@@ -3,7 +3,7 @@ package mocks
 import (
 	"time"
 
-	"v.io/v23/ipc"
+	"v.io/v23/rpc"
 )
 
 const (
@@ -21,12 +21,12 @@ type poolHeater struct {
 }
 
 // Status retrieves the PoolHeater's status (i.e., active, idle) and temperature.
-func (p *poolHeater) Status(ipc.ServerCall) (status string, temperature uint64, err error) {
+func (p *poolHeater) Status(rpc.ServerCall) (status string, temperature uint64, err error) {
 	return p.status, p.currTemperature, nil
 }
 
 // Start informs the PoolHeater to heat the pool to the given temperature until the duration expires.
-func (p *poolHeater) Start(_ ipc.ServerCall, temperature uint64, duration uint64) error {
+func (p *poolHeater) Start(_ rpc.ServerCall, temperature uint64, duration uint64) error {
 	// Begin heating.
 	p.status = poolHeaterActive
 	p.currTemperature = temperature
@@ -43,7 +43,7 @@ func (p *poolHeater) Start(_ ipc.ServerCall, temperature uint64, duration uint64
 }
 
 // Stop informs the PoolHeater to cease heating the pool.
-func (p *poolHeater) Stop(ipc.ServerCall) error {
+func (p *poolHeater) Stop(rpc.ServerCall) error {
 	p.status = poolHeaterIdle
 	p.currTemperature = poolHeaterDefaultTemperature
 	return nil

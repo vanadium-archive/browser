@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"sample"
-	"v.io/v23/ipc"
+	"v.io/v23/rpc"
 )
 
 const (
@@ -69,12 +69,12 @@ func NewPetFeeder() *PetFeeder {
 }
 
 // Status returns the current status of the Pet Feeder
-func (p *PetFeeder) Status(ipc.ServerCall) (float64, error) {
+func (p *PetFeeder) Status(rpc.ServerCall) (float64, error) {
 	return p.status, nil
 }
 
 // Fill fills the pet feeder bowl with food. Errors if the bowl will overflow.
-func (p *PetFeeder) Fill(_ ipc.ServerCall, amount float64) error {
+func (p *PetFeeder) Fill(_ rpc.ServerCall, amount float64) error {
 	if p.status+amount > MAX_FILL {
 		p.status = MAX_FILL
 		return fmt.Errorf("pet feeder overflowed")
@@ -84,7 +84,7 @@ func (p *PetFeeder) Fill(_ ipc.ServerCall, amount float64) error {
 }
 
 // Empty removes all food from the pet feeder bowl.
-func (p *PetFeeder) Empty(ipc.ServerCall) error {
+func (p *PetFeeder) Empty(rpc.ServerCall) error {
 	p.status = MIN_FILL
 	return nil
 }
@@ -164,7 +164,7 @@ func (r *RoboDog) eatCycle() {
 	}
 }
 
-func (r *RoboDog) Status(ipc.ServerCall) (sample.RoboDogStatus, error) {
+func (r *RoboDog) Status(rpc.ServerCall) (sample.RoboDogStatus, error) {
 	dogMoods := moods[r.mood]
 	dogMood := dogMoods[rand.Intn(len(dogMoods))] // pick a random mood
 	dogHunger := hungers[r.hunger]
@@ -177,7 +177,7 @@ func (r *RoboDog) Status(ipc.ServerCall) (sample.RoboDogStatus, error) {
 }
 
 // Speak allows a client to speak with the robotic dog.
-func (r *RoboDog) Speak(call ipc.ServerCall, words string) (string, error) {
+func (r *RoboDog) Speak(call rpc.ServerCall, words string) (string, error) {
 	// If dog is eating, the dog cannot listen or respond.
 	if r.eating {
 		return "*munch* *munch*", nil
@@ -194,7 +194,7 @@ func (r *RoboDog) Speak(call ipc.ServerCall, words string) (string, error) {
 
 // Play allows a client to play with the robotic dog.
 // Errors if the dog does not want to play.
-func (r *RoboDog) Play(_ ipc.ServerCall, duration uint32) error {
+func (r *RoboDog) Play(_ rpc.ServerCall, duration uint32) error {
 	if r.eating {
 		return fmt.Errorf("%s is busy eating now", r.name)
 	} else if r.mood == MIN_MOOD {
@@ -211,7 +211,7 @@ func (r *RoboDog) Play(_ ipc.ServerCall, duration uint32) error {
 }
 
 // SetName allows a client to set the robotic dog's name.
-func (r *RoboDog) SetName(_ ipc.ServerCall, name string) error {
+func (r *RoboDog) SetName(_ rpc.ServerCall, name string) error {
 	r.name = name
 	return nil
 }

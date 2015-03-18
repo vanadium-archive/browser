@@ -3,7 +3,7 @@ package mocks
 import (
 	"time"
 
-	"v.io/v23/ipc"
+	"v.io/v23/rpc"
 )
 
 const (
@@ -18,12 +18,12 @@ type sprinkler struct {
 }
 
 // Status retrieves the Sprinkler's status (i.e., active, idle)
-func (s *sprinkler) Status(ipc.ServerCall) (string, error) {
+func (s *sprinkler) Status(rpc.ServerCall) (string, error) {
 	return s.status, nil
 }
 
 // Start causes the Sprinkler to emit water for the given duration (in seconds).
-func (s *sprinkler) Start(_ ipc.ServerCall, duration uint16) error {
+func (s *sprinkler) Start(_ rpc.ServerCall, duration uint16) error {
 	s.status = sprinklerActive
 	time.AfterFunc(
 		time.Duration(duration)*time.Second,
@@ -33,7 +33,7 @@ func (s *sprinkler) Start(_ ipc.ServerCall, duration uint16) error {
 }
 
 // Stop causes the Sprinkler to cease watering.
-func (s *sprinkler) Stop(ipc.ServerCall) error {
+func (s *sprinkler) Stop(rpc.ServerCall) error {
 	s.status = sprinklerIdle
 	return nil
 }
