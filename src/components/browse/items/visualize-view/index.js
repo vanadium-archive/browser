@@ -20,8 +20,7 @@ module.exports.render = render;
 // var MAX_AUTO_LOAD_DEPTH = 3;
 
 var DURATION = 500; // d3 animation duration
-var STAGGERN = 4; // delay for each node
-var STAGGERD = 200; // delay for each depth
+var STAGGER = 10; // delay for each node
 var NODE_DIAMETER = 4; // diameter of circular nodes
 var MIN_ZOOM = 0.3; // minimum zoom allowed
 var MAX_ZOOM = 30;  // maximum zoom allowed
@@ -126,7 +125,7 @@ function render(itemsState, browseState, browseEvents, navEvents) {
       h('paper-fab.expand', {
         attributes: {
           mini: true,
-          icon: 'image:exposure-plus-1',
+          icon: 'unfold-more', // 'expand-less',
           title: 'Load +1 Level (Return)',
           'aria-label': 'load +1 level'
         },
@@ -221,9 +220,7 @@ D3Widget.prototype.updateRoot = function() {
       name: basename || '<root>',
       status: ItemTypes.loading,
       expandable: true,
-      icon: { title: 'Mount Table' },
-      x0: curY,
-      y0: 0
+      icon: { title: 'Mount Table' }
     };
   }
   loadSubItems(root); // load the children
@@ -290,21 +287,21 @@ function initD3() {
 
 // draw tree using d3js
 // subroot - source node of the update
-// doTransition - whether to do a transition
-function updateD3(subroot, doTransition) {
-  // console.log('updateD3', subroot, doTransition);
+// doAni - whether to do a transition animation
+function updateD3(subroot, doAni) {
+  // console.log('updateD3', subroot, doAni);
 
   // length of d3 animation
-  var duration = doTransition ?
-    (d3.event && d3.event.altKey ? DURATION * 4 : DURATION) : 0;
+  var duration = (d3.event && d3.event.altKey ? DURATION * 4 : DURATION);
 
   // Compute the new tree layout.
   var d3nodes = treeD3.nodes(root);
   var d3links = treeD3.links(d3nodes);
 
   // Update the view
-  svgGroup.transition().duration(duration).
-    attr('transform',
+  var view = doAni ? svgGroup.transition().duration(duration) : svgGroup;
+
+  view.attr('transform',
         'rotate(' + curR + ' ' + curX + ' ' + curY +
         ')translate(' + curX + ' ' + curY +
         ')scale(' + curZ + ')');
@@ -317,8 +314,8 @@ function updateD3(subroot, doTransition) {
   // Enter any new nodes at the parent's previous position
   var nodeEnter = gnode.enter().insert('g', ':first-child').
     attr('class', 'node').
-    attr('transform', 'rotate(' + (subroot.x0 - 90) +
-        ')translate(' + subroot.y0 + ')').
+    attr('transform', 'rotate(' + (subroot.x - 90) +
+        ')translate(' + subroot.y + ')').
     on('click', click).on('dblclick', dblclick).
     on('contextmenu', showContextMenu);
 
@@ -339,7 +336,7 @@ function updateD3(subroot, doTransition) {
     style('opacity', 0.9).
     style('fill-opacity', 0).
     attr('transform', function() {
-        return ((subroot.x0 + curR) % 360 <= 180 ?
+        return ((subroot.x + curR) % 360 <= 180 ?
             'translate(8)scale(' :
             'rotate(180)translate(-8)scale('
           ) + reduceZ(curZ) + ')';
@@ -379,12 +376,13 @@ function updateD3(subroot, doTransition) {
         return d === selNode ? SELECTED_COLOR : 'black';
     }).attr('dy', '.35em');
 
-  var nodeUpdate = gnode.transition().duration(duration).
-    delay( doTransition ? function(d, i) {
-        return i * STAGGERN +
-          Math.max(0, d.depth - selNode.depth) * STAGGERD;
-    } : 0).
-    attr('transform', function(d) {
+  var nodeUpdate = (doAni ?
+      gnode.transition().duration(duration).
+      delay(function(d, i) {
+        return i * STAGGER + Math.max(0, d.depth - selNode.depth);
+      }) : gnode);
+
+  nodeUpdate.attr('transform', function(d) {
       return 'rotate(' + (d.x - 90) + ')translate(' + d.y + ')';
     });
 
@@ -395,10 +393,10 @@ function updateD3(subroot, doTransition) {
     style('fill-opacity', 1);
 
   // Transition exiting nodes to the parent's new position and remove
-  var nodeExit = gnode.exit().transition().duration(duration).
-    delay( doTransition ? function(d, i) {
-          return i * STAGGERN; } : 0).
-    attr('transform', function() {
+  var nodeExit = doAni ? gnode.exit().transition().duration(duration).
+    delay(function(d, i) { return i * STAGGER; }) : gnode.exit();
+
+  nodeExit.attr('transform', function(d) {
         return 'rotate(' + (subroot.x - 90) +')translate(' + subroot.y + ')';
     }).
     remove();
@@ -417,8 +415,8 @@ function updateD3(subroot, doTransition) {
     attr('class', 'link').
     attr('d', function() {
         var o = {
-          x: subroot.x0,
-          y: subroot.y0
+          x: subroot.x,
+          y: subroot.y
         };
         return diagonal({
           source: o,
@@ -427,15 +425,14 @@ function updateD3(subroot, doTransition) {
     });
 
   // Transition links to their new position
-  glink.transition().duration(duration).
-    delay( doTransition ? function(d, i) {
-        return i * STAGGERN +
-          Math.max(0, d.source.depth - selNode.depth) * STAGGERD;
-    } : 0).
+  (doAni ? glink.transition().duration(duration).
+    delay(function(d, i) {
+      return i * STAGGER + Math.max(0, d.source.depth - selNode.depth);
+    }) : glink).
     attr('d', diagonal);
 
   // Transition exiting nodes to the parent's new position
-  glink.exit().transition().duration(duration).
+  (doAni ? glink.exit().transition().duration(duration) : glink.exit()).
     attr('d', function() {
         var o = {
           x: subroot.x,
@@ -447,19 +444,12 @@ function updateD3(subroot, doTransition) {
         });
     }).
     remove();
-
-  // Stash the old positions for transition
-  d3nodes.forEach(function(d) {
-    d.x0 = d.x;
-    d.y0 = d.y;
-  });
-
 } // end updateD3
 
 // find place to insert new node in children
 var bisectfun = d3.bisector(function(d) { return d.name; }).right;
 
-// create node or merge new data into it
+// create node or merge new item data into it
 function mergeNode(item, parent) {
   var nn = rootIndex[item.objectName] || {};
   var isNew = nn.id === undefined; // not found in rootIndex
@@ -473,8 +463,6 @@ function mergeNode(item, parent) {
   if (parent === undefined) { // hack to set correct type!
     nn.icon.title = 'Mount Table';
   }
-  nn.x0 = nn.x0 || parent.x;  // keep old value
-  nn.y0 = nn.y0 || parent.y;
   if (isNew && parent !== undefined) { // insert node in proper place
     rootIndex[nn.id] = nn;
     if (parent.children === undefined) {
@@ -522,8 +510,7 @@ function loadSubItems(node) {
     function updatedValues(results) {
       // TODO(wmleler) support removed and updated nodes for watchGlob
       var item = results._diff[0][2]; // changed item from Mercury
-      mergeNode(item, node);
-      updateD3(node, true); // force animation
+      updateD3(node, mergeNode(item, node));
     } // end updatedValues
   }).catch(function(err) {
     log.error('glob failed', err);
