@@ -13,7 +13,7 @@ var mockName = 'foo/bar/mockItem';
 var mockItem = {
   mountedName: 'mockItem',
   name: mockName,
-  itemType: ItemTypes.intermediary
+  itemType: ItemTypes.subtable
 };
 var namespaceServiceMock = {
   getNamespaceItem: function() {

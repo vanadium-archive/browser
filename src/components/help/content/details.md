@@ -1,6 +1,6 @@
-![Viz](helpimg/viz.png)
+![The Namespace Browser](helpimg/vnb.png)
 
-When you first open Viz it has four main areas.
+When you first open the namespace browser it has four main areas.
 At the very top is the header and immediately below it is the toolbar.
 
 In Browse mode, the rest of the page is divided into two panes.
@@ -21,7 +21,7 @@ Additional modes are planned for the future.
 
 In Browse mode, the header also shows the current Vanadium name being used
 as the root of the namespace.
-This can be a mount table or an intermediary name in a mount table.
+This can be a mount table or a subtable in a mount table.
 You can type a Vanadium name into this field, or you can select a name
 using the Bookmarks or Recommendations tools. If this field is empty,
 it defaults to the Home mount table for the current environment.

@@ -3,7 +3,7 @@
  */
 var ItemTypes = {
   loading: 'loading',
-  intermediary: 'intermediary',
+  subtable: 'subtable',
   server: 'server',
   inaccessible: 'inaccessible'
 };

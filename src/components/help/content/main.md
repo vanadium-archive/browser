@@ -1,7 +1,7 @@
 Introduction
 ------------
 
-The Viz Vanadium Viewer is a tool to browse and interact with Vanadium services.
+The namespace browser is a tool to browse and interact with Vanadium services.
 See the [Vanadium documentation](http://staging.v.io) for more information.
 
 Mount Tables
@@ -12,13 +12,11 @@ distributed pointers to other services (including other mount tables).
 Each item in a mount table can be one of three things:
 * a distributed pointer to another mount table
 * a distributed pointer to a Vanadium service (other than a mount table)
-* a folder (intermediary name)
+* a subtable (a subgroup of items in a mount table)
 
-<br />Folders are used to group items together, like in a file system
-on a computer.
-The name used to identify a folder is called an "intermediary name" (like
-a directory name). Folders in a mount table can only contain other items
-in the same mount table.
+<br />Subtables are used to group items together, like directories in a
+file system on a computer.
+A mount table can contain an arbitrary number of subtables.
 
 Namespaces
 ----------
@@ -72,10 +70,11 @@ the services (including mount tables) to which the user has been given access.
 Help Topics
 -----------
 
-* [What You See](#/help/details) – the different parts of Viz and what they do.
+* [What You See](#/help/details) –
+the different parts of the namespace browser and what they do.
 
-* [Browse](#/help/browse) – how to use Viz to browse a namespace,
-including the different views provided by Viz.
+* [Browse](#/help/browse) – how to browse a namespace,
+including the different views provided by the namespace browser.
 
 * [Invoking Services](#/help/methods) – once you browse to a service,
 how to invoke methods.

@@ -19,9 +19,9 @@ function getServiceIcon(item) {
       icon = serviceIconMap[item.serverInfo.typeInfo.key];
       title = item.serverInfo.typeInfo.typeName;
       break;
-    case ItemTypes.intermediary:
+    case ItemTypes.subtable:
       icon = 'folder-open';
-      title = 'Intermediary Name';
+      title = 'Subtable';
       break;
     case ItemTypes.inaccessible:
       icon = 'error';

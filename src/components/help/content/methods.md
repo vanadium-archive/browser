@@ -1,16 +1,16 @@
 When you select an item in any of the Browse views (Grid, Tree, or Visualize),
 details for that item appear in the right pane.
 
-Intermediary Name
+Subtable
 -----------------
 
-The simplest kind of item is an intermediary name:
+The simplest kind of item is a subtable:
 
-![Details for Intermediary name](helpimg/intermediary.png)
+![Details for Subtable](helpimg/subtable.png)
 
-In the left pane, the intermediary name "kitchen" has been selected.
+In the left pane, the subtable "kitchen" has been selected.
 
-The right pane displays that the type is "Intermediary Name".
+The right pane displays that the type is "Subtable".
 It also shows the item's full name from the root of this namespace.
 
 Above the name, you can click on the bookmark icon to set a bookmark
@@ -68,7 +68,8 @@ allows you to see more information about the arguments.
 The delayArm method takes a floating point number specifying the number of seconds
 to delay before arming the alarm.
 
-In this case, Viz is recommends a value of 1 (the item beginning with a star).
+In this case, the namespace browser is recommends a value of 1
+(the item beginning with a star).
 You can click the action button (circle containing a right arrow)
 for this recommendation to run it.
 

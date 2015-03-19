@@ -11,7 +11,7 @@ var tabKeys = Object.freeze({
 var sections = Object.freeze(new Map([
   [tabKeys.MAIN, {
     index: 0,
-    header: 'Viz Overview',
+    header: 'Overview and Concepts',
     markdownContent: require('./content/main.md'),
     path: helpRoute.createUrl(tabKeys.MAIN)
   }],

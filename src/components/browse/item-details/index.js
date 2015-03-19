@@ -421,8 +421,8 @@ function renderTypeFieldItem(state) {
   if (item.itemType === ItemTypes.server) {
     typeName = item.serverInfo.typeInfo.typeName;
     typeDescription = item.serverInfo.typeInfo.description;
-  } else if(item.itemType === ItemTypes.intermediary) {
-    typeName = 'Intermediary Name';
+  } else if(item.itemType === ItemTypes.subtable) {
+    typeName = 'Subtable';
   } else if(item.itemType === ItemTypes.inaccessible) {
     typeName = 'Inaccessible';
   } else {

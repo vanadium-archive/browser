@@ -385,7 +385,7 @@ function createNamespaceItem(mountEntry) {
     });
   });
 
-  //TODO(aghassemi) current workaround for knowing if a name is an intermediary
+  //TODO(aghassemi) current workaround for knowing if a name is a subtable
   //service or not. See https://github.com/veyron/release-issues/issues/1072
   var resolveNamePromise = getRuntime().then(function hasChildren(rt) {
     var resolveCtx = rt.getContext().withTimeout(RPC_TIMEOUT);
@@ -398,8 +398,8 @@ function createNamespaceItem(mountEntry) {
       });
     }, function(err) {
       if (err.id === 'v.io/v23/naming.nameDoesntExist') {
-        // we got nameDoesntExist error, it must be an intermediary node.
-        item.itemType.set(ItemTypes.intermediary);
+        // we got nameDoesntExist error, it must be an subtable node.
+        item.itemType.set(ItemTypes.subtable);
       } else {
         // TODO(aghassemi) Glob probably should not return items if their parent
         // is inaccessible. https://github.com/veyron/release-issues/issues/1161

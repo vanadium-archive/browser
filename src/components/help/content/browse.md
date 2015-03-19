@@ -15,13 +15,13 @@ shows the name of the parent of these items.
 
 This Grid View shows four items. Each item has an icon and a name:
 * The icon for house and cottage show that they are mount tables.
-* The icon for kitchen shows that it is an intermediary name
+* The icon for kitchen shows that it is a subtable
 (a folder in a mount table).
 * The icon for alarm shows that it is a service.
 
-If an item is a mount table or an intermediary name, then it can have
-children. If so, the item also has an action button on the right side
-to browse those children. Services (like alarm) do not have children.
+If an item is a mount table or a subtable, then it can have children.
+If so, the item also has an action button on the right side to
+browse those children. Services (like alarm) do not have children.
 
 Tree View
 ---------
@@ -31,12 +31,12 @@ The Tree View browses a namespace as a rooted tree:
 ![Tree View](helpimg/tree.png)
 
 Like the Grid View, each item contain an icon and a name.
-The icon shows if the item is a mount table, intermediary name, or service.
-As above, house is a mount table, kitchen is an intermediary name,
+The icon shows if the item is a mount table, subtable, or service.
+As above, house is a mount table, kitchen is a subtable ,
 and alarm is a service.
 
 To the left of the item is a widget showing if the item has children.
-Again, only mount tables and intermediary names can have children.
+Again, only mount tables and subtables can have children.
 
 If no widget is shown, then the item has no children.
 Because a namespace is often distributed across multiple computers,

@@ -91,7 +91,7 @@ test('getChildren of cottage/lawn', function(t) {
   }
 
   function assertBack(item) {
-    assertIntermediaryName(t, item, {
+    assertSubtableName(t, item, {
       name: 'back',
       objectName: 'cottage/lawn/back'
     });
@@ -242,12 +242,12 @@ test('getNamespaceItem of leaf server', function(t) {
   }).catch(t.end);
 });
 
-test('getNamespaceItem of intermediary name', function(t) {
+test('getNamespaceItem of subtable', function(t) {
   namespaceService.getNamespaceItem('cottage/lawn/back').
   then(function assertItem(itemObs) {
     assertIsImmutable(t, itemObs);
     var item = itemObs();
-    assertIntermediaryName(t, item, {
+    assertSubtableName(t, item, {
       name: 'back',
       objectName: 'cottage/lawn/back'
     });
@@ -411,13 +411,13 @@ function assertServer(t, item, vals) {
   }
 }
 
-function assertIntermediaryName(t, item, vals) {
+function assertSubtableName(t, item, vals) {
   assertMountedName(t, item, vals.name);
   assertObjectName(t, item, vals.objectName);
   assertIsGlobbable(t, item);
   assertIsAccessible(t, item);
-  t.equal(item.itemType, ItemTypes.intermediary, item.mountedName +
-    ': is intermediary node');
+  t.equal(item.itemType, ItemTypes.subtable, item.mountedName +
+    ': is subtable node');
 }
 
 function assertIsAccessible(t, item) {
