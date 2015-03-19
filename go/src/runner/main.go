@@ -18,18 +18,20 @@ import (
 	"sample/sampleworld"
 
 	"v.io/v23"
+	"v.io/v23/options"
 
 	"v.io/x/ref/lib/flags/consts"
 	"v.io/x/ref/lib/signals"
 	"v.io/x/ref/profiles"
 	identity "v.io/x/ref/services/identity/modules"
+	mounttable "v.io/x/ref/services/mounttable/lib"
 	"v.io/x/ref/test/expect"
 	"v.io/x/ref/test/modules"
-	"v.io/x/ref/test/modules/core"
 )
 
 const (
-	SampleWorldCommand = "sampleWorld"           // The modules library command.
+	SampleWorldCommand = "sampleWorld" // The modules library command.
+	RunMTCommand       = "runMT"
 	stdoutLog          = "tmp/runner.stdout.log" // Used as stdout drain when shutting down.
 	stderrLog          = "tmp/runner.stderr.log" // Used as stderr drain when shutting down.
 )
@@ -46,12 +48,42 @@ var (
 
 func init() {
 	modules.RegisterChild(SampleWorldCommand, "desc", sampleWorld)
+	modules.RegisterChild(RunMTCommand, "", runMT)
 	flag.BoolVar(&runSample, "runSample", false, "if true, runs sample services")
 	flag.BoolVar(&serveHTTP, "serveHTTP", false, "if true, serves HTTP")
 	flag.StringVar(&portHTTP, "portHTTP", "9001", "default 9001, the port to serve HTTP on")
 	flag.StringVar(&rootHTTP, "rootHTTP", ".", "default '.', the root HTTP folder path")
 	flag.BoolVar(&runTests, "runTests", false, "if true, runs the namespace browser tests")
 	flag.BoolVar(&runTestsWatch, "runTestsWatch", false, "if true && runTests, runs the tests in watch mode")
+}
+
+func runMT(stdin io.Reader, stdout, stderr io.Writer, env map[string]string, args ...string) error {
+	ctx, shutdown := v23.Init()
+	defer shutdown()
+
+	lspec := v23.GetListenSpec(ctx)
+	server, err := v23.NewServer(ctx, options.ServesMountTable(true))
+	if err != nil {
+		return fmt.Errorf("root failed: %v", err)
+	}
+	mp := args[0]
+	mt, err := mounttable.NewMountTableDispatcher("")
+	if err != nil {
+		return fmt.Errorf("mounttable.NewMountTableDispatcher failed: %s", err)
+	}
+	eps, err := server.Listen(lspec)
+	if err != nil {
+		return fmt.Errorf("server.Listen failed: %s", err)
+	}
+	if err := server.ServeDispatcher(mp, mt); err != nil {
+		return fmt.Errorf("root failed: %s", err)
+	}
+	fmt.Fprintf(stdout, "PID=%d\n", os.Getpid())
+	for _, ep := range eps {
+		fmt.Fprintf(stdout, "MT_NAME=%s\n", ep.Name())
+	}
+	modules.WaitForEOF(stdin)
+	return nil
 }
 
 // Helper function to simply print an error and then exit.
@@ -203,7 +235,7 @@ func run() bool {
 
 	// Run the host mounttable.
 	rootName := fmt.Sprintf("%s-home", strings.TrimSpace(string(hostName))) // Must trim; hostname has \n at the end.
-	hRoot, err := sh.Start(core.MTCommand, nil, "--veyron.tcp.protocol=wsh", fmt.Sprintf("--veyron.tcp.address=%s:%d", host, port), rootName)
+	hRoot, err := sh.Start(RunMTCommand, nil, "--veyron.tcp.protocol=wsh", fmt.Sprintf("--veyron.tcp.address=%s:%d", host, port), rootName)
 	exitOnError(err, "Failed to start root mount table")
 	exitOnError(updateVars(hRoot, vars, "MT_NAME"), "Failed to get MT_NAME")
 	defer hRoot.Shutdown(outFile, errFile)
@@ -213,13 +245,13 @@ func run() bool {
 	v23.GetNamespace(ctx).SetRoots(vars["MT_NAME"])
 
 	// Run the cottage mounttable at host/cottage.
-	hCottage, err := sh.Start(core.MTCommand, nil, "--veyron.tcp.protocol=wsh", fmt.Sprintf("--veyron.tcp.address=%s:%d", host, cottagePort), "cottage")
+	hCottage, err := sh.Start(RunMTCommand, nil, "--veyron.tcp.protocol=wsh", fmt.Sprintf("--veyron.tcp.address=%s:%d", host, cottagePort), "cottage")
 	exitOnError(err, "Failed to start cottage mount table")
 	expect.NewSession(nil, hCottage.Stdout(), 30*time.Second)
 	defer hCottage.Shutdown(outFile, errFile)
 
 	// run the house mounttable at host/house.
-	hHouse, err := sh.Start(core.MTCommand, nil, "--veyron.tcp.protocol=wsh", fmt.Sprintf("--veyron.tcp.address=%s:%d", host, housePort), "house")
+	hHouse, err := sh.Start(RunMTCommand, nil, "--veyron.tcp.protocol=wsh", fmt.Sprintf("--veyron.tcp.address=%s:%d", host, housePort), "house")
 	exitOnError(err, "Failed to start house mount table")
 	expect.NewSession(nil, hHouse.Stdout(), 30*time.Second)
 	defer hHouse.Shutdown(outFile, errFile)
