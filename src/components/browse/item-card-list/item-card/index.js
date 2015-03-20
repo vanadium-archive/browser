@@ -58,7 +58,7 @@ function render(item, browseState, browseEvents, navEvents, showShortName,
     (item.itemType === ItemTypes.inaccessible ? '.grayed-out' : '');
 
   var cardLabel = (showShortName ? item.mountedName : item.objectName) ||
-    '<root>';
+    '<Home>';
 
   var hoverAction;
   if (hoverActionInfo) {

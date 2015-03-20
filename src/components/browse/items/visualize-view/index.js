@@ -31,6 +31,7 @@ var SELECTED_COLOR = '#E65100';  // color of selected node
 var ZOOM_INC = 0.06;  // zoom factor per animation frame
 var PAN_INC = 3;  //  pan per animation frame
 var ROT_INC = 0.5;  // rotation per animation frame
+var RELATIVE_ROOT = '<Home>';
 
 var networkElem;  // DOM element for visualization
 
@@ -63,12 +64,9 @@ var KEY_RETURN = 13;    // (expand tree)
 var KEY_HOME = 36;      // (center root)
 var KEY_END = 35;       // (center selection)
 
-function create() {
-  // console.log('create');
-}
+function create() { }
 
 function render(itemsState, browseState, browseEvents, navEvents) {
-  // console.log('render');
   insertCss(css);
 
   // handle changed selection
@@ -159,7 +157,6 @@ function render(itemsState, browseState, browseEvents, navEvents) {
 
 // Constructor for mercury widget for d3 element
 function D3Widget(browseState, browseEvents) {
-  // console.log('new D3Widget');
   this.browseState = browseState;
   this.browseEvents = browseEvents;
 }
@@ -167,8 +164,6 @@ function D3Widget(browseState, browseEvents) {
 D3Widget.prototype.type = 'Widget';
 
 D3Widget.prototype.init = function() {
-  // console.log('D3Widget.init');
-
   if (!networkElem) {
     networkElem = document.createElement('div');
     networkElem.className = 'network';
@@ -193,47 +188,61 @@ D3Widget.prototype.init = function() {
 var previousNamespace;
 
 D3Widget.prototype.update = function(prev, networkElem) {
-  // console.log('D3Widget.update', this);
   this.updateRoot();
-  updateD3(root, true);
 };
 
 // build new data tree
 D3Widget.prototype.updateRoot = function() {
   var rootNodeId = this.browseState.namespace;
-  // console.log('D3Widget.updateRoot');
 
-  if (width !== networkElem.offsetWidth) {
-    resize();
-  }
+  // check to see if window was resized while we were away
+  if (width !== networkElem.offsetWidth) { resize(); }
 
   if (previousNamespace === rootNodeId) { return; }
   previousNamespace = rootNodeId;
 
-  // Add the initial node
-  var basename = namespaceService.util.basename(rootNodeId);
+  // parse root id
+  var parts = namespaceService.util.parseName(rootNodeId);
 
-  root = rootIndex[rootNodeId];
-  if (!root) {  // create new and put in index
-    rootIndex[rootNodeId] = root = {
-      id: rootNodeId,
-      name: basename || '<root>',
-      status: ItemTypes.loading,
-      expandable: true,
-      icon: { title: 'Mount Table' }
-    };
-  }
+  var isRooted = namespaceService.util.isRooted(rootNodeId);
+  var buildId = '';
+  if (!isRooted) { parts.unshift(''); } // create <Home> node
+
+  var parent; // used to connect each new node to their parent
+
+  parts.forEach(function(v) {
+    buildId += (buildId.length > 0 || isRooted ? '/' : '') + v;
+    var nn = rootIndex[buildId] || {};
+    var isNew = (nn.id === undefined);
+    nn.id = buildId;
+    nn.name = v || RELATIVE_ROOT;
+    nn.expandable = true;
+    nn.icon = { title: 'unknown' };
+    if (parent !== undefined) {
+      nn.parent = parent;
+      if (parent.children === undefined && parent._children === undefined) {
+        parent._children = [nn];  // initially hidden
+      }
+    }
+    if (isNew) {
+      rootIndex[buildId] = nn;
+    }
+    parent = nn;
+  });
+
+  root = parent;
+  root.status = ItemTypes.loading;
+
   loadSubItems(root); // load the children
   loadItem(root); // load rest of information for this node
   if (selNode === undefined) {
     selectNode(root);
   }
-  updateD3(root, true);
+  updateD3(root, true); // always animate
 };
 
 // initialize d3 HTML elements
 function initD3() {
-  // console.log('initD3', networkElem.offsetWidth);
 
   // size of the diagram
   width = networkElem.offsetWidth;
@@ -289,8 +298,6 @@ function initD3() {
 // subroot - source node of the update
 // doAni - whether to do a transition animation
 function updateD3(subroot, doAni) {
-  // console.log('updateD3', subroot, doAni);
-
   // length of d3 animation
   var duration = (d3.event && d3.event.altKey ? DURATION * 4 : DURATION);
 
@@ -454,15 +461,15 @@ function mergeNode(item, parent) {
   var nn = rootIndex[item.objectName] || {};
   var isNew = nn.id === undefined; // not found in rootIndex
   nn.id = item.objectName;
-  nn.name = item.mountedName;
+  nn.name = item.mountedName || RELATIVE_ROOT;
   nn.parent = parent || nn.parent;
   nn.expandable = item.isGlobbable;
   nn.status = item.itemType;
   nn.error = item.itemError;
   nn.icon = getServiceIcon(item);
-  if (parent === undefined) { // hack to set correct type!
-    nn.icon.title = 'Mount Table';
-  }
+  // if (parent === undefined) { // hack to set correct type!
+  //   nn.icon.title = 'Mount Table';
+  // }
   if (isNew && parent !== undefined) { // insert node in proper place
     rootIndex[nn.id] = nn;
     if (parent.children === undefined) {
@@ -479,7 +486,7 @@ function loadItem(node) { // load a single item (used for root of tree)
     mercury.watch(observable, updateItem);
 
     function updateItem(item) { // currently only gets called once (no updates)
-      updateD3(node, mergeNode(item, undefined));
+      updateD3(node, mergeNode(item, node.parent));
     }
   });
 }
@@ -487,7 +494,6 @@ function loadItem(node) { // load a single item (used for root of tree)
 // load children items asynchronously
 function loadSubItems(node) {
   if (node.subNodesLoaded) { return; }
-  // console.log('loadSubItems', node);
   var namespace = node.id;
   if (node._children) {
     node.children = node._children;
@@ -566,7 +572,7 @@ function toggle(d) {
   if (d.children) {
     d._children = d.children;
     d.children = null;
-  } else if (d._children) {
+  } else if (d._children && d.subNodesLoaded) {
     d.children = d._children;
     d._children = null;
   } else {
@@ -574,30 +580,14 @@ function toggle(d) {
   }
 }
 
-// function toggleTree(d) {
-//   if (d.children) {
-//     collapseTree(d);
-//   } else {
-//     expandTree(d);
-//     loadSubItems(d);
-//   }
-// }
-
-// function expand(d) {
-//   if (d._children) {
-//     d.children = d._children;
-//     d._children = null;
-//   }
-// }
-
-function collapse(d) {
+function collapse(d) {  // collapse one level
   if (d.children) {
     d._children = d.children;
     d.children = null;
   }
 }
 
-// expand all children, whether expanded or collapsed
+// expand all loaded children and descendents
 function expandTree(d) {
   if (d._children) {
     d.children = d._children;
@@ -607,17 +597,6 @@ function expandTree(d) {
     d.children.forEach(expandTree);
   }
 }
-
-// // collapse all children
-// function collapseTree(d) {
-//   if (d.children) {
-//     d._children = d.children;
-//     d.children = null;
-//   }
-//   if (d._children) {
-//     d._children.forEach(collapseTree);
-//   }
-// }
 
 // expand one level of tree using breadth first search
 function expand1Level(d) {
@@ -684,7 +663,6 @@ function reduceZ(z) {
 //
 
 function resize() { // window resize
-  // console.log('resize', networkElem.offsetWidth);
   if (networkElem.offsetWidth === 0) { return; }
   var oldwidth = width;
   var oldheight = height;
@@ -821,7 +799,6 @@ function hideContextMenu() {
 //   with "break", so the key can be saved, and actionUp can stop the action.
 // * Click actions mostly happen on keydown, like toggling children.
 function actionDown(key, shift, alt) {
-  // console.log('actionDown', key, shift, alt);
   var parch; // parent's children
   var slow = alt ? 0.25 : 1;
   if (keysdown.indexOf(key) >= 0) { return; } // defeat auto repeat

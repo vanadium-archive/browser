@@ -10,6 +10,7 @@ var sortedPush = require('../../lib/mercury/sorted-push-array');
 var log = require('../../lib/log')('services:namespace:service');
 var ItemTypes = require('./item-types');
 var namespaceUtil = vanadium.naming.util;
+namespaceUtil.parseName = parseName;
 
 module.exports = {
   getChildren: getChildren,
@@ -485,4 +486,26 @@ function createUnknownServiceTypeInfo() {
     typeName: 'Service',
     description: null
   });
+}
+
+/*
+ * Given an arbitrary Vanadium name, parses it into an array
+ * of strings.
+ * For example, if name is "/ns.dev.v.io:8101/global/rps"
+ * returns ["ns.dev.v.io:8101", "global", "rps"]
+ * Can use namespaceService.util.isRooted to see if the name
+ * is rooted (begins with a slash).
+ * Note that the address part can contain slashes.
+ */
+function parseName(name) {
+  var splitName = namespaceUtil.splitAddressName(name);
+  var namespaceParts = [];
+  if (splitName.address) {
+    namespaceParts.push(splitName.address);
+  }
+  if (splitName.suffix) {
+    var suffixParts = splitName.suffix.split('/');
+    namespaceParts = namespaceParts.concat(suffixParts);
+  }
+  return namespaceParts;
 }

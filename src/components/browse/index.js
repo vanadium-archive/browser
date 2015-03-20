@@ -607,15 +607,7 @@ function renderBreadcrumbs(browseState, navEvents) {
   }
 
   var isRooted = namespaceService.util.isRooted(browseState.namespace);
-  var splitName = namespaceService.util.splitAddressName(browseState.namespace);
-  var namespaceParts = [];
-  if (splitName.address) {
-    namespaceParts.push(splitName.address);
-  }
-  if (splitName.suffix) {
-    var suffixParts = splitName.suffix.split('/');
-    namespaceParts = namespaceParts.concat(suffixParts);
-  }
+  var namespaceParts = namespaceService.util.parseName(browseState.namespace);
   var breadCrumbs = [];
   if (!isRooted) {
     // Add a relative root (empty namespace)
@@ -629,7 +621,7 @@ function renderBreadcrumbs(browseState, navEvents) {
         'ev-click': mercury.event(navEvents.navigate, {
           path: rootUrl
         })
-      }, 'Home')
+      }, '<Home>')
     ]));
   }
 

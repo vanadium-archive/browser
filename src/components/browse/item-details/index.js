@@ -167,7 +167,7 @@ function render(state, events, browseState, navEvents) {
  */
 function renderTabTitles(state, events) {
   // Details tab
-  var detailsTabTitle = (namespaceUtil.basename(state.itemName) || '<root>');
+  var detailsTabTitle = (namespaceUtil.basename(state.itemName) || '<Home>');
   var detailsTab =
     renderTabTitle(state, events, DETAILS_TAB_KEY, detailsTabTitle);
 
@@ -318,7 +318,7 @@ function renderActions(state, events, browseState, navEvents) {
     var browseUpUrl = browseRoute.createUrl(browseState, {
       namespace: parent
     });
-    var parentName = parent || '<root>';
+    var parentName = parent || '<Home>';
     var browseUpTitle = 'Browse up to ' + parentName;
     var browseUpAction = h('core-tooltip', {
         attributes: {
@@ -349,7 +349,7 @@ function renderActions(state, events, browseState, navEvents) {
     var browseUrl = browseRoute.createUrl(browseState, {
       namespace: state.itemName
     });
-    var itemName = state.itemName || '<root>';
+    var itemName = state.itemName || '<Home>';
     var browseTitle = 'Browse into ' + itemName;
     var browseAction = h('core-tooltip', {
         attributes: {
@@ -386,7 +386,7 @@ function renderHeaderContent(state, events, browseState, navEvents) {
   var actions = renderActions(state, events, browseState, navEvents);
   var headerItems = [
     actions,
-    renderFieldItem('Full Name', (state.itemName || '<root>')),
+    renderFieldItem('Full Name', (state.itemName || '<Home>')),
   ];
   return headerItems;
 }

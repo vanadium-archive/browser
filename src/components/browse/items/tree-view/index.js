@@ -101,7 +101,7 @@ function createTreeNode(state, selected, item, extraprops) {
   var iconInfo = getServiceIcon(item);
   var props = {
     attributes: {
-      label: item.mountedName || '<root>',
+      label: item.mountedName || '<Home>',
       icon: iconInfo.icon,
       itemTitle: iconInfo.title,
       open: !!state.expandedMap[item.objectName],
