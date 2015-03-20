@@ -592,6 +592,7 @@ function renderSearch(browseState, navEvents) {
 
 /*
  * Renders the current name being browsed, split into parts.
+ * Starts at the top of the name and goes all the way to the selected item.
  * Each name part is a link to a parent.
  */
 function renderBreadcrumbs(browseState, navEvents) {
@@ -606,8 +607,9 @@ function renderBreadcrumbs(browseState, navEvents) {
     });
   }
 
-  var isRooted = namespaceService.util.isRooted(browseState.namespace);
-  var namespaceParts = namespaceService.util.parseName(browseState.namespace);
+  var name = browseState.selectedItemName || browseState.namespace;
+  var isRooted = namespaceService.util.isRooted(name);
+  var namespaceParts = namespaceService.util.parseName(name);
   var breadCrumbs = [];
   if (!isRooted) {
     // Add a relative root (empty namespace)
