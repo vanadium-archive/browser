@@ -35,7 +35,7 @@ module.exports.renderHeader = renderHeader;
 var NAMESPACE_AUTOCOMPLETE_MAX_ITEMS = 5;
 
 /*
- * Browse component provides user interfaces for browsing the Veyron namespace
+ * Browse component provides user interfaces for browsing the Vanadium namespace
  */
 function create() {
   loadLearners();
@@ -47,13 +47,13 @@ function create() {
 
   var state = mercury.varhash({
     /*
-     * Veyron namespace being displayed and queried
+     * Vanadium namespace being displayed and queried
      * @type {string}
      */
     namespace: mercury.value(''),
 
     /*
-     * Glob query applied to the Veyron namespace
+     * Glob query applied to the Vanadium namespace
      * @type {string}
      */
     globQuery: mercury.value(''),
@@ -136,7 +136,7 @@ function create() {
 
   var events = mercury.input([
     /*
-     * Indicates a request to browse the Veyron namespace
+     * Indicates a request to browse the Vanadium namespace
      * Data of form:
      * {
      *   namespace: '/namespace-root:8881/name/space',

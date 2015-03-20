@@ -3,8 +3,8 @@ module.exports = getServiceIcon;
 var ItemTypes = require('../../services/namespace/item-types');
 
 var serviceIconMap = Object.freeze({
-  'veyron-mounttable': 'dns',
-  'veyron-unknown': 'cloud-queue'
+  'vanadium-mounttable': 'dns',
+  'vanadium-unknown': 'cloud-queue'
 });
 
 /*

@@ -467,7 +467,7 @@ function assertIsImmutable(t, observable) {
  */
 function assertUnknownServiceTypeInfo(t, item) {
   var typeInfo = item.serverInfo.typeInfo;
-  t.equal(typeInfo.key, 'veyron-unknown',
+  t.equal(typeInfo.key, 'vanadium-unknown',
     item.mountedName + ': unknown type info has the right key');
 
   t.equal(typeInfo.typeName, 'Service',
@@ -482,7 +482,7 @@ function assertUnknownServiceTypeInfo(t, item) {
  */
 function assertMounttableServiceTypeInfo(t, item) {
     var typeInfo = item.serverInfo.typeInfo;
-    t.equal(typeInfo.key, 'veyron-mounttable',
+    t.equal(typeInfo.key, 'vanadium-mounttable',
       item.mountedName + ': mounttable type info has the right key');
 
     t.equal(typeInfo.typeName, 'Mount Table',

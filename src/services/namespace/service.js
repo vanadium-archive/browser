@@ -469,7 +469,7 @@ function getServerTypeInfo(mountEntry) {
   var isMounttable = mountEntry.servesMountTable;
   if (isMounttable) {
     return itemFactory.createServerTypeInfo({
-      key: 'veyron-mounttable',
+      key: 'vanadium-mounttable',
       typeName: 'Mount Table',
       description: 'Mount table service allows registration ' +
         'and resolution of object names.'
@@ -481,7 +481,7 @@ function getServerTypeInfo(mountEntry) {
 
 function createUnknownServiceTypeInfo() {
   return itemFactory.createServerTypeInfo({
-    key: 'veyron-unknown',
+    key: 'vanadium-unknown',
     typeName: 'Service',
     description: null
   });
