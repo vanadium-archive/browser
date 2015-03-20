@@ -35,12 +35,12 @@ var state = mercury.struct({
   }),
 
   /*
-   * Veyron Namespace Browsing related state
+   * Vanadium Namespace Browsing related state
    */
   browse: browseComponent.state,
 
   /*
-   * Veyron Namespace Help related state
+   * Vanadium Namespace Help related state
    */
   help: helpComponent.state,
 
@@ -80,12 +80,12 @@ var events = mercury.input([
   'navigation',
 
   /*
-   * Veyron Namespace Browsing related events
+   * Vanadium Namespace Browsing related events
    */
   'browse',
 
   /*
-   * Veyron Namespace Help related events
+   * Vanadium Namespace Help related events
    */
   'help',
 

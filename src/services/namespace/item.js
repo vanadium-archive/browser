@@ -59,8 +59,8 @@ function createServerInfo(obj) {
  * would have information such as a key, human readable name and description for
  * the type of server.
  *
- * @param {string} obj.key Unique key for the type. e.g. 'veyron-unknown',
- * 'veyron-mounttable', 'etc'.
+ * @param {string} obj.key Unique key for the type. e.g. 'vanadium-unknown',
+ * 'vanadium-mounttable', 'etc'.
  * @param {string} [obj.typeName] Human friendly name for the service type. e.g
  * 'Service', 'Mount Table', 'Storage'
  * @param {string} [obj.description] Human friendly description of server type.

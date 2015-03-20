@@ -7,7 +7,7 @@ var store = require('../lib/store');
 var log = require('../lib/log')('routes:browse');
 
 module.exports = function(routes) {
-  // Url pattern: /browse/veyronNameSpace?glob=*&viewType=grid
+  // Url pattern: /browse/vanadiumNameSpace?glob=*&viewType=grid
   routes.addRoute('/browse/:namespace?', handleBrowseRoute);
 };
 

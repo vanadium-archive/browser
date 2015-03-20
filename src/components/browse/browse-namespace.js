@@ -16,7 +16,7 @@ var previousNamespace;
  * Updates the necessary states when browseNamespace is triggered
  * Data is of the form
  * {
- *   namespace: '/veyron/name/space',
+ *   namespace: '/vanadium/name/space',
  *   globQuery: '*',
  * }
  */

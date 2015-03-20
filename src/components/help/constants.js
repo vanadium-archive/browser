@@ -1,7 +1,7 @@
 var helpRoute = require('../../routes/help');
 
 var tabKeys = Object.freeze({
-  MAIN: 'main',       // Describes the Veyron Browser to new users.
+  MAIN: 'main',       // Describes the Vanadium Browser to new users.
   DETAILS: 'details', // Defines service information and icons.
   BROWSE: 'browse',   // Introduces how to browse the namespace.
   METHODS: 'methods', // Explains how to make RPCs.
