@@ -19,6 +19,7 @@
   position: absolute;
   top: 5px;
   left: 10px;
+  width: 92px;
 }
 
 paper-fab.zoom, paper-fab.rotate, paper-fab.expand, paper-fab.menubutton
@@ -26,11 +27,6 @@ paper-fab.zoom, paper-fab.rotate, paper-fab.expand, paper-fab.menubutton
   background-color: var(--color-white);
   margin: 5px 3px;
 }
-/*paper-fab.selected {
-  background-color: #6B0E9C;
-  color: var(--color-white);
-}*/
-
 
 paper-shadow.contextmenu {
   display: none;

@@ -131,7 +131,9 @@ function render(itemsState, browseState, browseEvents, navEvents) {
       })
     ] ),
     h('paper-shadow.contextmenu', { // context menu
-          attributes: { z: 3 }  // height above background
+          attributes: {
+            z: 3  // height above background
+          }
       }, [  // context menu
         h('paper-item',
             { 'ev-mouseup': menu.bind(undefined, KEY_SPACE, false) },
@@ -287,7 +289,6 @@ function initD3() {
     on('wheel', wheel).  // zoom, rotate
     on('keydown', keydown).
     on('keyup', keyup).
-    // on('mouseup', hideContextMenu).
     on('mouseover', function() {
       networkElem.focus();
     });
@@ -780,13 +781,19 @@ function showContextMenu(d) {
     top: (d3.event.offsetY + 8) + 'px',
     display: 'block'
   });
-  d3.select(document).on('mouseup', hideContextMenu, true);
+  var doc = d3.select(document);
+  doc.on('mousedown.cm', hideContextMenu, true);
+  setTimeout(function() {
+    doc.on('mouseup.cm', hideContextMenu, true);
+  }, 500);
   selectNode(d);
 }
 
 function hideContextMenu() {
+  var doc = d3.select(document);
   d3.select('.contextmenu').style('display', 'none');
-  d3.select(document).on('mouseup', null);
+  doc.on('mouseup.cm', null);
+  doc.on('mousedown.cm', null);
 }
 
 
