@@ -295,7 +295,7 @@ func run() bool {
 		os.Setenv("NAMESPACE_ROOT", vars["MT_NAME"])
 		os.Setenv("PROXY_ADDR", vars["PROXY_NAME"])
 		os.Setenv("IDENTITYD", fmt.Sprintf("%s/google", vars["TEST_IDENTITYD_NAME"]))
-		os.Setenv("IDENTITYD_BLESSING_URL", fmt.Sprintf("%s/blessing-root", vars["TEST_IDENTITYD_HTTP_ADDR"]))
+		os.Setenv("IDENTITYD_BLESSING_URL", fmt.Sprintf("%s/auth/blessing-root", vars["TEST_IDENTITYD_HTTP_ADDR"]))
 		os.Setenv("DEBUG", "false")
 
 		testsOk := runProva()
