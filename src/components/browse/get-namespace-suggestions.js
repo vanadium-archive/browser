@@ -1,3 +1,7 @@
+// Copyright 2015 The Vanadium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
 var log = require('../../lib/log')('components:browse:browse-children');
 var namespaceService = require('../../services/namespace/service');
 

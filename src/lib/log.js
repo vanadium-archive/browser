@@ -1,3 +1,7 @@
+// Copyright 2015 The Vanadium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
 /*
  * DeLogger wraps the popular debug (github.com/visionmedia/debug) module and
  * adds error and warning levels on top of debug.
