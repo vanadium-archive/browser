@@ -5,10 +5,13 @@
 @import "common-style/theme.css";
 @import "common-style/sizes.css";
 
-.account-name {
+.user-icon {
   position: absolute;
-  right: var(--size-space-small);
-  top: var(--size-space-xxsmall);
-  color: var(--color-text-primary-invert);
-  font-size: var(--size-font-xxsmall);
+  right: var(--size-space-xsmall);
+  top: var(--size-space-normal);
+  color: var(--color-white);
+}
+
+.user-account {
+  font-size: var(--size-font-xlarge);
 }

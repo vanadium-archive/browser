@@ -66,6 +66,7 @@
 
 .breadcrumbs {
   margin: 0px;
+  margin-left: var(--size-space-small) !important;
   padding: 0px;
   display: flex;
   align-items: flex-start;
@@ -109,7 +110,8 @@
   background: var(--color-grey-very-light);
   font-size: var(--size-font-xsmall);
   padding: 0 var(--size-space-xsmall);
-  margin-left: var(--size-space-xlarge) !important;
+  margin-left: var(--size-space-large) !important;
+  margin-right: var(--size-space-xxlarge) !important;
   border-radius: 1px;
 }
 

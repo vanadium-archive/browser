@@ -39,12 +39,20 @@ function create() {
 function render(state) {
   insertCss(css);
 
-  return h('core-tooltip.account-name', {
+  return h('core-tooltip.user-icon', {
       attributes: {
-        'label': 'You are logged in as:',
-        'position': 'bottom'
+        tipAttribute: 'usertip',
+        position: 'left'
       }
-    },
-    h('span', state.accountName)
+    }, [
+      h('div', {
+          attributes: { 'usertip': true }
+        },
+        h('span.user-account', 'Account name: ' + state.accountName)
+      ),
+      h('core-icon', {
+        icon: 'account-box'
+      })
+    ]
   );
 }
