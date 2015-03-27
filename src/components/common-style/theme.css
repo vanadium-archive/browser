@@ -93,7 +93,7 @@
   --color-ok: #388E3C;
 
   /* Blueish color used to indicate neutral information */
-  --color-info: #0277BD;
+  --color-info: var(--color-button-primary);
 
   /* hover color for menus, like context menus */
   --color-menu-hover: rgba(236, 239, 241, 0.8);

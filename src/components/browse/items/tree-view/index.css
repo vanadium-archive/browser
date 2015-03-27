@@ -26,5 +26,6 @@ tree-node::shadow .itemicon {
 
 #tree-container {
   margin-top: var(--size-space-normal);
+  margin-bottom: var(--size-space-normal);
   margin-left: -var(--size-space-xsmall);
 }

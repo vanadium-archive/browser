@@ -214,7 +214,7 @@ paper-autocomplete.autocomplete paper-item {
 paper-icon-button.selected,
 paper-icon-button.selected:focus,
 paper-icon-button.selected:hover {
-  background-color: var(--color-bright);
+  background-color: var(--color-button-primary);
   color: var(--color-white);
   box-shadow: var(--shadow-all-around);
   border-radius: 999px; /* Any square with sufficiently rounded corner is indistinguishable from a circle */
@@ -226,8 +226,8 @@ paper-icon-button.selected:hover {
   left: -18px;
   top: 2px;
   transform: scale(0.6);
-  background-color: var(--color-bright);
-  color: var(--color-white);
+  background-color: var(--color-button-secondary);
+  color: var(--color-button-secondary-text);
 }
 
 .resize-handle {
