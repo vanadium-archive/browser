@@ -23,7 +23,7 @@ for Vanadium for more information.
 In order to build your own copy of Viz, simply run:
 
 ```sh
-cd $VANADIUM_ROOT/release/projects/namespace_browser
+cd $VANADIUM_ROOT/release/projects/browser
 make build
 ```
 

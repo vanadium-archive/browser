@@ -13,9 +13,9 @@
 # see http://stackoverflow.com/questions/21708839/problems-setting-path-in-makefile for details.
 ##
 
-export GOPATH:=$(VANADIUM_ROOT)/release/projects/namespace_browser/go
-export VDLPATH:=$(VANADIUM_ROOT)/release/projects/namespace_browser/go
-export GOBIN:=$(VANADIUM_ROOT)/release/projects/namespace_browser/go/bin
+export GOPATH:=$(VANADIUM_ROOT)/release/projects/browser/go
+export VDLPATH:=$(VANADIUM_ROOT)/release/projects/browser/go
+export GOBIN:=$(VANADIUM_ROOT)/release/projects/browser/go/bin
 
 PATH:=$(VANADIUM_ROOT)/environment/cout/node/bin:$(PATH)
 PATH:=node_modules/.bin:$(GOBIN):$(PATH)
@@ -109,7 +109,7 @@ build: directories public/bundle.js public/bundle.html
 # Run unit and integration tests.
 test: all
 	:;jshint test # lint all test JavaScript files.
-	:;./go/bin/runner -v=3 -log_dir=$(VANADIUM_ROOT)/release/projects/namespace_browser/tmp/log -runSample=true -runTests=true -alsologtostderr=false
+	:;./go/bin/runner -v=3 -log_dir=$(VANADIUM_ROOT)/release/projects/browser/tmp/log -runSample=true -runTests=true -alsologtostderr=false
 
 # Continuously watch for changes to .js, .html or .css files.
 # Rebundles the appropriate bundles when local files change.
@@ -120,12 +120,12 @@ watch:
 # Continuously reruns the tests as they change.
 watch-test: NOMINIFY=true
 watch-test: go/bin
-	:;./go/bin/runner -v=3 -log_dir=$(VANADIUM_ROOT)/release/projects/namespace_browser/tmp/log -runSample=true -runTests=true -runTestsWatch=true -alsologtostderr=false
+	:;./go/bin/runner -v=3 -log_dir=$(VANADIUM_ROOT)/release/projects/browser/tmp/log -runSample=true -runTests=true -runTestsWatch=true -alsologtostderr=false
 
 # Serves the needed daemons and starts a server at http://localhost:9000
 # CTRL-C to stop
 start: all go/bin
-	:;./go/bin/runner -runSample=true -serveHTTP=true -portHTTP=9001 -rootHTTP=$(VANADIUM_ROOT)/release/projects/namespace_browser/public/ -alsologtostderr=false
+	:;./go/bin/runner -runSample=true -serveHTTP=true -portHTTP=9001 -rootHTTP=$(VANADIUM_ROOT)/release/projects/browser/public/ -alsologtostderr=false
 
 # Create needed directories like TMPDIR.
 directories:
