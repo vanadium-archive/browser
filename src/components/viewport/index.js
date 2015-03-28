@@ -121,7 +121,7 @@ function render(state, events) {
  */
 function renderSideToolbar(state, events) {
   return h('core-toolbar.toolbar', [
-    h('h1.title', 'Viz Vanadium Viewer')
+    h('h1.title', 'Vanadium Namespace Browser')
   ]);
 }
 

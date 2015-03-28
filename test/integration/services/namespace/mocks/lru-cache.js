@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// Mocking the LRU cache used by Viz so we can test caching logic
+// Mocking the LRU cache so we can test caching logic
 module.exports = {
   cache: {},
   getCallHits: {},

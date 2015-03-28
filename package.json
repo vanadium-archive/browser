@@ -1,6 +1,6 @@
 {
-  "name": "viz-vanadium-viewer",
-  "description": "Viz is a browser for Vanadium namespaces.",
+  "name": "vanadium-namespace-browser",
+  "description": "A browser for Vanadium namespaces.",
   "version": "0.0.1",
   "private": true,
   "devDependencies": {

@@ -1,7 +1,7 @@
 /*
  * ItemPlugin is an external, pluggable UI widget that can extend the
  * functionality of the details view which is displayed when user selects an
- * item in the Vanadium Viewer.
+ * item in the Vanadium Namespace Browser.
  */
 var itemPlugin = {
 

@@ -241,7 +241,7 @@ function loadLearners() {
 }
 
 /*
- * Renders the top bar of Viz where the user can specify a namespace root.
+ * Renders the top bar, where the user can specify a namespace root.
  */
 function renderHeader(browseState, browseEvents, navEvents) {
   return h('div.header-content', [
@@ -269,7 +269,7 @@ function renderSidePanelToggle(browseState, browseEvents) {
 }
 
 /*
- * Renders the main body of Viz.
+ * Renders the main body.
  * A toolbar is rendered on top of the mainView and sideView showing the current
  * position in the namespace as well as a globquery searchbox.
  * The mainView contains the shortcuts and names at this point in the namespace.

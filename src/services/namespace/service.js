@@ -46,7 +46,7 @@ function getRuntime() {
 }
 
 /*
- * Returns the accountName for the currently logged in user of Viz
+ * Returns the accountName for the currently logged in user
  * @return {Promise.<string>}
  */
 function getAccountName() {
