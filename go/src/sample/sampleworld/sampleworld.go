@@ -15,7 +15,7 @@ import (
 	"v.io/v23"
 	"v.io/v23/context"
 	"v.io/v23/security"
-	"v.io/v23/services/security/access"
+	"v.io/v23/security/access"
 	"v.io/x/ref/lib/signals"
 )
 
