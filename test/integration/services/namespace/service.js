@@ -16,10 +16,10 @@ var vanadiumConfigForTest = {
   '@noCallThru': true
 };
 
-// The NAMESPACE_ROOT environment variable is set by servicerunner in the "make
+// The V23_NAMESPACE environment variable is set by servicerunner in the "make
 // test" target.  That environment variable is picked up by the "envify" prova
-// transform and used to set process.env.NAMESPACE_ROOT.
-var globalRoot = process.env.NAMESPACE_ROOT;
+// transform and used to set process.env.V23_NAMESPACE.
+var globalRoot = process.env.V23_NAMESPACE;
 
 // Require namespaceService but using test specific mocks and configs
 var namespaceService =

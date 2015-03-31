@@ -24,7 +24,7 @@ import (
 	"v.io/v23"
 	"v.io/v23/options"
 
-	"v.io/x/ref/lib/flags/consts"
+	"v.io/x/ref/envvar"
 	"v.io/x/ref/lib/signals"
 	"v.io/x/ref/profiles"
 	identity "v.io/x/ref/services/identity/modules"
@@ -244,8 +244,8 @@ func run() bool {
 	exitOnError(updateVars(hRoot, vars, "MT_NAME"), "Failed to get MT_NAME")
 	defer hRoot.Shutdown(outFile, errFile)
 
-	// Set consts.NamespaceRootPrefix env var, consumed downstream.
-	sh.SetVar(consts.NamespaceRootPrefix, vars["MT_NAME"])
+	// Set envvar.NamespacePrefix env var, consumed downstream.
+	sh.SetVar(envvar.NamespacePrefix, vars["MT_NAME"])
 	v23.GetNamespace(ctx).SetRoots(vars["MT_NAME"])
 
 	// Run the cottage mounttable at host/cottage.
@@ -296,7 +296,7 @@ func run() bool {
 		defer hIdentityd.Shutdown(outFile, errFile)
 
 		// Setup a lot of environment variables; these are used for the tests and building the test extension.
-		os.Setenv("NAMESPACE_ROOT", vars["MT_NAME"])
+		os.Setenv(envvar.NamespacePrefix, vars["MT_NAME"])
 		os.Setenv("PROXY_ADDR", vars["PROXY_NAME"])
 		os.Setenv("IDENTITYD", fmt.Sprintf("%s/google", vars["TEST_IDENTITYD_NAME"]))
 		os.Setenv("IDENTITYD_BLESSING_URL", fmt.Sprintf("%s/auth/blessing-root", vars["TEST_IDENTITYD_HTTP_ADDR"]))
