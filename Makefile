@@ -60,7 +60,7 @@ default: build
 deploy-staging: build
 	git rev-parse --verify HEAD >> public/version
 	gcloud config set project vanadium-staging
-	gsutil -m rsync -d -r public gs://staging.namespace.v.io
+	gsutil -m rsync -d -r public gs://browser.staging.v.io
 
 # Creating the bundle JS file.
 public/bundle.js: $(SOURCE_FILES) node_modules
