@@ -6,9 +6,13 @@
 @import "common-style/sizes.css";
 
 .nav-item.core-selected {
-  color: var(--color-bright);
+  color: var(--color-secondary-800);
 }
 
 .nav-item {
   margin: var(--size-space-small);
+}
+
+.nav-item:hover, .nav-item:focus {
+  background-color: var(--color-menu-hover);
 }

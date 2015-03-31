@@ -26,8 +26,7 @@
   width: 92px;
 }
 
-paper-fab.zoom, paper-fab.rotate, paper-fab.expand, paper-fab.menubutton
- {
+.vismenu paper-fab {
   background-color: var(--color-white);
   margin: 5px 3px;
 }
@@ -49,7 +48,7 @@ paper-shadow.contextmenu paper-item div.ksc {
   right: 10px;
 }
 
-.contextmenu paper-item:hover {
+.contextmenu paper-item:hover, .contextmenu paper-item:focus {
   background-color: var(--color-menu-hover);
 }
 
@@ -69,7 +68,7 @@ paper-shadow.contextmenu paper-item div.ksc {
   text-shadow: 4px 4px 3px var(--color-white),
               -4px -4px 3px var(--color-white);
 }
-.node text:hover {
+.node text:hover, .node text:focus {
   font-size: var(--size-font-large);
   transition: font-size 0.1s;
 }

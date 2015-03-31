@@ -500,7 +500,7 @@ function renderViewActions(browseState, navEvents) {
         viewType: 'grid'
       }), selectedActionKey === 'grid'
     ),
-    createActionIcon('Radial view', 'image:grain',
+    createActionIcon('Radial view', 'image:filter-tilt-shift',
       browseRoute.createUrl(browseState, {
         viewType: 'visualize'
       }), selectedActionKey === 'visualize'

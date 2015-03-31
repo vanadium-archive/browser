@@ -86,11 +86,11 @@
 
 .breadcrumb-item a {
   display: inline-block;
-  color: var(--color-text-link);
+  color: var(--color-text-primary);
 }
 
 .breadcrumb-item a:hover, .breadcrumbs li a:focus {
-  color: var(--color-text-link-hover);
+  color: var(--color-secondary-800);
 }
 
 .breadcrumb-item:before
@@ -141,13 +141,8 @@
   margin:0 var(--size-space-xxsmall);
 }
 
-.icon-group paper-icon-button::shadow #ripple{
-  color: var(--color-bright);
-}
-
-.icon-group paper-icon-button:hover, .icon-group paper-icon-button:focus {
-  background: #eee;
-  border-radius: 50%;
+.icon-group paper-icon-button::shadow #ripple {
+  color: var(--color-secondary-800);
 }
 
 .search-box {
