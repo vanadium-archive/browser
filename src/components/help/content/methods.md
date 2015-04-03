@@ -1,4 +1,4 @@
-When you select an item in any of the Browse views (Grid, Tree, or Visualize),
+When you select an item in any of the Browse views (Tree, Grid, or Radial),
 details for that item appear in the right pane.
 
 Subtable
@@ -86,3 +86,4 @@ Mount Tables as Services
 
 A mount table is also a service. The methods for a mount table allow you
 to call methods on a mount table (e.g., to insert and delete items).
+<p>&nbsp;</p>

@@ -1,32 +1,12 @@
 In Browse mode, the left pane is used to browse the current namespace.
 
-There are three views for browsing: Grid, Tree, and Visualize.
+There are three views for browsing: Tree, Grid, and Radial.
 In any view, you can click on an item to show details in the right pane.
-
-Grid View
----------
-
-The Grid View is the default view.
-
-![Grid View](helpimg/grid.png)
-
-The breadcrumbs in the toolbar ("localhost:5167")
-shows the name of the parent of these items.
-
-This Grid View shows four items. Each item has an icon and a name:
-* The icon for house and cottage show that they are mount tables.
-* The icon for kitchen shows that it is a subtable
-(a folder in a mount table).
-* The icon for alarm shows that it is a service.
-
-If an item is a mount table or a subtable, then it can have children.
-If so, the item also has an action button on the right side to
-browse those children. Services (like alarm) do not have children.
 
 Tree View
 ---------
 
-The Tree View browses a namespace as a rooted tree:
+The Tree View browses a namespace as a hierarchy:
 
 ![Tree View](helpimg/tree.png)
 
@@ -50,6 +30,30 @@ Again, because a namespace is distributed,
 it may take a moment for all children to appear.
 Click on the widget to collapse the sub-tree.
 
+Grid View
+---------
+
+The Grid View show a set of items.
+It is the default view for Bookmarks and Recent.
+
+![Grid View](helpimg/grid.png)
+
+The breadcrumbs in the toolbar ("localhost:5167")
+shows the name of the parent of these items.
+
+This Grid View shows four items. Each item has an icon and a name:
+* The icon for house and cottage show that they are mount tables.
+* The icon for kitchen shows that it is a subtable
+(a folder in a mount table).
+* The icon for alarm shows that it is a service.
+
+Some items can have children. For example, mount tables can always
+have children, and other services can be written to allow children
+by extending the namespace.
+If an item can have children, the item  has an action button on the right
+side to browse those children.
+Conversely, some services (like alarm) do not have children.
+
 Radial View
 --------------
 
@@ -58,27 +62,39 @@ nodes and edges.
 
 ![Radial View](helpimg/visualize.png)
 
-You can select items to show details for that item (in the right pane).
+An item in the namespace is represented by a circular node.
+You can click on a node to select it,
+which shows details for that item in the right pane.
+If the circle has a solid center, then that item may have children.
+You can double-click on the node to expand the children.
 
-You can drag the entire visualization around with your mouse,
-or using the arrow keys on your keyboard.
-You can zoom the entire visualization using the action buttons in
-the upper left, using the "+" and "&minus;" keys on
-your keyboard, or using the scroll wheel on your mouse.
-You can rotate the entire visualization using the action buttons
-in the upper left, using the "Page Up" and "Page Down" keys
-on your keyboard, or by holding down the Shift key and using
-the scroll wheel on your mouse.
+You can interact with the visualization using the widget buttons,
+by right-clicking on a node to get a context menu,
+or using keyboard shortcuts:
 
-You can reset the view using the Home key on your keyboard,
-and you can center the currently selected item using the End
-key on your keyboard.
+<style>
+thead td { font-weight: bold; font-size: 1.1em; }
+td.big { font-size: 1.2em; }
+td:nth-child(1), td:nth-child(2), td:nth-child(3), td:nth-child(4) { text-align: center; }
+td:nth-child(5) { padding-left: 5px; }
+</style>
+<table>
+  <thead>
+    <tr><td>Widgets</td><td>Context menu</td><td>Keyboard shortcut</td><td>Other</td><td>Description</td></tr>
+  </thead>
+  <tr><td></td><td></td><td>Shift + arrow keys</td><td>click on node</td><td>select item</td></tr>
+  <tr><td></td><td></td><td>arrow keys</td><td>drag with mouse</td><td>move visualization</tr>
+  <tr><td class="big">+ &minus;</td><td></td><td>+ &minus;</td><td>mouse scrollwheel</td><td>zoom</td></tr>
+  <tr><td class="big">&#8634; &#8635;</td><td></td><td>PageUp PageDown</td><td>Shift + scrollwheel</td><td>rotate</td></tr>
+  <tr><td><img src="helpimg/unfold-more.png" style="border:none"></td><td>Load +1 Level</td><td>Return</td><td>Shift + double-click</td><td>load 1 additional level, from selection</tr>
+  <tr><td></td><td>Expand/Collapse</td><td>space bar</td><td>double-click</td><td>expand/collapse immediate children</tr>
+  <tr><td></td><td>Center Selected</td><td>End</td><td></td><td>center selected node</tr>
+  <tr><td></td><td>Center Root</td><td>Home</td><td></td><td>reset rotate and zoom</td></tr>
+  <tr><td></td><td>Show Loaded</td><td>Shift + Return</td><td></td><td>show all loaded children</tr>
+  <tr><td></td><td>Browse Into</td><td>/</td><td>breadcrumbs</td><td>change root to selection</tr>
+</table>
 
-The last action button loads an entire level of items, starting
-from the currently selected item. You can also do this using
-the Return key on your keyboard.
-
-You can right click on any item to see a context menu for that item.
-This menu allows you to expand or collapse the children of an item.
-It also allows you to show all items that have already been loaded,
-and make the currently selected node be the root of the visualization.
+<br/>
+For example, click on the <img src="helpimg/unfold-more.png" style="border:none">
+widget to see additional levels in the namespace.
+<p>&nbsp;</p>

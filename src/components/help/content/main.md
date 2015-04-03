@@ -1,8 +1,6 @@
-Introduction
-------------
-
-The namespace browser is a tool to browse and interact with Vanadium services.
-See the [Vanadium documentation](http://staging.v.io) for more information.
+The namespace browser is a tool to browse Vanadium namespaces
+and interact with Vanadium services.
+See the [Vanadium documentation](http://v.io) for more information.
 
 Mount Tables
 ------------
@@ -12,10 +10,10 @@ distributed pointers to other services (including other mount tables).
 Each item in a mount table can be one of three things:
 * a distributed pointer to another mount table
 * a distributed pointer to a Vanadium service (other than a mount table)
-* a subtable (a subgroup of items in a mount table)
+* a local pointer to a subtable (a subgroup of items in a mount table)
 
-<br />Subtables are used to group items together, like directories in a
-file system on a computer.
+<br />Subtables are used to group items together,
+like directories in a file system on a computer.
 A mount table can contain an arbitrary number of subtables.
 
 Namespaces
@@ -24,7 +22,8 @@ Namespaces
 An interconnected set of mount tables forms a Vanadium *namespace*.
 
 Vanadium uses namespaces to find things (services), somewhat like how the WWW
-uses URLs to find things (web pages).
+uses URLs to find things (web pages), except that namespaces find services,
+are distributed, and can define relative names.
 
 Names
 -----
@@ -63,7 +62,7 @@ so they would access their own messages.
 Identity
 --------
 
-In Vanadium, mount tables (and thus names) are secure.
+In Vanadium, mount tables (and thus names) are by default secure.
 What names are accessible to a user depend on the identity of the user, and
 the services (including mount tables) to which the user has been given access.
 
@@ -80,3 +79,4 @@ including the different views provided by the namespace browser.
 how to invoke methods.
 
 * [FAQ](#/help/faq) – answers to frequently asked questions.
+<p>&nbsp;</p>
