@@ -6,40 +6,39 @@
 @import "common-style/theme.css";
 @import "common-style/card.css";
 
-.field {
-  font-size: var(--size-font-small);
-  margin-bottom: var(--size-space-small);
-}
-
-.field.collapsed {
-  border-bottom: var(--border);
-}
-
-.field .header h4 {
-  margin: 0;
-  color: var(--color-text-secondary);
-  flex: 1;
-}
-
-.field .header {
-  display: flex;
-  flex-direction: row;
-}
-
-.field .content {
-  white-space: normal;
-  word-break: break-word;
-}
-
 paper-icon-button.bookmarked {
   color: var(--color-bright);
 }
 
 .item-actions {
   margin: var(--size-space-xxsmall) -var(--size-space-xsmall);
-  margin-top: -var(--size-space-xxsmall);
-  padding: var(--size-space-xxsmall) 0;
+  display: inline-block;
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  padding: var(--size-space-xsmall);
+}
+
+.sidebar-header .name-title {
+  display: inline-block;
+  padding: var(--size-space-small) 75px;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.sidebar-header {
+  box-shadow: var(--shadow-bottom);
+  text-align: center;
+  background-color: var(--color-secondary-800);
   border-bottom: var(--border);
+}
+
+.sidebar-header .name-title, .sidebar-header paper-icon-button {
+  color: var(--color-white);
+}
+
+.padded-error-box {
+  padding: var(--size-space-normal);
 }
 
 .method-input {
@@ -120,10 +119,4 @@ core-icon.error {
 
 core-icon.starred {
   color: var(--color-bright);
-}
-
-/* Chrome, Safari, Opera */
-@-webkit-keyframes myfirst {
-  0%   {background:cyan; width:0%;}
-  100% {background:cyan; width:100%;}
 }

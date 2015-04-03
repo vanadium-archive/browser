@@ -37,6 +37,7 @@
 .browse-details-sidebar::shadow #mainContainer {
   background-color: var(--color-grey-very-light);
   border-left: solid 1px var(--color-divider);
+  overflow-y: scroll;
 }
 
 .browse-main-wrapper paper-progress {
@@ -219,7 +220,7 @@ paper-icon-button.selected:hover {
   position: absolute;
   z-index: 2;
   left: -18px;
-  top: 2px;
+  top: 28px;
   transform: scale(0.6);
   background-color: var(--color-button-secondary);
   color: var(--color-button-secondary-text);

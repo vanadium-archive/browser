@@ -18,7 +18,7 @@ var bookmarksRoute = require('../../routes/bookmarks');
 var recommendationsRoute = require('../../routes/recommendations');
 
 var ItemDetails = require('./item-details/index');
-var Items = require('./items/index');
+var Views = require('./views/index');
 var Bookmarks = require('./bookmarks/index');
 var Recommendations = require('./recommendations/index');
 
@@ -47,7 +47,7 @@ function create() {
   var selectedItemDetails = new ItemDetails();
   var bookmarks = new Bookmarks();
   var recommendations = new Recommendations();
-  var items = new Items();
+  var views = new Views();
 
   var state = mercury.varhash({
     /*
@@ -91,9 +91,9 @@ function create() {
     recommendations: recommendations.state,
 
     /*
-     * State of the items component
+     * State of the views component
      */
-    items: items.state,
+    views: views.state,
 
     /*
      * State of the selected item-details component
@@ -115,7 +115,7 @@ function create() {
      * Specifies what sub page is currently displayed.
      * One of: items, bookmarks, recommendations
      */
-    subPage: mercury.value('items'),
+    subPage: mercury.value('views'),
 
     /*
      * Whether the side panel is collapsed or expanded
@@ -151,9 +151,9 @@ function create() {
     'browseNamespace',
 
     /*
-     * Items to be shown in the current view.
+     * View components events.
      */
-    'items',
+    'views',
 
     /*
      * Indicates a request to obtain the direct descendants of the given name.
@@ -205,7 +205,7 @@ function create() {
 
   wireUpEvents(state, events);
   events.selectedItemDetails = selectedItemDetails.events;
-  events.items = items.events;
+  events.views = views.events;
   selectedItemDetails.events.toast = events.toast;
 
   return {
@@ -292,8 +292,8 @@ function render(browseState, browseEvents, navEvents) {
 
   var mainView;
   switch (browseState.subPage) {
-    case 'items':
-      mainView = Items.render(browseState.items, browseEvents.items,
+    case 'views':
+      mainView = Views.render(browseState.views, browseEvents.views,
         browseState, browseEvents, navEvents);
       break;
     case 'bookmarks':
@@ -485,8 +485,8 @@ function createActionIcon(tooltip, icon, href, isSelected) {
 function renderViewActions(browseState, navEvents) {
 
   var selectedActionKey = browseState.subPage;
-  if (browseState.subPage === 'items') {
-    selectedActionKey = browseState.items.viewType;
+  if (browseState.subPage === 'views') {
+    selectedActionKey = browseState.views.viewType;
   }
 
   var switchGroup = h('div.icon-group', [
@@ -602,7 +602,7 @@ function renderSearch(browseState, navEvents) {
 function renderBreadcrumbs(browseState, navEvents) {
 
   // only render the breadcrumbs for items and not bookmarks/recommendations
-  if (browseState.subPage !== 'items') {
+  if (browseState.subPage !== 'views') {
     // use a flex div to leave white-space inplace of breadcrumbs
     return h('div', {
       attributes: {

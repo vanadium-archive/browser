@@ -1,0 +1,31 @@
+/* Copyright 2015 The Vanadium Authors. All rights reserved. */
+/* Use of this source code is governed by a BSD-style */
+/* license that can be found in the LICENSE file. */
+
+@import "common-style/sizes.css";
+@import "common-style/theme.css";
+
+.field {
+  font-size: var(--size-font-small);
+  margin-bottom: var(--size-space-small);
+}
+
+.field.collapsed {
+  border-bottom: var(--border);
+}
+
+.field .header h4 {
+  margin: 0;
+  color: var(--color-text-secondary);
+  flex: 1;
+}
+
+.field .header {
+  display: flex;
+  flex-direction: row;
+}
+
+.field .content {
+  white-space: normal;
+  word-break: break-word;
+}

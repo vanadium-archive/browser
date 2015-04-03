@@ -7,7 +7,6 @@ var mercury = require('mercury');
 var _ = require('lodash');
 var proxyquire = require('proxyquireify')(require);
 var mockLRUCache = require('./mocks/lru-cache');
-var ItemTypes = require('../../../../src/services/namespace/item-types');
 
 // @noCallThru ensures this completely overrdies the original config
 // instead of inheriting the properties that are not defined here from
@@ -52,8 +51,8 @@ test('getChildren of default namespace root', function(t) {
     assertServer(t, item, {
       name: 'cottage',
       objectName: 'cottage',
-      isGlobbable: true,
-      type: 'mounttable'
+      isLeaf: false,
+      isMounttable: true
     });
   }
 
@@ -61,8 +60,8 @@ test('getChildren of default namespace root', function(t) {
     assertServer(t, item, {
       name: 'house',
       objectName: 'house',
-      isGlobbable: true,
-      type: 'mounttable'
+      isLeaf: false,
+      isMounttable: true
     });
   }
 });
@@ -89,8 +88,7 @@ test('getChildren of cottage/lawn', function(t) {
     assertServer(t, item, {
       name: 'master-sprinkler',
       objectName: 'cottage/lawn/master-sprinkler',
-      isGlobbable: false,
-      type: 'unknown'
+      isLeaf: true
     });
   }
 
@@ -124,8 +122,7 @@ test('getChildren of rooted ' + globalRoot + '/house/kitchen', function(t) {
     assertServer(t, item, {
       name: 'lights',
       objectName: globalRoot + '/house/kitchen/lights',
-      isGlobbable: false,
-      type: 'unknown'
+      isLeaf: true
     });
   }
 
@@ -133,8 +130,7 @@ test('getChildren of rooted ' + globalRoot + '/house/kitchen', function(t) {
     assertServer(t, item, {
       name: 'smoke-detector',
       objectName: globalRoot + '/house/kitchen/smoke-detector',
-      isGlobbable: false,
-      type: 'unknown'
+      isLeaf: true
     });
   }
 });
@@ -166,8 +162,7 @@ test('getChildren of rooted ' + hostPortRoot + '/kitchen', function(t) {
     assertServer(t, item, {
       name: 'lights',
       objectName: hostPortRoot + '/kitchen/lights',
-      isGlobbable: false,
-      type: 'unknown'
+      isLeaf: true
     });
   }
 
@@ -175,42 +170,10 @@ test('getChildren of rooted ' + hostPortRoot + '/kitchen', function(t) {
     assertServer(t, item, {
       name: 'smoke-detector',
       objectName: hostPortRoot + '/kitchen/smoke-detector',
-      isGlobbable: false,
-      type: 'unknown'
+      isLeaf: true
     });
   }
 });
-
-test('getChildren of' + globalRoot + '/house/master-bedroom/personal' +
-  ' - all inaccessible nodes',
-  function(t) {
-    namespaceService.getChildren(globalRoot + '/house/master-bedroom/personal').
-    then(function assertResult(result) {
-      assertIsImmutable(t, result);
-      // Wait until we finish, we expect inaccessible toothbrush and hairbrush
-      result.events.on('end', function validate() {
-        mercury.watch(result, function(children) {
-          children.sort();
-
-          var hairbrush = children[0];
-          assertMountedName(t, hairbrush, 'hairbrush');
-          assertIsInaccessible(t, hairbrush);
-          assertIsNotGlobbable(t, hairbrush);
-
-          var toothbrush = children[1];
-          assertMountedName(t, toothbrush, 'toothbrush');
-          assertIsInaccessible(t, toothbrush);
-          assertIsNotGlobbable(t, toothbrush);
-
-          t.end();
-        });
-      });
-      result.events.on('globError', function(error) {
-        t.notOk(error, 'did not expect any globs errors');
-        t.end();
-      });
-    }).catch(t.end);
-  });
 
 test('getChildren of non-existing mounttable', function(t) {
   // TODO(aghassemi) why does namespace library return empty results instead of
@@ -239,8 +202,7 @@ test('getNamespaceItem of leaf server', function(t) {
     assertServer(t, item, {
       name: 'master-sprinkler',
       objectName: 'cottage/lawn/master-sprinkler',
-      isGlobbable: false,
-      type: 'unknown'
+      isLeaf: true
     });
     t.end();
   }).catch(t.end);
@@ -267,8 +229,8 @@ test('getNamespaceItem of mounttable leaf server', function(t) {
     assertServer(t, item, {
       name: 'cottage',
       objectName: 'cottage',
-      isGlobbable: true,
-      type: 'mounttable'
+      isLeaf: false,
+      isMounttable: true
     });
     t.end();
   }).catch(t.end);
@@ -317,13 +279,6 @@ test('getSignature uses caching', function(t) {
     t.end();
   }).catch(t.end);
 });
-
-//TODO(aghassemi)
-//Tests for:
-// Recursive glob
-// Glob with some keyword
-// Ensuring array is updated when nodes get mounted and unmounted (when we use
-// watchGlob)
 
 // Make RPC: good inputs => no error
 var okRPCs = {
@@ -399,42 +354,20 @@ function assertServer(t, item, vals) {
   assertMountedName(t, item, vals.name);
   assertObjectName(t, item, vals.objectName);
   assertIsServer(t, item);
-  assertIsAccessible(t, item);
-  if (vals.isGlobbable === true) {
-    assertIsGlobbable(t, item);
-  } else if (vals.isGlobbable === false) {
-    assertIsNotGlobbable(t, item);
+  if (vals.isLeaf === true) {
+    assertIsLeaf(t, item);
+  } else if (vals.isLeaf === false) {
+    assertIsNotLeaf(t, item);
   }
 
-  if (vals.type === 'unknown') {
-    assertUnknownServiceTypeInfo(t, item);
-  } else if (vals.type === 'mounttable') {
-    assertMounttableServiceTypeInfo(t, item);
-  } else {
-    t.fail('Unknown type: ' + vals.type);
-  }
+  t.equals(!!item.isMounttable, !!vals.isMounttable, ': is a mounttable');
 }
 
 function assertSubtableName(t, item, vals) {
   assertMountedName(t, item, vals.name);
   assertObjectName(t, item, vals.objectName);
-  assertIsGlobbable(t, item);
-  assertIsAccessible(t, item);
-  t.equal(item.itemType, ItemTypes.subtable, item.mountedName +
-    ': is subtable node');
-}
-
-function assertIsAccessible(t, item) {
-  t.notEqual(item.itemType, ItemTypes.inaccessible, item.mountedName +
-    ': is accessible');
-  t.notOk(item.itemError, item.mountedName + ': has no item errors');
-}
-
-function assertIsInaccessible(t, item) {
-  t.equal(item.itemType, ItemTypes.inaccessible, item.mountedName +
-    ': is inaccessible');
-  t.ok(typeof item.itemError === 'string',
-    item.mountedName + ': has item error');
+  assertIsNotLeaf(t, item);
+  t.ok(item.hasMountPoint, ': is subtable node');
 }
 
 function assertMountedName(t, item, val) {
@@ -448,18 +381,15 @@ function assertObjectName(t, item, val) {
 }
 
 function assertIsServer(t, item) {
-  t.equal(item.itemType, ItemTypes.server, item.mountedName + ': is a server');
-  t.ok(item.serverInfo, item.mountedName + ': has server info');
-  t.ok(item.serverInfo.endpoints.length > 0, item.mountedName +
-    ': has at least 1 endpoint');
+  t.ok(item.hasServer, ': is a server');
 }
 
-function assertIsGlobbable(t, item) {
-  t.equal(item.isGlobbable, true, item.mountedName + ': is globbable');
+function assertIsLeaf(t, item) {
+  t.equal(item.isLeaf, true, item.mountedName + ': is leaf');
 }
 
-function assertIsNotGlobbable(t, item) {
-  t.equal(item.isGlobbable, false, item.mountedName + ': is not globbable');
+function assertIsNotLeaf(t, item) {
+  t.equal(item.isLeaf, false, item.mountedName + ': is not leaf');
 }
 
 function assertIsImmutable(t, observable) {
@@ -467,37 +397,8 @@ function assertIsImmutable(t, observable) {
 }
 
 /*
- * Asserts that a ServiceTypeInfo is of predefined type of Unknown Service.
+ * Runs a test to ensure the makeRPC call terminates without error.
  */
-function assertUnknownServiceTypeInfo(t, item) {
-  var typeInfo = item.serverInfo.typeInfo;
-  t.equal(typeInfo.key, 'vanadium-unknown',
-    item.mountedName + ': unknown type info has the right key');
-
-  t.equal(typeInfo.typeName, 'Service',
-    item.mountedName + ': unknown type info has the type name');
-
-  t.equal(typeInfo.description, null,
-    item.mountedName + ': unknown type info does not have description');
-}
-
-/*
- * Asserts that a ServiceTypeInfo is of predefined type of mounttable.
- */
-function assertMounttableServiceTypeInfo(t, item) {
-    var typeInfo = item.serverInfo.typeInfo;
-    t.equal(typeInfo.key, 'vanadium-mounttable',
-      item.mountedName + ': mounttable type info has the right key');
-
-    t.equal(typeInfo.typeName, 'Mount Table',
-      item.mountedName + ': mounttable type info has the type name');
-
-    t.ok(typeInfo.description,
-      item.mountedName + ': mounttable type info has a description');
-  }
-  /*
-   * Runs a test to ensure the makeRPC call terminates without error.
-   */
 function testMakeRPCNoError(args, t) {
   namespaceService.makeRPC.apply(null, args).then(function(result) {
     t.pass('completed without error');
@@ -519,3 +420,14 @@ function testMakeRPCHasError(args, t) {
     t.end();
   });
 }
+
+//TODO(aghassemi)
+//Tests for:
+// Recursive glob
+// Glob with some keyword
+// Ensuring array is updated when nodes get mounted and unmounted (when we use
+// watchGlob)
+// getEndpoints()
+// getPermissions()
+// resolveToMounttable()
+// getRemoteBlessings()

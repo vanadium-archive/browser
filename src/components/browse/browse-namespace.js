@@ -4,7 +4,7 @@
 
 var Bookmarks = require('./bookmarks/index.js');
 var Recommendations = require('./recommendations/index.js');
-var Items = require('./items/index.js');
+var Views = require('./views/index.js');
 
 var extendDefaults = require('../../lib/extend-defaults');
 var log = require('../../lib/log')('components:browse:browse-namespace');
@@ -28,13 +28,13 @@ function browseNamespace(browseState, browseEvents, data) {
   var defaults = {
     namespace: '',
     globQuery: '',
-    subPage: 'items',
+    subPage: 'views',
     viewType: 'tree'
   };
 
   data = extendDefaults(defaults, data);
 
-  if (!Items.trySetViewType(browseState.items, data.viewType)) {
+  if (!Views.trySetViewType(browseState.views, data.viewType)) {
     error404('Invalid view type: ' + data.viewType);
     return;
   }
@@ -56,8 +56,8 @@ function browseNamespace(browseState, browseEvents, data) {
   browseState.isFinishedLoadingItems.set(false);
 
   switch (subPage) {
-    case 'items':
-      Items.load(browseState.items, namespace, globQuery)
+    case 'views':
+      Views.load(browseState.views, namespace, globQuery)
         .then(loadingFinished)
         .catch(onError.bind(null, 'items'));
       break;

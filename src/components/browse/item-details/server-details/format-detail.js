@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-var log = require('../../../lib/log')(
+var log = require('../../../../lib/log')(
   'components:browse:item-details:format-detail');
 
 /*
@@ -11,10 +11,10 @@ var log = require('../../../lib/log')(
  * The default plugin should always be last.
  */
 var plugins = [
-  require('./plugins/empty.js'),
-  require('./plugins/error.js'),
-  require('./plugins/histogram.js'),
-  require('./plugins/default.js')
+  require('./output-plugins/empty.js'),
+  require('./output-plugins/error.js'),
+  require('./output-plugins/histogram.js'),
+  require('./output-plugins/default.js')
 ];
 
 module.exports = formatDetail;

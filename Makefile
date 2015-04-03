@@ -113,14 +113,12 @@ test: all
 
 # Continuously watch for changes to .js, .html or .css files.
 # Rebundles the appropriate bundles when local files change.
-watch: NOMINIFY=true
 watch:
-	watch -n 1 make build
+	NOMINIFY=true watch -n 1 make build
 
 # Continuously reruns the tests as they change.
-watch-test: NOMINIFY=true
 watch-test: go/bin
-	:;./go/bin/runner -v=3 -log_dir=$(VANADIUM_ROOT)/release/projects/browser/tmp/log -runSample=true -runTests=true -runTestsWatch=true -alsologtostderr=false
+	NOMINIFY=true ./go/bin/runner -v=3 -log_dir=$(VANADIUM_ROOT)/release/projects/browser/tmp/log -runSample=true -runTests=true -runTestsWatch=true -alsologtostderr=false
 
 # Serves the needed daemons and starts a server at http://localhost:9000
 # CTRL-C to stop

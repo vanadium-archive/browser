@@ -8,7 +8,6 @@ var d3 = require('d3');
 
 var namespaceService = require('../../../../services/namespace/service');
 var browseRoute = require('../../../../routes/browse');
-var ItemTypes = require('../../../../services/namespace/item-types');
 var getServiceIcon = require('../../get-service-icon');
 
 var log = require('../../../../lib/log'
@@ -237,7 +236,6 @@ D3Widget.prototype.updateRoot = function() {
   });
 
   root = parent;
-  root.status = ItemTypes.loading;
 
   loadSubItems(root); // load the children
   loadItem(root); // load rest of information for this node
@@ -468,9 +466,7 @@ function mergeNode(item, parent) {
   nn.id = item.objectName;
   nn.name = item.mountedName || RELATIVE_ROOT;
   nn.parent = parent || nn.parent;
-  nn.expandable = item.isGlobbable;
-  nn.status = item.itemType;
-  nn.error = item.itemError;
+  nn.expandable = !item.isLeaf;
   nn.icon = getServiceIcon(item);
   // if (parent === undefined) { // hack to set correct type!
   //   nn.icon.title = 'Mount Table';
@@ -487,7 +483,7 @@ function mergeNode(item, parent) {
 } // end mergeNode
 
 function loadItem(node) { // load a single item (used for root of tree)
-  namespaceService.getNamespaceItem(node.id). then(function(observable) {
+  namespaceService.getNamespaceItem(node.id).then(function(observable) {
     mercury.watch(observable, updateItem);
 
     function updateItem(item) { // currently only gets called once (no updates)

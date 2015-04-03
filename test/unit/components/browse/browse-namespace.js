@@ -17,7 +17,9 @@ var browseComponent = proxyquire('../../../../src/components/browse/index', {
 var mockItem = {
   mountedName: 'mockItem',
   objectName: 'foo/bar/mockItem',
-  isGlobbable: true
+  isLeaf: true,
+  hasServer: true,
+  hasMountPoint: true
 };
 
 var namespaceServiceMock = {

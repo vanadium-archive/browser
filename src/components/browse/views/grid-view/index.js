@@ -10,7 +10,7 @@ module.exports.render = render;
 
 function create() {}
 
-function render(itemsState, browseState, browseEvents, navEvents) {
+function render(viewsState, browseState, browseEvents, navEvents) {
   var isSearch = !!browseState.globQuery;
   var emptyText = (isSearch ? 'No glob search results' : 'No children');
   var title;
@@ -22,7 +22,7 @@ function render(itemsState, browseState, browseEvents, navEvents) {
   }
 
   return ItemCardList.render(
-    itemsState.items,
+    viewsState.items,
     browseState,
     browseEvents,
     navEvents, {

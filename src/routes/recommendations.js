@@ -21,6 +21,6 @@ function handleRecommendationRoute(state, events, params) {
   events.browse.browseNamespace({
     'namespace': state.browse.namespace(),
     'subPage': 'recommendations',
-    'viewType': state.browse.items.viewType()
+    'viewType': state.browse.views.viewType()
   });
 }

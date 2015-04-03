@@ -27,7 +27,6 @@ function bookmark(state, events, data) {
       bookmark: !data.bookmark
     });
 
-
     events.toast({
       text: toastText,
       action: undoAction,

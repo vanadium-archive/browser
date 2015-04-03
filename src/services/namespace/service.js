@@ -4,7 +4,6 @@
 
 var vanadium = require('vanadium');
 var mercury = require('mercury');
-var bluebirdPromise = require('bluebird');
 var LRU = require('lru-cache');
 var EventEmitter = require('events').EventEmitter;
 var vanadiumConfig = require('../../vanadium-config');
@@ -12,7 +11,6 @@ var itemFactory = require('./item');
 var freeze = require('../../lib/mercury/freeze');
 var sortedPush = require('../../lib/mercury/sorted-push-array');
 var log = require('../../lib/log')('services:namespace:service');
-var ItemTypes = require('./item-types');
 var namespaceUtil = vanadium.naming.util;
 namespaceUtil.parseName = parseName;
 
@@ -22,6 +20,9 @@ module.exports = {
   getRemoteBlessings: getRemoteBlessings,
   getSignature: getSignature,
   getAccountName: getAccountName,
+  getEndpoints: getEndpoints,
+  getPermissions: getPermissions,
+  resolveToMounttable: resolveToMounttable,
   makeRPC: makeRPC,
   search: search,
   util: namespaceUtil,
@@ -107,23 +108,16 @@ function glob(pattern) {
       var namespace = rt.namespace();
       return namespace.glob(ctx, pattern).stream;
     }).then(function updateResult(globStream) {
-      var itemPromises = [];
-
       globStream.on('data', function createItem(globResult) {
         // Create an item as glob results come in and add the item to result
-        var result = createNamespaceItem(globResult);
-        var item = result.item;
-        var onFinishPromise = result.onFinish;
+        var item = createNamespaceItem(globResult);
 
-        // TODO(aghassemi) namespace glob can return duplicate results, this
-        // temporary fix keeps the one that's a server. Is this correct?
-        // If a name can be more than one thing, UI needs change too.
         var existingItem = globItemsObservArr.filter(function(curItem) {
           return curItem().objectName === item().objectName;
         }).get(0);
         if (existingItem) {
-          // override the old one if new item is a server
-          if (item().itemType === ItemTypes.server) {
+          // override the old one if new item has server
+          if (item().hasServer) {
             var index = globItemsObservArr.indexOf(existingItem);
             globItemsObservArr.put(index, item);
           }
@@ -131,21 +125,11 @@ function glob(pattern) {
           var sorter = 'mountedName';
           sortedPush(globItemsObservArr, item, sorter);
         }
-
-        itemPromises.push(onFinishPromise);
       });
 
       globStream.on('end', function() {
-        var triggerEnd = function() {
-          immutableResult.events.emit('end');
-          immutableResult._hasEnded = true;
-        };
-
-        // Wait until all createItem promises return before triggering has ended
-        // We are using Bluebird's settle() since Promise.all won't work as
-        // it will get rejected as soon as one is rejected but we want to know
-        // when all have resolved/rejected which is what settle() does.
-        bluebirdPromise.settle(itemPromises).then(triggerEnd).catch(triggerEnd);
+        immutableResult.events.emit('end');
+        immutableResult._hasEnded = true;
       });
 
       globStream.on('error', function emitGlobErrorAndLog(err) {
@@ -172,7 +156,6 @@ function glob(pattern) {
  * as defined in @see item.js
  */
 function getNamespaceItem(objectName) {
-
   // Globbing the name itself would provide information about the name.
   return glob(objectName).then(function(resultsObs) {
     // Wait until the glob finishes before returning the item
@@ -182,9 +165,7 @@ function getNamespaceItem(objectName) {
         if (results.length === 0) {
           reject(new Error(objectName + ' Not Found'));
         } else {
-          var item = new mercury.value(results[0]);
-          var immutableItem = freeze(item);
-          resolve(immutableItem);
+          resolve(resultsObs.get(0));
         }
       });
     });
@@ -224,6 +205,56 @@ function search(parentName, pattern) {
 }
 
 /*
+ * Given a name, provide information about its mount point permissions.
+ * @param {string} objectName Object name to get permissions for.
+ * @return {Promise.<mercury.value<vanadium.security.Permissions>>} Promise of a
+ * vanadium.security.Permissions object.
+ */
+function getPermissions(name) {
+  return getRuntime().then(function(rt) {
+    var ctx = rt.getContext().withTimeout(RPC_TIMEOUT);
+    var ns = rt.namespace();
+    return ns.getPermissions(ctx, name);
+  }).then(function(results) {
+    // getPermissions return multiple results, permissions is at
+    // outArg position 0
+    return mercury.value(results[0]);
+  });
+}
+
+/*
+ * Given a name, provide information about its mounttable endpoint.
+ * @param {string} objectName Object name to get mounttable endpoint for.
+ * @return {Promise.<mercury.array<string>>} Promise of an array of endpoint
+ * strings.
+ */
+function resolveToMounttable(name) {
+  return getRuntime().then(function(rt) {
+    var ctx = rt.getContext().withTimeout(RPC_TIMEOUT);
+    var ns = rt.namespace();
+    return ns.resolveToMounttable(ctx, name);
+  }).then(function(endpoints) {
+    return mercury.array(endpoints);
+  });
+}
+
+/*
+ * Given a name, provide information about its endpoints.
+ * @param {string} objectName Object name to get endpoints for.
+ * @return {Promise.<mercury.array<string>>} Promise of an observable value an
+ * array of string endpoints
+ */
+function getEndpoints(name) {
+  return getRuntime().then(function resolve(rt) {
+    var resolveCtx = rt.getContext().withTimeout(RPC_TIMEOUT);
+    var ns = rt.namespace();
+    return ns.resolve(resolveCtx, name);
+  }).then(function(endpoints) {
+    return mercury.array(endpoints);
+  });
+}
+
+/*
  * remoteBlessingsCache holds (name, []string) cache entry for
  * REMOTE_BLESSINGS_CACHE_MAX_SIZE items in an LRU cache
  */
@@ -231,6 +262,7 @@ var REMOTE_BLESSINGS_CACHE_MAX_SIZE = 10000;
 var remoteBlessingsCache = new LRU({
   max: REMOTE_BLESSINGS_CACHE_MAX_SIZE
 });
+
 /*
  * Given an object name, returns a promise of the service's remote blessings.
  * @param {string} objectName Object name to get remote blessings for
@@ -314,12 +346,10 @@ function makeRPC(name, methodName, args) {
 /*
  * Creates an observable struct representing basic information about
  * an item in the namespace.
- * @param {string} name The full hierarchical object name of the item e.g.
- * "bar/baz/foo"
+ * @see item.js
  * @param {MountEntry} mountEntry The mount entry from glob results.
- * @param {Array<string>} List of server addresses this name points to, if any.
- * @return item: {mercury.struct} onFinish: {Promise<bool>} Promise indicating
- * we have loaded all the information including the async ones for the item.
+ * @return {Mercury.struct} observable struct representing basic information
+ * about an item.
  */
 function createNamespaceItem(mountEntry) {
 
@@ -327,169 +357,24 @@ function createNamespaceItem(mountEntry) {
 
   // mounted name relative to parent
   var mountedName = namespaceUtil.basename(name);
-  var servers = mountEntry.servers;
-
-  var itemType = ItemTypes.unknown;
-
-  // get server related information.
-  if (servers.length > 0) {
-    // NOTE: servers.length > 0 is not enough
-    // to know if something is a server or not we also have to call resolve()
-    // later to determine the itemType better as it could be that
-    // servers.length === 0 and yet the name is a server
-    itemType = ItemTypes.server;
-  }
-
-  // Also endpoints need to come from resolve() call and not servers[].
-  // See following bug report for details:
-  // https://github.com/veyron/release-issues/issues/1072 to track a proper fix
-  // TODO(aghassemi) make itemType and endpoints synchronous again if/when the
-  // issue above is fixed.
-  var serverInfo = getServerInfo(name, mountEntry);
+  var isLeaf = mountEntry.isLeaf;
+  var hasServer = mountEntry.servers.length > 0 ||
+    !mountEntry.servesMountTable;
+  var hasMountPoint = mountEntry.servers.length > 0 ||
+    mountEntry.servesMountTable;
+  var isMounttable = mountEntry.servers.length > 0 &&
+    mountEntry.servesMountTable;
 
   var item = itemFactory.createItem({
     objectName: name,
     mountedName: mountedName,
-    isGlobbable: false,
-    itemType: itemType,
-    serverInfo: serverInfo
+    isLeaf: isLeaf,
+    hasServer: hasServer,
+    hasMountPoint: hasMountPoint,
+    isMounttable: isMounttable
   });
 
-  // find out if the object referenced by name is globbable and accessible
-  // asynchronously and update the state when it comes back
-  var hasChildrenPromise = new Promise(function(resolve, reject) {
-    // glob for 'object/name/*', this will tell is if the name has any children
-    // also the errors can be used to detect if name is accessible or not.
-    //TODO(aghassemi) we no longer need to do this since glob tells us
-    //if something is globbable or not in the GlobError, switch to that
-    //See https://github.com/veyron/release-issues/issues/1307
-    getRuntime().then(function hasChildren(rt) {
-      var ctx = rt.getContext().withTimeout(RPC_TIMEOUT).withCancel();
-      var ns = rt.namespace();
-      var globStream = ns.glob(ctx, namespaceUtil.join(name, '*')).stream;
-      globStream.once('data', function createItem() {
-        // we have at least one child
-        item.isGlobbable.set(true);
-        ctx.cancel();
-        resolve();
-      });
-      globStream.once('error', function createItem(globResult) {
-
-        if (globResult.name === name &&
-          globResult.error instanceof vanadium.errors.NoServersError) {
-
-          item.itemType.set(ItemTypes.inaccessible);
-          item.itemError.set(globResult.toString());
-          ctx.cancel();
-          resolve();
-        }
-      });
-      globStream.once('end', function() {
-        resolve();
-      });
-    });
-  });
-
-  //TODO(aghassemi) current workaround for knowing if a name is a subtable
-  //service or not. See https://github.com/veyron/release-issues/issues/1072
-  var resolveNamePromise = getRuntime().then(function hasChildren(rt) {
-    var resolveCtx = rt.getContext().withTimeout(RPC_TIMEOUT);
-    var ns = rt.namespace();
-    return ns.resolve(resolveCtx, name).then(function(endpoints) {
-      // it resolved to an endpoint, type is a server
-      item.itemType.set(ItemTypes.server);
-      endpoints.forEach(function(ep) {
-        serverInfo.endpoints.push(ep);
-      });
-    }, function(err) {
-      if (err.id === 'v.io/v23/naming.nameDoesntExist') {
-        // we got nameDoesntExist error, it must be an subtable node.
-        item.itemType.set(ItemTypes.subtable);
-      } else {
-        // TODO(aghassemi) Glob probably should not return items if their parent
-        // is inaccessible. https://github.com/veyron/release-issues/issues/1161
-        // For now we inspect the error as a work-around.
-        item.itemType.set(ItemTypes.inaccessible);
-        item.itemError.set(err.toString());
-      }
-    });
-  });
-
-  // We are using .settle instead of .all because we don't want to resolve the
-  // onFinishPromise if one is rejected early.
-  var onFinishPromise = bluebirdPromise.settle(
-    [hasChildrenPromise, resolveNamePromise]
-  ).then(function(results) {
-    if (results[0].isRejected()) {
-      log.error('hasChildrenPromise failed in createNamespaceItem for ' +
-        name, results[0].reason());
-    }
-    if (results[1].isRejected()) {
-      log.error('resolveNamePromise failed in createNamespaceItem for ' +
-        name, results[1].reason());
-    }
-  });
-
-  return {
-    item: item,
-    onFinish: onFinishPromise
-  };
-}
-
-/*
- * Creates an observable struct representing information about a server such as
- * type information
- * @see item.js for details.
- * @param {string} objectName Object name to get serverInfo for.
- * @param {MountEntry} mountEntry mount entry to item to get serverInfo for.
- * @return {mercury.struct}
- */
-function getServerInfo(objectName, mountEntry) {
-  var typeInfo = getServerTypeInfo(mountEntry);
-  var serverInfo = itemFactory.createServerInfo({
-    typeInfo: typeInfo,
-    endpoints: mercury.array([])
-  });
-
-  return serverInfo;
-}
-
-/*
- * Creates an observable struct representing information about a server type.
- * For example if a server is known to be a mounttable or a store, the struct
- * would have information such as a key, human readable name and description for
- * the type of server.
- * @see item.js for details.
- * @param {MountEntry} mountEntry mount entry to get serverTypeInfo for.
- * @return {mercury.struct}
- */
-function getServerTypeInfo(mountEntry) {
-  // Currently we only support detecting mounttables which is
-  // based on a "MT" flag that comes from the Glob API. Mounttables are special
-  // in a sense that we fundamentally "know" they are a mounttable.
-  // Later when we extend the support for other services, we need to do
-  // either duck typing and have a special __meta route that provides metadata
-  // information about a service.
-
-  var isMounttable = mountEntry.servesMountTable;
-  if (isMounttable) {
-    return itemFactory.createServerTypeInfo({
-      key: 'vanadium-mounttable',
-      typeName: 'Mount Table',
-      description: 'Mount table service allows registration ' +
-        'and resolution of object names.'
-    });
-  } else {
-    return createUnknownServiceTypeInfo();
-  }
-}
-
-function createUnknownServiceTypeInfo() {
-  return itemFactory.createServerTypeInfo({
-    key: 'vanadium-unknown',
-    typeName: 'Service',
-    description: null
-  });
+  return item;
 }
 
 /*

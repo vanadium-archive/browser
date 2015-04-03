@@ -20,6 +20,6 @@ function handleBookmarksRoute(state, events, params) {
   events.browse.browseNamespace({
     'namespace': state.browse.namespace(),
     'subPage': 'bookmarks',
-    'viewType': state.browse.items.viewType()
+    'viewType': state.browse.views.viewType()
   });
 }

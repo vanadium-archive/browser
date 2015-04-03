@@ -4,11 +4,11 @@
 
 var formatDetail = require('./format-detail');
 
-var smartService = require('../../../services/smart/service');
+var smartService = require('../../../../services/smart/service');
 var getMethodData =
-  require('../../../services/namespace/interface-util').getMethodData;
+  require('../../../../services/namespace/interface-util').getMethodData;
 
-var log = require('../../../lib/log')(
+var log = require('../../../../lib/log')(
   'components:browse:item-details:method-end');
 
 var h = require('mercury').h;

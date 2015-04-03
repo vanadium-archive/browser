@@ -7,7 +7,6 @@ var insertCss = require('insert-css');
 var getServiceIcon = require('../../get-service-icon');
 
 var browseRoute = require('../../../../routes/browse');
-var ItemTypes = require('../../../../services/namespace/item-types');
 
 var css = require('./index.css');
 var h = mercury.h;
@@ -30,7 +29,7 @@ function render(item, browseState, browseEvents, navEvents, showShortName,
 
   // Prepare the drill if this item happens to be globbable.
   var expandAction = null;
-  if (item.isGlobbable) {
+  if (!item.isLeaf) {
     expandAction = h('a.drill', {
       'href': url,
       'ev-click': mercury.event(navEvents.navigate, {
@@ -57,9 +56,7 @@ function render(item, browseState, browseEvents, navEvents, showShortName,
   var iconNode = h('core-icon' + iconCssClass, iconAttributes);
 
   // Put the item card's pieces together.
-  var itemClassNames = 'item.card' +
-    (selected ? '.selected' : '') +
-    (item.itemType === ItemTypes.inaccessible ? '.grayed-out' : '');
+  var itemClassNames = 'item.card' + (selected ? '.selected' : '');
 
   var cardLabel = (showShortName ? item.mountedName : item.objectName) ||
     '<Home>';

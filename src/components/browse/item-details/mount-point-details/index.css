@@ -1,0 +1,15 @@
+/* Copyright 2015 The Vanadium Authors. All rights reserved. */
+/* Use of this source code is governed by a BSD-style */
+/* license that can be found in the LICENSE file. */
+
+@import "common-style/theme.css";
+@import "common-style/sizes.css";
+
+.permission-item .permission-name {
+  font-size: var(--size-font-small);
+}
+
+.permission-item .permission-in, .permission-item .permission-out {
+  color: var(--color-info);
+  padding-left: var(--size-space-xsmall);
+}
