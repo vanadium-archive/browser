@@ -239,7 +239,7 @@ func run() bool {
 
 	// Run the host mounttable.
 	rootName := fmt.Sprintf("%s-home", strings.TrimSpace(string(hostName))) // Must trim; hostname has \n at the end.
-	hRoot, err := sh.Start(RunMTCommand, nil, "--veyron.tcp.protocol=wsh", fmt.Sprintf("--veyron.tcp.address=%s:%d", host, port), rootName)
+	hRoot, err := sh.Start(RunMTCommand, nil, "--v23.tcp.protocol=wsh", fmt.Sprintf("--v23.tcp.address=%s:%d", host, port), rootName)
 	exitOnError(err, "Failed to start root mount table")
 	exitOnError(updateVars(hRoot, vars, "MT_NAME"), "Failed to get MT_NAME")
 	defer hRoot.Shutdown(outFile, errFile)
@@ -249,13 +249,13 @@ func run() bool {
 	v23.GetNamespace(ctx).SetRoots(vars["MT_NAME"])
 
 	// Run the cottage mounttable at host/cottage.
-	hCottage, err := sh.Start(RunMTCommand, nil, "--veyron.tcp.protocol=wsh", fmt.Sprintf("--veyron.tcp.address=%s:%d", host, cottagePort), "cottage")
+	hCottage, err := sh.Start(RunMTCommand, nil, "--v23.tcp.protocol=wsh", fmt.Sprintf("--v23.tcp.address=%s:%d", host, cottagePort), "cottage")
 	exitOnError(err, "Failed to start cottage mount table")
 	expect.NewSession(nil, hCottage.Stdout(), 30*time.Second)
 	defer hCottage.Shutdown(outFile, errFile)
 
 	// run the house mounttable at host/house.
-	hHouse, err := sh.Start(RunMTCommand, nil, "--veyron.tcp.protocol=wsh", fmt.Sprintf("--veyron.tcp.address=%s:%d", host, housePort), "house")
+	hHouse, err := sh.Start(RunMTCommand, nil, "--v23.tcp.protocol=wsh", fmt.Sprintf("--v23.tcp.address=%s:%d", host, housePort), "house")
 	exitOnError(err, "Failed to start house mount table")
 	expect.NewSession(nil, hHouse.Stdout(), 30*time.Second)
 	defer hHouse.Shutdown(outFile, errFile)
@@ -263,7 +263,7 @@ func run() bool {
 	// Possibly run the sample world.
 	if runSample {
 		fmt.Println("Running Sample World")
-		hSample, err := sh.Start(SampleWorldCommand, nil, "--veyron.tcp.protocol=wsh", fmt.Sprintf("--veyron.tcp.address=%s:0", host))
+		hSample, err := sh.Start(SampleWorldCommand, nil, "--v23.tcp.protocol=wsh", fmt.Sprintf("--v23.tcp.address=%s:0", host))
 		exitOnError(err, "Failed to start sample world")
 		expect.NewSession(nil, hSample.Stdout(), 30*time.Second)
 		defer hSample.Shutdown(outFile, errFile)
@@ -290,7 +290,7 @@ func run() bool {
 		defer proxyShutdown()
 		vars["PROXY_NAME"] = proxyEndpoint.Name()
 
-		hIdentityd, err := sh.Start(identity.TestIdentitydCommand, nil, "--veyron.tcp.protocol=wsh", "--veyron.tcp.address=:0", "--veyron.proxy=test/proxy", "--http-addr=localhost:0")
+		hIdentityd, err := sh.Start(identity.TestIdentitydCommand, nil, "--v23.tcp.protocol=wsh", "--v23.tcp.address=:0", "--v23.proxy=test/proxy", "--http-addr=localhost:0")
 		exitOnError(err, "Failed to start identityd")
 		exitOnError(updateVars(hIdentityd, vars, "TEST_IDENTITYD_NAME", "TEST_IDENTITYD_HTTP_ADDR"), "Failed to obtain identityd address")
 		defer hIdentityd.Shutdown(outFile, errFile)
