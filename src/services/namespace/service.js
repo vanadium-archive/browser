@@ -11,8 +11,8 @@ var itemFactory = require('./item');
 var freeze = require('../../lib/mercury/freeze');
 var sortedPush = require('../../lib/mercury/sorted-push-array');
 var log = require('../../lib/log')('services:namespace:service');
-var namespaceUtil = vanadium.naming.util;
-namespaceUtil.parseName = parseName;
+var naming = vanadium.naming;
+naming.parseName = parseName;
 
 module.exports = {
   getChildren: getChildren,
@@ -25,7 +25,7 @@ module.exports = {
   resolveToMounttable: resolveToMounttable,
   makeRPC: makeRPC,
   search: search,
-  util: namespaceUtil,
+  util: naming,
   initVanadium: getRuntime
 };
 
@@ -181,7 +181,7 @@ function getChildren(parentName) {
   parentName = parentName || '';
   var pattern = '*';
   if (parentName) {
-    pattern = namespaceUtil.join(parentName, pattern);
+    pattern = naming.join(parentName, pattern);
   }
   return glob(pattern);
 }
@@ -199,7 +199,7 @@ function getChildren(parentName) {
 function search(parentName, pattern) {
   parentName = parentName || '';
   if (parentName) {
-    pattern = namespaceUtil.join(parentName, pattern);
+    pattern = naming.join(parentName, pattern);
   }
   return glob(pattern);
 }
@@ -356,7 +356,7 @@ function createNamespaceItem(mountEntry) {
   var name = mountEntry.name;
 
   // mounted name relative to parent
-  var mountedName = namespaceUtil.basename(name);
+  var mountedName = naming.basename(name);
   var isLeaf = mountEntry.isLeaf;
   var hasServer = mountEntry.servers.length > 0 ||
     !mountEntry.servesMountTable;
@@ -387,7 +387,7 @@ function createNamespaceItem(mountEntry) {
  * Note that the address part can contain slashes.
  */
 function parseName(name) {
-  var splitName = namespaceUtil.splitAddressName(name);
+  var splitName = naming.splitAddressName(name);
   var namespaceParts = [];
   if (splitName.address) {
     namespaceParts.push(splitName.address);
