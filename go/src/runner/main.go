@@ -28,7 +28,7 @@ import (
 	"v.io/x/ref/lib/signals"
 	"v.io/x/ref/profiles"
 	identity "v.io/x/ref/services/identity/modules"
-	mounttable "v.io/x/ref/services/mounttable/lib"
+	"v.io/x/ref/services/mounttable/mounttablelib"
 	"v.io/x/ref/test/expect"
 	"v.io/x/ref/test/modules"
 )
@@ -71,9 +71,9 @@ func runMT(stdin io.Reader, stdout, stderr io.Writer, env map[string]string, arg
 		return fmt.Errorf("root failed: %v", err)
 	}
 	mp := args[0]
-	mt, err := mounttable.NewMountTableDispatcher("")
+	mt, err := mounttablelib.NewMountTableDispatcher("")
 	if err != nil {
-		return fmt.Errorf("mounttable.NewMountTableDispatcher failed: %s", err)
+		return fmt.Errorf("mounttablelib.NewMountTableDispatcher failed: %s", err)
 	}
 	eps, err := server.Listen(lspec)
 	if err != nil {
