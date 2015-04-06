@@ -37,7 +37,6 @@
 .browse-details-sidebar::shadow #mainContainer {
   background-color: var(--color-grey-very-light);
   border-left: solid 1px var(--color-divider);
-  overflow-y: scroll;
 }
 
 .browse-main-wrapper paper-progress {
