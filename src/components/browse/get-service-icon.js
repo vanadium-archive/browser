@@ -11,15 +11,15 @@ module.exports = getServiceIcon;
 function getServiceIcon(item) {
   var icon;
   var title;
-  if (item.isMounttable) {
-    icon = 'dns';
-    title = 'Mount Table Service';
-  } else if (item.hasServer) {
+  if (item.hasMountPoint && item.hasServer) {
     icon = 'cloud-queue';
+    title = 'MountPoint & Service';
+  } else if (item.hasServer) {
+    icon = 'social:circles';
     title = 'Service';
   } else {
-    icon = 'folder-open';
-    title = 'Sub Table';
+    icon = 'check-box-outline-blank';
+    title = 'MountPoint';
   }
 
   return {

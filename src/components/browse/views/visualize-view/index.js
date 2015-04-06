@@ -23,7 +23,7 @@ module.exports.render = render;
 // var MAX_AUTO_LOAD_DEPTH = 3;
 
 var DURATION = 500; // d3 animation duration
-var STAGGER = 10; // delay for each node
+var STAGGER = 5; // mS delay for each node
 var NODE_DIAMETER = 4; // diameter of circular nodes
 var MIN_ZOOM = 0.3; // minimum zoom allowed
 var MAX_ZOOM = 30;  // maximum zoom allowed
@@ -36,6 +36,7 @@ var PAN_INC = 3;  //  pan per animation frame
 var ROT_INC = 0.5;  // rotation per animation frame
 var RELATIVE_ROOT = '<Home>';
 
+var widget; // instance of D3Widget
 var networkElem;  // DOM element for visualization
 
 var selNode;  // currently selected node
@@ -78,8 +79,14 @@ function render(itemsState, browseState, browseEvents, navEvents) {
   browseInto.browseState = browseState;
   browseInto.navEvents = navEvents;
 
+  if (widget === undefined) {
+    widget = new D3Widget(browseState, browseEvents);
+  } else {
+    widget.update(browseState, browseEvents);
+  }
+
   return [
-    new D3Widget(browseState, browseEvents),
+    widget,
     h('div.vismenu', {  // visualization menu
     }, [
       h('paper-fab.zoom', {
@@ -149,10 +156,10 @@ function render(itemsState, browseState, browseEvents, navEvents) {
             [ h('div', 'Show Loaded'), h('div.ksc', '\u21E7 Return') ]),
         h('paper-item',
             { 'ev-mouseup': menu.bind(undefined, KEY_END, false) },
-            [ h('div', 'Center View Node'), h('div.ksc', 'End') ]),
+            [ h('div', 'Center Selected'), h('div.ksc', 'End') ]),
         h('paper-item',
             { 'ev-mouseup': menu.bind(undefined, KEY_HOME, false) },
-            [ h('div', 'Center View Root'), h('div.ksc', 'Home') ]),
+            [ h('div', 'Center Root'), h('div.ksc', 'Home') ]),
         h('paper-item',
             { 'ev-mouseup': menu.bind(undefined, KEY_SLASH, false) },
             [ h('div', 'Browse Into'), h('div.ksc', '/') ])
@@ -192,7 +199,13 @@ D3Widget.prototype.init = function() {
 // know when navigating to a different namespace happens.
 var previousNamespace;
 
-D3Widget.prototype.update = function(prev, networkElem) {
+D3Widget.prototype.update = function(browseState, browseEvents) {
+  this.browseState = browseState;
+  this.browseEvents = browseEvents;
+
+  // check to see if window was resized while we were away
+  if (width !== networkElem.offsetWidth) { resize(); }
+
   this.updateRoot();
 };
 
@@ -200,48 +213,50 @@ D3Widget.prototype.update = function(prev, networkElem) {
 D3Widget.prototype.updateRoot = function() {
   var rootNodeId = this.browseState.namespace;
 
-  // check to see if window was resized while we were away
-  if (width !== networkElem.offsetWidth) { resize(); }
+  if (previousNamespace !== rootNodeId) {
 
-  if (previousNamespace === rootNodeId) { return; }
-  previousNamespace = rootNodeId;
+    previousNamespace = rootNodeId;
 
-  // parse root id
-  var parts = namespaceService.util.parseName(rootNodeId);
+    // parse root id
+    var parts = namespaceService.util.parseName(rootNodeId);
 
-  var isRooted = namespaceService.util.isRooted(rootNodeId);
-  var buildId = '';
-  if (!isRooted) { parts.unshift(''); } // create <Home> node
+    var isRooted = namespaceService.util.isRooted(rootNodeId);
+    var buildId = '';
+    if (!isRooted) { parts.unshift(''); } // create <Home> node
 
-  var parent; // used to connect each new node to their parent
+    var parent; // used to connect each new node to their parent
 
-  parts.forEach(function(v) {
-    buildId += (buildId.length > 0 || isRooted ? '/' : '') + v;
-    var nn = rootIndex[buildId] || {};
-    var isNew = (nn.id === undefined);
-    nn.id = buildId;
-    nn.name = v || RELATIVE_ROOT;
-    nn.expandable = true;
-    nn.icon = { title: 'unknown' };
-    if (parent !== undefined) {
-      nn.parent = parent;
-      if (parent.children === undefined && parent._children === undefined) {
-        parent._children = [nn];  // initially hidden
+    parts.forEach(function(v) {
+      buildId += (buildId.length > 0 || isRooted ? '/' : '') + v;
+      var nn = rootIndex[buildId] || {};
+      var isNew = (nn.id === undefined);
+      nn.id = buildId;
+      nn.name = v || RELATIVE_ROOT;
+      nn.isLeaf = false;
+      // nn.hasServer
+      // nn.MountPoint
+      if (parent !== undefined) {
+        nn.parent = parent;
+        if (parent.children === undefined && parent._children === undefined) {
+          parent._children = [nn];  // initially hidden
+        }
       }
-    }
-    if (isNew) {
-      rootIndex[buildId] = nn;
-    }
-    parent = nn;
-  });
+      if (isNew) {
+        rootIndex[buildId] = nn;
+      }
+      parent = nn;
+    });
 
-  root = parent;
+    root = parent;  // new root
 
-  loadSubItems(root); // load the children
-  loadItem(root); // load rest of information for this node
-  if (selNode === undefined) {
-    selectNode(root);
+    if (selNode === undefined) {
+      selectNode(root);
+    }
+
+    loadItem(root); // load rest of information for this node
+    loadSubItems(root); // load the children
   }
+
   updateD3(root, true); // always animate
 };
 
@@ -329,14 +344,15 @@ function updateD3(subroot, doAni) {
     on('click', click).on('dblclick', dblclick).
     on('contextmenu', showContextMenu);
 
-  nodeEnter.append('title').
-      text(function(d) { return d.icon.title + ': ' + d.id; });
+  nodeEnter.append('title').text(function(d) {
+      return getServiceIcon(d).title;
+  });
 
   nodeEnter.append('circle').
     attr('r', 1e-6).
     style('fill', function(d) {
-      return d._children || d.expandable && !d.children ?
-          HAS_CHILDREN_COLOR : NO_CHILDREN_COLOR;
+      // only show children_color if the children are not shown
+      return d.isLeaf || d.children ? NO_CHILDREN_COLOR : HAS_CHILDREN_COLOR;
     });
 
   nodeEnter.append('text').
@@ -345,12 +361,9 @@ function updateD3(subroot, doAni) {
     }).
     style('opacity', 0.9).
     style('fill-opacity', 0).
-    attr('transform', function() {
-        return ((subroot.x + curR) % 360 <= 180 ?
-            'translate(8)scale(' :
-            'rotate(180)translate(-8)scale('
-          ) + reduceZ(curZ) + ')';
-    });
+    attr('transform', ((subroot.x + curR) % 360 <= 180 ?
+            'translate(8)scale(' : 'rotate(180)translate(-8)scale('
+          ) + reduceZ(curZ) + ')' );
 
   // update existing graph nodes
 
@@ -359,8 +372,7 @@ function updateD3(subroot, doAni) {
     attr('r', NODE_DIAMETER * reduceZ(curZ)).
     attr('class', function(d) { return d.loading ? 'loading' : ''; }).
     style('fill', function(d) {
-      return d._children || d.expandable && !d.children ?
-          HAS_CHILDREN_COLOR : NO_CHILDREN_COLOR;
+      return d.isLeaf || d.children ? NO_CHILDREN_COLOR : HAS_CHILDREN_COLOR;
     }).
     attr('stroke', function(d) {
         return d === selNode ? SELECTED_COLOR : CIRCLE_STROKE_COLOR;
@@ -369,18 +381,19 @@ function updateD3(subroot, doAni) {
         return d === selNode ? 3 : 1.5;
     });
 
-  gnode.select('title').
-      text(function(d) { return d.icon.title + ': ' + d.id; });
+  gnode.select('title').text(function(d) {
+      return getServiceIcon(d).title;
+  });
 
   gnode.select('text').
     attr('text-anchor', function(d) {
         return (d.x + curR) % 360 <= 180 ? 'start' : 'end';
     }).
     attr('transform', function(d) {
-        return ((d.x + curR) % 360 <= 180 ?
-            'translate(8)scale(' :
-            'rotate(180)translate(-8)scale('
-          ) + reduceZ(curZ) +')';
+      return ((d.x + curR) % 360 <= 180 ?
+          'translate(8)scale(' :
+          'rotate(180)translate(-8)scale('
+        ) + reduceZ(curZ) +')';
     }).
     attr('fill', function(d) {
         return d === selNode ? SELECTED_COLOR : 'black';
@@ -466,11 +479,9 @@ function mergeNode(item, parent) {
   nn.id = item.objectName;
   nn.name = item.mountedName || RELATIVE_ROOT;
   nn.parent = parent || nn.parent;
-  nn.expandable = !item.isLeaf;
-  nn.icon = getServiceIcon(item);
-  // if (parent === undefined) { // hack to set correct type!
-  //   nn.icon.title = 'Mount Table';
-  // }
+  nn.isLeaf = item.isLeaf;
+  nn.hasMountPoint = item.hasMountPoint;
+  nn.hasServer = item.hasServer;
   if (isNew && parent !== undefined) { // insert node in proper place
     rootIndex[nn.id] = nn;
     if (parent.children === undefined) {
@@ -487,7 +498,7 @@ function loadItem(node) { // load a single item (used for root of tree)
     mercury.watch(observable, updateItem);
 
     function updateItem(item) { // currently only gets called once (no updates)
-      updateD3(node, mergeNode(item, node.parent));
+      mergeNode(item, node.parent); // update elsewhere
     }
   });
 }
@@ -506,7 +517,7 @@ function loadSubItems(node) {
   namespaceService.getChildren(namespace).then(function(resultObservable) {
     var initialValues = resultObservable();
     initialValues.forEach(function(item) {
-        updateD3(node, mergeNode(item, node));
+        batchUpdate(node, mergeNode(item, node));
     });
     resultObservable.events.once('end', function() {
       showLoading(node, false); // node no longer loading
@@ -517,12 +528,32 @@ function loadSubItems(node) {
     function updatedValues(results) {
       // TODO(wmleler) support removed and updated nodes for watchGlob
       var item = results._diff[0][2]; // changed item from Mercury
-      updateD3(node, mergeNode(item, node));
-    } // end updatedValues
+      batchUpdate(node, mergeNode(item, node));
+    }
   }).catch(function(err) {
     log.error('glob failed', err);
   });
 } // end loadSubItems
+
+// batch up groups of updates to speed up transitions
+var batchNode = null;
+var batchId = null;
+
+function batchUpdate(node, doAni) {
+  if (node !== batchNode) {
+    if (batchNode !== null) { updateD3(batchNode, doAni); }
+    batchNode = node;
+    if (batchId !== null) {
+      clearTimeout(batchId);
+      batchId = null;
+    }
+  } else {
+    batchId = setTimeout(function() {
+      updateD3(batchNode, doAni);
+      batchId = null;
+    }, DURATION);
+  }
+}
 
 function selectNode(node) { // highlight node and show details
   if (node === selNode) { return; }
@@ -612,7 +643,7 @@ function expand1Level(d) {
       cn.children = cn._children;
       cn._children = null;
       cn.children.forEach(collapse);
-    } else if (cn.expandable && !cn.subNodesLoaded) {
+    } else if (!(cn.isLeaf || cn.subNodesLoaded)) {
       done = cn.depth;
       loadSubItems(cn);
     }
@@ -816,14 +847,14 @@ function actionDown(key, shift, alt) {
     case KEY_MINUS: // zoom out
       moveZ = -ZOOM_INC * slow;
       break;
-    case KEY_SLASH: // toggle root to selection
+    case KEY_SLASH: // set root to selection
       browseInto(selNode);
       return;
     case KEY_PAGEUP: // rotate counterclockwise
       moveR = -ROT_INC * slow;
       break;
-    case KEY_PAGEDOWN: // zoom out
-      moveR = ROT_INC * slow; // rotate clockwise
+    case KEY_PAGEDOWN: // rotate clockwise
+      moveR = ROT_INC * slow;
       break;
     case KEY_LEFT:
       if (shift) { // move selection to parent
@@ -831,6 +862,7 @@ function actionDown(key, shift, alt) {
           selectNode(root);
         } else if (selNode.parent) {
           selectNode(selNode.parent);
+          updateD3(selNode, false);
         }
         return;
       }
@@ -844,6 +876,7 @@ function actionDown(key, shift, alt) {
           parch = selNode.parent.children;
           selectNode(parch[(parch.indexOf(selNode) +
               parch.length - 1) % parch.length]);
+          updateD3(selNode, false);
         }
         return;
       }
@@ -854,8 +887,9 @@ function actionDown(key, shift, alt) {
         if (!selNode) {
           selectNode(root);
         } else {
-          if (selNode.children) {
+          if (selNode.children && selNode.children.length > 0) {
             selectNode(selNode.children[0]);
+            updateD3(selNode, false);
           }
         }
         return;
@@ -868,8 +902,8 @@ function actionDown(key, shift, alt) {
           selectNode(root);
         } else if (selNode.parent) {
           parch = selNode.parent.children;
-          selectNode(
-            parch[(parch.indexOf(selNode) + 1) % parch.length]);
+          selectNode(parch[(parch.indexOf(selNode) + 1) % parch.length]);
+          updateD3(selNode, false);
         }
         return;
       }
@@ -918,7 +952,6 @@ function actionDown(key, shift, alt) {
 }
 
 function actionUp(key) {
-  // key = key || d3.event.which;
   var pos = keysdown.indexOf(key);
   if (pos < 0) { return; }
 
@@ -927,8 +960,8 @@ function actionUp(key) {
     case KEY_MINUS: // + = zoom in
       moveZ = 0;
       break;
-    case KEY_PAGEUP: // page up = zoom out / rotate
-    case KEY_PAGEDOWN: // page down = zoom in / rotate
+    case KEY_PAGEUP: // page up = rotate CCW
+    case KEY_PAGEDOWN: // page down = rotate CW
       moveR = 0;
       break;
     case KEY_LEFT: // left arrow
