@@ -16,7 +16,7 @@ function canSupport(name, signature) {
 }
 
 function render(name, signature) {
-  var logViewer = document.createElement('viz-plugins-log-viewer');
+  var logViewer = document.createElement('nsb-plugins-log-viewer');
   logViewer.vname = name;
 
   return logViewer;

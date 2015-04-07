@@ -8,7 +8,7 @@ var publishedProperties = {
   vname: ''
 };
 
-polymer('viz-plugins-log-viewer', {
+polymer('nsb-plugins-log-viewer', {
   publish: publishedProperties,
   ready: onReady
 });
