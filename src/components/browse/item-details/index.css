@@ -11,10 +11,10 @@ paper-icon-button.bookmarked {
 }
 
 .item-actions {
-  margin: var(--size-space-xxsmall) -var(--size-space-xsmall);
+  margin: 0 -var(--size-space-xsmall);
   display: inline-block;
   position: absolute;
-  left: 0px;
+  left: var(--size-space-xsmall);
   top: 0px;
   padding: var(--size-space-xsmall);
 }
