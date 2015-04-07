@@ -13,14 +13,14 @@
 # see http://stackoverflow.com/questions/21708839/problems-setting-path-in-makefile for details.
 ##
 
-export GOPATH:=$(VANADIUM_ROOT)/release/projects/browser/go
-export VDLPATH:=$(VANADIUM_ROOT)/release/projects/browser/go
-export GOBIN:=$(VANADIUM_ROOT)/release/projects/browser/go/bin
+export GOPATH:=$(V23_ROOT)/release/projects/browser/go
+export VDLPATH:=$(V23_ROOT)/release/projects/browser/go
+export GOBIN:=$(V23_ROOT)/release/projects/browser/go/bin
 
-PATH:=$(VANADIUM_ROOT)/environment/cout/node/bin:$(PATH)
+PATH:=$(V23_ROOT)/environment/cout/node/bin:$(PATH)
 PATH:=node_modules/.bin:$(GOBIN):$(PATH)
 
-VANADIUM_JS:=$(VANADIUM_ROOT)/release/javascript/core
+VANADIUM_JS:=$(V23_ROOT)/release/javascript/core
 SOURCE_FILES = $(shell find src -name "*")
 
 ifndef TMPDIR
@@ -80,7 +80,7 @@ node_modules: package.json
 	:;npm prune
 	:;npm install --quiet
 	# TODO(aghassemi) Temporarily use local release/javascript/core add github/npm to package.json later
-	cd "$(VANADIUM_ROOT)/release/javascript/core" && npm link
+	cd "$(V23_ROOT)/release/javascript/core" && npm link
 	:;npm link vanadium
 
 	touch node_modules
@@ -109,7 +109,7 @@ build: directories public/bundle.js public/bundle.html
 # Run unit and integration tests.
 test: all
 	:;jshint test # lint all test JavaScript files.
-	:;./go/bin/runner -v=3 -log_dir=$(VANADIUM_ROOT)/release/projects/browser/tmp/log -runSample=true -runTests=true -alsologtostderr=false
+	:;./go/bin/runner -v=3 -log_dir=$(V23_ROOT)/release/projects/browser/tmp/log -runSample=true -runTests=true -alsologtostderr=false
 
 # Continuously watch for changes to .js, .html or .css files.
 # Rebundles the appropriate bundles when local files change.
@@ -118,12 +118,12 @@ watch:
 
 # Continuously reruns the tests as they change.
 watch-test: go/bin
-	NOMINIFY=true ./go/bin/runner -v=3 -log_dir=$(VANADIUM_ROOT)/release/projects/browser/tmp/log -runSample=true -runTests=true -runTestsWatch=true -alsologtostderr=false
+	NOMINIFY=true ./go/bin/runner -v=3 -log_dir=$(V23_ROOT)/release/projects/browser/tmp/log -runSample=true -runTests=true -runTestsWatch=true -alsologtostderr=false
 
 # Serves the needed daemons and starts a server at http://localhost:9000
 # CTRL-C to stop
 start: all go/bin
-	:;./go/bin/runner -runSample=true -serveHTTP=true -portHTTP=9001 -rootHTTP=$(VANADIUM_ROOT)/release/projects/browser/public/ -alsologtostderr=false
+	:;./go/bin/runner -runSample=true -serveHTTP=true -portHTTP=9001 -rootHTTP=$(V23_ROOT)/release/projects/browser/public/ -alsologtostderr=false
 
 # Create needed directories like TMPDIR.
 directories:

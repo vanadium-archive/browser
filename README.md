@@ -30,7 +30,7 @@ https://v.io/community/contributing.html
 Next, to build your own copy of the namespace browser, simply run:
 
 ```sh
-cd $VANADIUM_ROOT/release/projects/browser
+cd $V23_ROOT/release/projects/browser
 make build
 ```
 

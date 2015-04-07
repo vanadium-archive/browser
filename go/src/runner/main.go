@@ -316,9 +316,9 @@ func run() bool {
 // Run the prova tests and convert its tap output to xunit.
 func runProva() bool {
 	// This is also useful information for routing the test output.
-	VANADIUM_ROOT := os.Getenv("VANADIUM_ROOT")
-	VANADIUM_JS := fmt.Sprintf("%s/release/javascript/core", VANADIUM_ROOT)
-	VANADIUM_BROWSER := fmt.Sprintf("%s/release/projects/browser", VANADIUM_ROOT)
+	V23_ROOT := os.Getenv("V23_ROOT")
+	VANADIUM_JS := fmt.Sprintf("%s/release/javascript/core", V23_ROOT)
+	VANADIUM_BROWSER := fmt.Sprintf("%s/release/projects/browser", V23_ROOT)
 
 	TAP_XUNIT := fmt.Sprintf("%s/node_modules/.bin/tap-xunit", VANADIUM_BROWSER)
 	XUNIT_OUTPUT_FILE := os.Getenv("XUNIT_OUTPUT_FILE")
