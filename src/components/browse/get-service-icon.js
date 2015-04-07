@@ -12,13 +12,13 @@ function getServiceIcon(item) {
   var icon;
   var title;
   if (item.hasMountPoint && item.hasServer) {
-    icon = 'cloud-queue';
+    icon = 'vanadium:both';
     title = 'MountPoint & Service';
   } else if (item.hasServer) {
-    icon = 'social:circles';
+    icon = 'vanadium:service';
     title = 'Service';
   } else {
-    icon = 'check-box-outline-blank';
+    icon = 'vanadium:mountpoint';
     title = 'MountPoint';
   }
 
