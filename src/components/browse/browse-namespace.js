@@ -11,10 +11,6 @@ var log = require('../../lib/log')('components:browse:browse-namespace');
 
 module.exports = browseNamespace;
 
-// We keep track of previous namespace that was browsed to so we can
-// know when navigating to a different namespace happens.
-var previousNamespace;
-
 /*
  * Default event handler for the browseNamespace event.
  * Updates the necessary states when browseNamespace is triggered
@@ -46,12 +42,6 @@ function browseNamespace(browseState, browseEvents, data) {
   var namespace = browseState.namespace();
   var globQuery = browseState.globQuery() || '*';
   var subPage = browseState.subPage();
-
-  // When navigating to a different namespace, reset the currently selected item
-  if (previousNamespace !== namespace) {
-    browseState.selectedItemName.set(namespace);
-  }
-  previousNamespace = namespace;
 
   browseState.isFinishedLoadingItems.set(false);
 
