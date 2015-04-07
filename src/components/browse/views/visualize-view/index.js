@@ -25,8 +25,8 @@ module.exports.render = render;
 var DURATION = 500; // d3 animation duration
 var STAGGER = 5; // mS delay for each node
 var NODE_DIAMETER = 4; // diameter of circular nodes
-var MIN_ZOOM = 0.3; // minimum zoom allowed
-var MAX_ZOOM = 30;  // maximum zoom allowed
+var MIN_ZOOM = 0.5; // minimum zoom allowed
+var MAX_ZOOM = 20;  // maximum zoom allowed
 var CIRCLE_STROKE_COLOR = '#00838F';
 var HAS_CHILDREN_COLOR = '#00ACC1';
 var NO_CHILDREN_COLOR = 'white';
@@ -378,7 +378,7 @@ function updateD3(subroot, doAni) {
         return d === selNode ? SELECTED_COLOR : CIRCLE_STROKE_COLOR;
     }).
     attr('stroke-width', function(d) {
-        return d === selNode ? 3 : 1.5;
+        return (d === selNode ? 3 : 1.5) / curZ;
     });
 
   gnode.select('title').text(function(d) {
@@ -466,7 +466,7 @@ function updateD3(subroot, doAni) {
           target: o
         });
     }).
-    remove();
+    remove(); // remove edge at end of animation
 } // end updateD3
 
 // find place to insert new node in children
@@ -585,7 +585,10 @@ function setview() {
             ) + reduceZ(curZ) +')';
       });
   svgGroup.selectAll('circle').
-    attr('r', NODE_DIAMETER * reduceZ(curZ));
+    attr('r', NODE_DIAMETER * reduceZ(curZ)).
+    attr('stroke-width', function(d) {
+        return (d === selNode ? 3 : 1.5) / curZ;
+    });
 }
 
 // show nodes that are loading
