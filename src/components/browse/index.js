@@ -614,13 +614,14 @@ function renderBreadcrumbs(browseState, navEvents) {
   var name = browseState.selectedItemName || browseState.namespace;
   var isRooted = namespaceService.util.isRooted(name);
   var namespaceParts = namespaceService.util.parseName(name);
+  var parentParts = namespaceService.util.parseName(browseState.namespace);
   var breadCrumbs = [];
   if (!isRooted) {
     // Add a relative root (empty namespace)
     var rootUrl = browseRoute.createUrl(browseState, {
       namespace: ''
     });
-    breadCrumbs.push(h('li.breadcrumb-item', [
+    breadCrumbs.push(h('li.breadcrumb-item.breadcrumb-item-prefix', [
       //TODO(aghassemi) refactor link generation code
       h('a', {
         'href': rootUrl,
@@ -640,7 +641,12 @@ function renderBreadcrumbs(browseState, navEvents) {
       namespace: fullName
     });
 
-    var listItem = h('li.breadcrumb-item', [
+    var isPartOfParent = parentParts.indexOf(namePart) > -1;
+    var cssClass = 'breadcrumb-item';
+    if(isPartOfParent) {
+      cssClass += '.breadcrumb-item-prefix';
+    }
+    var listItem = h('li.' + cssClass, [
       h('a', {
         'href': url,
         'ev-click': mercury.event(navEvents.navigate, {
@@ -652,11 +658,9 @@ function renderBreadcrumbs(browseState, navEvents) {
     breadCrumbs.push(listItem);
   }
 
-  return h('ul.breadcrumbs', {
-    attributes: {
-      'flex': 'true'
-    }
-  }, breadCrumbs);
+  var bc = h('ul.breadcrumbs', breadCrumbs);
+
+  return h('div.breadcrumbs-wrapper', bc);
 }
 
 // Wire up events that we know how to handle
