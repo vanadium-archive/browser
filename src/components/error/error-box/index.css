@@ -6,7 +6,6 @@
 @import "common-style/theme.css";
 
 .error-box-title {
-  display: flex;
   width: 100%;
   font-size: var(--size-font-xlarge);
   color: var(--color-text-secondary);
