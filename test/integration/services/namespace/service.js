@@ -104,11 +104,13 @@ test('getChildren of rooted ' + globalRoot + '/house/kitchen', function(t) {
   namespaceService.getChildren(globalRoot + '/house/kitchen').
   then(function assertResult(result) {
     assertIsImmutable(t, result);
-    // Wait until we finish, we expect 2 items, lights and smoke-detector
+    // Wait until we finish, we expect 3 items, lights, secret-pantry
+    // and smoke-detector
     result.events.on('end', function validate() {
       mercury.watch(result, function(children) {
         assertLightSwitch(children[0]);
-        assertSmokeDetector(children[1]);
+        assertSecretPantry(children[1]);
+        assertSmokeDetector(children[2]);
         t.end();
       });
     });
@@ -123,6 +125,13 @@ test('getChildren of rooted ' + globalRoot + '/house/kitchen', function(t) {
       name: 'lights',
       objectName: globalRoot + '/house/kitchen/lights',
       isLeaf: true
+    });
+  }
+
+  function assertSecretPantry(item) {
+    assertSubtableName(t, item, {
+      name: 'secret-pantry',
+      objectName: globalRoot + '/house/kitchen/secret-pantry'
     });
   }
 
@@ -144,11 +153,13 @@ test('getChildren of rooted ' + hostPortRoot + '/kitchen', function(t) {
   namespaceService.getChildren(hostPortRoot + '/kitchen').
   then(function assertResult(result) {
     assertIsImmutable(t, result);
-    // Wait until we finish, we expect 2 items, lights and smoke-detector
+    // Wait until we finish, we expect 3 items, lights, secret-pantry
+    // and smoke-detector
     result.events.on('end', function validate() {
       mercury.watch(result, function(children) {
         assertLightSwitch(children[0]);
-        assertSmokeDetector(children[1]);
+        assertSecretPantry(children[1]);
+        assertSmokeDetector(children[2]);
         t.end();
       });
     });
@@ -163,6 +174,13 @@ test('getChildren of rooted ' + hostPortRoot + '/kitchen', function(t) {
       name: 'lights',
       objectName: hostPortRoot + '/kitchen/lights',
       isLeaf: true
+    });
+  }
+
+  function assertSecretPantry(item) {
+    assertSubtableName(t, item, {
+      name: 'secret-pantry',
+      objectName: hostPortRoot + '/kitchen/secret-pantry'
     });
   }
 

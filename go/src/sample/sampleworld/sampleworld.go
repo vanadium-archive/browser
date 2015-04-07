@@ -7,7 +7,6 @@ package sampleworld
 import (
 	"fmt"
 	"log"
-	"time"
 
 	"sample"
 	"sample/mocks"
@@ -106,57 +105,27 @@ func RunSampleWorld(ctx *context.T) {
 	defer listenAndServe("cottage/lawn/back/sprinkler", makeServerSprinkler())()
 	defer listenAndServe("cottage/lawn/master-sprinkler", makeServerSprinkler())()
 
-	// Add bunch of inaccessible names
-	var nobody = []security.BlessingPattern{""}
+	var onlyMe = []security.BlessingPattern{"dev.v.io/root/users/me@example.com"}
 	var everybody = []security.BlessingPattern{"..."}
-	var nobodyCanResolve = access.Permissions{
+	var nobodyCanList = access.Permissions{
 		"Resolve": access.AccessList{
-			In: nobody,
-		},
-		"Read": access.AccessList{
-			In: nobody,
-		},
-		"Admin": access.AccessList{
-			In: nobody,
-		},
-		"Create": access.AccessList{
-			In: nobody,
-		},
-		"Mount": access.AccessList{
-			In: everybody,
-		},
-	}
-	var everybodyCanList = access.Permissions{
-		"Resolve": access.AccessList{
-			In: everybody,
+			In: onlyMe,
 		},
 		"Read": access.AccessList{
 			In: everybody,
 		},
 		"Admin": access.AccessList{
-			In: everybody,
+			In: onlyMe,
 		},
 		"Create": access.AccessList{
-			In: everybody,
+			In: onlyMe,
 		},
 		"Mount": access.AccessList{
-			In: everybody,
+			In: onlyMe,
 		},
 	}
-
 	ns := v23.GetNamespace(ctx)
-	// Make everyone see stuff in house/master-bedroom/personal.
-	ns.SetPermissions(ctx, "house/master-bedroom/personal", everybodyCanList, "")
-
-	// Toothbrush is inaccessible because of bad endpoint.
-	nextYear := time.Now().AddDate(1, 0, 0)
-	ttl := nextYear.Sub(time.Now())
-	ns.Mount(ctx, "house/master-bedroom/personal/toothbrush", "/does.not.exist.v.io:9898", ttl)
-
-	// Hairbrush is inaccessible because of mounttable ACLs on it do not allow anyone to resolve the name.
-	ns.SetPermissions(ctx, "house/master-bedroom/personal/hairbrush", nobodyCanResolve, "")
-	defer listenAndServe("house/master-bedroom/personal/hairbrush", makeServerSprinkler())()
-
+	ns.SetPermissions(ctx, "house/kitchen/secret-pantry", nobodyCanList, "")
 	// Wait forever.
 	<-signals.ShutdownOnSignals(ctx)
 }
