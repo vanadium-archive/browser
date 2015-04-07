@@ -22,7 +22,7 @@ module.exports.displayServerDetails = displayServerDetails;
 
 /*
  * ServerDetails component provides user interfaces for displaying details for
- * a server such is its endpoints, signature, remote blessings, etc..
+ * a server such is its resolvedNames, signature, remote blessings, etc..
  */
 function create() {
   var state = mercury.varhash({
@@ -95,10 +95,10 @@ function create() {
     isBookmarked: mercury.value(false),
 
     /*
-     * List of endpoints for the name.
+     * List of resolvedNames for the name.
      * @type {mercury.array<string>}
      */
-    endpoints: mercury.array([])
+    resolvedNames: mercury.array([])
   });
 
   var events = mercury.input([
@@ -167,7 +167,7 @@ function renderDetailsContent(state, events) {
     renderNameField(state)
   ];
   if (state.item.hasServer) {
-    displayItems.push(renderEndpointsFieldItem(state));
+    displayItems.push(renderResolvedNamesFieldItem(state));
     if (state.remoteBlessings) {
       displayItems.push(renderRemoteBlessingsFieldItem(state));
     }
@@ -178,27 +178,27 @@ function renderDetailsContent(state, events) {
 }
 
 /*
- * Renders the Endpoints Field Item, a simple listing of the server's endpoints.
+ * Renders the ResolvedNames Field Item, a simple listing of the server's
+ * resolvedNames.
  */
-function renderEndpointsFieldItem(state) {
-  var endpointDivs;
-  //TODO(aghassemi)0 fix this
-  if (!state.endpoints || state.endpoints.length === 0) {
-    endpointDivs = [
-      h('div', h('span', 'No endpoints found'))
+function renderResolvedNamesFieldItem(state) {
+  var resolvedNameDivs;
+  if (!state.resolvedNames || state.resolvedNames.length === 0) {
+    resolvedNameDivs = [
+      h('div', h('span', 'No Resolved Names Found'))
     ];
   } else {
-    // Show 1 div per server endpoint.
-    endpointDivs = state.endpoints.map(function(endpoint) {
-      return h('div', h('span', endpoint));
+    // Show 1 div per server resolvedName.
+    resolvedNameDivs = state.resolvedNames.map(function(resolvedName) {
+      return h('div', h('span', resolvedName));
     });
   }
-  return FieldItem.render('Service Endpoints', h('div', {
+  return FieldItem.render('Service Resolved Names', h('div', {
     attributes: {
       'vertical': true,
       'layout': true
     }
-  }, endpointDivs));
+  }, resolvedNameDivs));
 }
 
 /*

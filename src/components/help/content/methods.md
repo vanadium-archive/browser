@@ -30,8 +30,8 @@ the alarm service already has already been bookmarked
 (the bookmark icon is solid purple).
 Click it again to remove the bookmark.
 
-Below the full name and the type, you can see what Vanadium
-endpoints point to this service,
+Below the full name and the type, you can see the resolved names
+for this service,
 and what interfaces are supported by this service.
 
 Most importantly, the methods for the service are displayed.

@@ -20,7 +20,7 @@ module.exports = {
   getRemoteBlessings: getRemoteBlessings,
   getSignature: getSignature,
   getAccountName: getAccountName,
-  getEndpoints: getEndpoints,
+  getResolvedNames: getResolvedNames,
   getPermissions: getPermissions,
   resolveToMounttable: resolveToMounttable,
   makeRPC: makeRPC,
@@ -223,9 +223,9 @@ function getPermissions(name) {
 }
 
 /*
- * Given a name, provide information about its mounttable endpoint.
- * @param {string} objectName Object name to get mounttable endpoint for.
- * @return {Promise.<mercury.array<string>>} Promise of an array of endpoint
+ * Given a name, provide information about its mounttable resolvedName.
+ * @param {string} objectName Object name to get mounttable resolvedName for.
+ * @return {Promise.<mercury.array<string>>} Promise of an array of resolvedName
  * strings.
  */
 function resolveToMounttable(name) {
@@ -233,24 +233,24 @@ function resolveToMounttable(name) {
     var ctx = rt.getContext().withTimeout(RPC_TIMEOUT);
     var ns = rt.namespace();
     return ns.resolveToMounttable(ctx, name);
-  }).then(function(endpoints) {
-    return mercury.array(endpoints);
+  }).then(function(resolvedNames) {
+    return mercury.array(resolvedNames);
   });
 }
 
 /*
- * Given a name, provide information about its endpoints.
- * @param {string} objectName Object name to get endpoints for.
+ * Given a name, provide information about its resolvedNames.
+ * @param {string} objectName Object name to get resolvedNames for.
  * @return {Promise.<mercury.array<string>>} Promise of an observable value an
- * array of string endpoints
+ * array of string resolvedNames
  */
-function getEndpoints(name) {
+function getResolvedNames(name) {
   return getRuntime().then(function resolve(rt) {
     var resolveCtx = rt.getContext().withTimeout(RPC_TIMEOUT);
     var ns = rt.namespace();
     return ns.resolve(resolveCtx, name);
-  }).then(function(endpoints) {
-    return mercury.array(endpoints);
+  }).then(function(resolvedNames) {
+    return mercury.array(resolvedNames);
   });
 }
 

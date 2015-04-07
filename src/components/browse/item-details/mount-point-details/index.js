@@ -66,10 +66,10 @@ function create() {
     notAuthorizedToSeePermissions: mercury.value(false),
 
     /*
-     * The endpoints as resoledToMounttable
+     * The resolvedNames as resolveToMounttable
      * @type {mercury.array<string>}
      */
-    endpoints: mercury.array([])
+    resolvedNames: mercury.array([])
 
   });
 
@@ -95,7 +95,7 @@ function render(state, events, browseState, navEvents) {
   if (state.item) {
     var displayItems = [];
     displayItems.push(renderNameField(state));
-    displayItems.push(renderEndpointField(state));
+    displayItems.push(renderResolvedNameField(state));
     displayItems.push(renderPermissionsField(state));
 
     content.push(h('div', displayItems));
@@ -128,12 +128,12 @@ function renderNameField(state) {
 }
 
 /*
- * Renders the Endpoints field which should the endpoints at the parent
- * mount table (i.e. result of call to resolveToMounttable())
+ * Renders the ResolvedNames field which should be the resolvedNames at the
+ * parent mount table (i.e. result of call to resolveToMounttable())
  */
-function renderEndpointField(state) {
-  return FieldItem.render('Mount Table Endpoints', (state.endpoints), {
-    contentTooltip: 'Endpoints at the parent mount table'
+function renderResolvedNameField(state) {
+  return FieldItem.render('Mount Table Resolved Names', (state.resolvedNames), {
+    contentTooltip: 'Resolved names at the parent mount table'
   });
 }
 

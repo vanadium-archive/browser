@@ -41,7 +41,7 @@ function displayServerDetails(state, events, data) {
   state.put('error', null);
   state.put('signature', null);
   state.put('remoteBlessings', null);
-  state.put('endpoints', null);
+  state.put('resolvedNames', null);
   state.put('showLoadingIndicator', false);
 
   // Whether we have finished loading yet.
@@ -57,7 +57,7 @@ function displayServerDetails(state, events, data) {
 
   var allPromises = Promise.all([
     loadRemoteBlessings(itemObs()),
-    loadEndpoints(itemObs()),
+    loadResolvedNames(itemObs()),
     loadSignature(itemObs())
   ]);
 
@@ -90,17 +90,17 @@ function displayServerDetails(state, events, data) {
     });
   }
 
-  function loadEndpoints(item) {
+  function loadResolvedNames(item) {
     if (!item.hasServer) {
       return;
     }
 
-    return namespaceService.getEndpoints(name).then(function(eps) {
+    return namespaceService.getResolvedNames(name).then(function(eps) {
       // Protect this call; this must be the selected item.
       if (!isCurrentlySelected()) {
         return;
       }
-      state.put('endpoints', eps);
+      state.put('resolvedNames', eps);
     });
   }
 
