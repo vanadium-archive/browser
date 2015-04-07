@@ -66,10 +66,10 @@ function create() {
     notAuthorizedToSeePermissions: mercury.value(false),
 
     /*
-     * The resolvedNames as resolveToMounttable
+     * The objectAddresses as resolveToMounttable
      * @type {mercury.array<string>}
      */
-    resolvedNames: mercury.array([])
+    objectAddresses: mercury.array([])
 
   });
 
@@ -95,7 +95,7 @@ function render(state, events, browseState, navEvents) {
   if (state.item) {
     var displayItems = [];
     displayItems.push(renderNameField(state));
-    displayItems.push(renderResolvedNameField(state));
+    displayItems.push(renderObjectAddressesField(state));
     displayItems.push(renderPermissionsField(state));
 
     content.push(h('div', displayItems));
@@ -128,13 +128,14 @@ function renderNameField(state) {
 }
 
 /*
- * Renders the ResolvedNames field which should be the resolvedNames at the
+ * Renders the ObjectAddresses field which should be the objectAddresses at the
  * parent mount table (i.e. result of call to resolveToMounttable())
  */
-function renderResolvedNameField(state) {
-  return FieldItem.render('Mount Table Resolved Names', (state.resolvedNames), {
-    contentTooltip: 'Resolved names at the parent mount table'
-  });
+function renderObjectAddressesField(state) {
+  return FieldItem.render(
+    'Mount Point Object Addresses', (state.objectAddresses), {
+      contentTooltip: 'Object addresses at the parent mount table'
+    });
 }
 
 /*

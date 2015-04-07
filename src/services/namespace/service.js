@@ -20,7 +20,7 @@ module.exports = {
   getRemoteBlessings: getRemoteBlessings,
   getSignature: getSignature,
   getAccountName: getAccountName,
-  getResolvedNames: getResolvedNames,
+  getObjectAddresses: getObjectAddresses,
   getPermissions: getPermissions,
   resolveToMounttable: resolveToMounttable,
   makeRPC: makeRPC,
@@ -223,34 +223,34 @@ function getPermissions(name) {
 }
 
 /*
- * Given a name, provide information about its mounttable resolvedName.
- * @param {string} objectName Object name to get mounttable resolvedName for.
- * @return {Promise.<mercury.array<string>>} Promise of an array of resolvedName
- * strings.
+ * Given a name, provide information about its mounttable objectAddress.
+ * @param {string} objectName Object name to get mounttable objectAddress for.
+ * @return {Promise.<mercury.array<string>>} Promise of an array of
+ * objectAddress strings.
  */
 function resolveToMounttable(name) {
   return getRuntime().then(function(rt) {
     var ctx = rt.getContext().withTimeout(RPC_TIMEOUT);
     var ns = rt.namespace();
     return ns.resolveToMounttable(ctx, name);
-  }).then(function(resolvedNames) {
-    return mercury.array(resolvedNames);
+  }).then(function(objectAddresses) {
+    return mercury.array(objectAddresses);
   });
 }
 
 /*
- * Given a name, provide information about its resolvedNames.
- * @param {string} objectName Object name to get resolvedNames for.
+ * Given a name, provide information about its objectAddresses.
+ * @param {string} objectName Object name to get objectAddresses for.
  * @return {Promise.<mercury.array<string>>} Promise of an observable value an
- * array of string resolvedNames
+ * array of string objectAddresses
  */
-function getResolvedNames(name) {
+function getObjectAddresses(name) {
   return getRuntime().then(function resolve(rt) {
     var resolveCtx = rt.getContext().withTimeout(RPC_TIMEOUT);
     var ns = rt.namespace();
     return ns.resolve(resolveCtx, name);
-  }).then(function(resolvedNames) {
-    return mercury.array(resolvedNames);
+  }).then(function(objectAddresses) {
+    return mercury.array(objectAddresses);
   });
 }
 

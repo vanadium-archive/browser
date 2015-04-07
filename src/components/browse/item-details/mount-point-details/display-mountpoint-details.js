@@ -34,7 +34,7 @@ function displayMountPointDetails(state, events, data) {
   state.put('error', null);
   state.put('showLoadingIndicator', false);
   state.put('notAuthorizedToSeePermissions', false);
-  state.put('resolvedNames', '');
+  state.put('objectAddresses', '');
 
   // Whether we have finished loading yet.
   var isLoaded = false;
@@ -94,7 +94,7 @@ function displayMountPointDetails(state, events, data) {
     }
 
     return namespaceService.resolveToMounttable(name).then(function(eps) {
-      state.put('resolvedNames', eps);
+      state.put('objectAddresses', eps);
     }).catch(function(err) {
       log.error('Failed to resolve to mounttable for:', name, err);
       state.put('parentMounttable', '');

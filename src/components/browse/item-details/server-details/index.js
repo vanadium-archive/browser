@@ -22,7 +22,7 @@ module.exports.displayServerDetails = displayServerDetails;
 
 /*
  * ServerDetails component provides user interfaces for displaying details for
- * a server such is its resolvedNames, signature, remote blessings, etc..
+ * a server such is its objectAddresses, signature, remote blessings, etc..
  */
 function create() {
   var state = mercury.varhash({
@@ -95,10 +95,10 @@ function create() {
     isBookmarked: mercury.value(false),
 
     /*
-     * List of resolvedNames for the name.
+     * List of objectAddresses for the name.
      * @type {mercury.array<string>}
      */
-    resolvedNames: mercury.array([])
+    objectAddresses: mercury.array([])
   });
 
   var events = mercury.input([
@@ -167,7 +167,7 @@ function renderDetailsContent(state, events) {
     renderNameField(state)
   ];
   if (state.item.hasServer) {
-    displayItems.push(renderResolvedNamesFieldItem(state));
+    displayItems.push(renderObjectAddressesFieldItem(state));
     if (state.remoteBlessings) {
       displayItems.push(renderRemoteBlessingsFieldItem(state));
     }
@@ -178,27 +178,27 @@ function renderDetailsContent(state, events) {
 }
 
 /*
- * Renders the ResolvedNames Field Item, a simple listing of the server's
- * resolvedNames.
+ * Renders the ObjectAddresses Field Item, a simple listing of the server's
+ * objectAddresses.
  */
-function renderResolvedNamesFieldItem(state) {
-  var resolvedNameDivs;
-  if (!state.resolvedNames || state.resolvedNames.length === 0) {
-    resolvedNameDivs = [
-      h('div', h('span', 'No Resolved Names Found'))
+function renderObjectAddressesFieldItem(state) {
+  var objectAddressDivs;
+  if (!state.objectAddresses || state.objectAddresses.length === 0) {
+    objectAddressDivs = [
+      h('div', h('span', 'No Object Addresses Found'))
     ];
   } else {
-    // Show 1 div per server resolvedName.
-    resolvedNameDivs = state.resolvedNames.map(function(resolvedName) {
-      return h('div', h('span', resolvedName));
+    // Show 1 div per server objectAddress.
+    objectAddressDivs = state.objectAddresses.map(function(objectAddress) {
+      return h('div', h('span', objectAddress));
     });
   }
-  return FieldItem.render('Service Resolved Names', h('div', {
+  return FieldItem.render('Service Object Addresses', h('div', {
     attributes: {
       'vertical': true,
       'layout': true
     }
-  }, resolvedNameDivs));
+  }, objectAddressDivs));
 }
 
 /*
