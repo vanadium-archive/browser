@@ -27,7 +27,7 @@ import (
 	"v.io/x/ref/envvar"
 	"v.io/x/ref/lib/signals"
 	"v.io/x/ref/profiles"
-	identity "v.io/x/ref/services/identity/modules"
+	"v.io/x/ref/services/identity/identitylib"
 	"v.io/x/ref/services/mounttable/mounttablelib"
 	"v.io/x/ref/test/expect"
 	"v.io/x/ref/test/modules"
@@ -290,7 +290,7 @@ func run() bool {
 		defer proxyShutdown()
 		vars["PROXY_NAME"] = proxyEndpoint.Name()
 
-		hIdentityd, err := sh.Start(identity.TestIdentitydCommand, nil, "--v23.tcp.protocol=wsh", "--v23.tcp.address=:0", "--v23.proxy=test/proxy", "--http-addr=localhost:0")
+		hIdentityd, err := sh.Start(identitylib.TestIdentitydCommand, nil, "--v23.tcp.protocol=wsh", "--v23.tcp.address=:0", "--v23.proxy=test/proxy", "--http-addr=localhost:0")
 		exitOnError(err, "Failed to start identityd")
 		exitOnError(updateVars(hIdentityd, vars, "TEST_IDENTITYD_NAME", "TEST_IDENTITYD_HTTP_ADDR"), "Failed to obtain identityd address")
 		defer hIdentityd.Shutdown(outFile, errFile)
