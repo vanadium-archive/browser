@@ -128,8 +128,13 @@
   color: inherit
 }
 
-.namespace-box core-tooltip {
+.namespace-box core-tooltip.icontooltip {
+  margin-top: var(--size-space-xxsmall);
+}
+
+.namespace-box core-tooltip.nstooltip {
   width: 100%;
+  margin-bottom: var(--size-space-xsmall);
 }
 
 .icon-group {
@@ -165,7 +170,7 @@
 }
 
 .search-box .icon, .namespace-box .icon {
-  align-self: flex-end;
+  /*align-self: flex-end;*/
   color: var(--color-text-secondary);
   margin-right: var(--size-space-xsmall);
 }

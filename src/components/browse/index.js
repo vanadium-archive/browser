@@ -422,18 +422,18 @@ function renderNamespaceBox(browseState, browseEvents, navEvents) {
   );
 
   return h('div.namespace-box',
-    h('core-tooltip.tooltip', {
-        attributes: {
-          'label': 'Enter a name to browse, e.g. house/living-room'
+    h('div', {
+      attributes: {
+        'layout': 'true',
+        'horizontal': 'true'
+      }
+    }, [
+      h('core-tooltip.icontooltip', {
+          attributes: {
+            'label': 'Reload'
+          },
+          'position': 'bottom'
         },
-        'position': 'bottom'
-      },
-      h('div', {
-        attributes: {
-          'layout': 'true',
-          'horizontal': 'true'
-        }
-      }, [
         h('paper-icon-button.icon', {
           attributes: {
             'icon': 'refresh',
@@ -442,7 +442,14 @@ function renderNamespaceBox(browseState, browseEvents, navEvents) {
           'ev-click': function() {
             location.reload();
           }
-        }),
+        })
+      ),
+      h('core-tooltip.nstooltip', {
+          attributes: {
+            'label': 'Enter a name to browse, e.g. house/living-room'
+          },
+          'position': 'bottom'
+        },
         h('paper-autocomplete.autocomplete', {
           attributes: {
             'name': 'namespace',
@@ -455,8 +462,8 @@ function renderNamespaceBox(browseState, browseEvents, navEvents) {
           'ev-input': inputEvent,
           'ev-change': changeEvent
         }, children)
-      ])
-    )
+      )
+    ])
   );
 }
 
