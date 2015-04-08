@@ -6,10 +6,16 @@ var Bookmarks = require('./bookmarks/index.js');
 var Recommendations = require('./recommendations/index.js');
 var Views = require('./views/index.js');
 
+var namespaceService = require('../../services/namespace/service');
+
 var extendDefaults = require('../../lib/extend-defaults');
 var log = require('../../lib/log')('components:browse:browse-namespace');
 
 module.exports = browseNamespace;
+
+// We keep track of previous namespace root that was browsed to so we can
+// know when navigating to a different namespace happens.
+var previousNamespaceRoot;
 
 /*
  * Default event handler for the browseNamespace event.
@@ -42,6 +48,13 @@ function browseNamespace(browseState, browseEvents, data) {
   var namespace = browseState.namespace();
   var globQuery = browseState.globQuery() || '*';
   var subPage = browseState.subPage();
+
+  // When navigating to a different root, reset the currently selected item
+  var root = namespaceService.util.parseName(namespace)[0];
+  if (previousNamespaceRoot !== root) {
+    browseState.selectedItemName.set(namespace);
+  }
+  previousNamespaceRoot = root;
 
   browseState.isFinishedLoadingItems.set(false);
 
