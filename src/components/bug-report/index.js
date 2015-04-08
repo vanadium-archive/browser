@@ -10,8 +10,8 @@ var h = mercury.h;
 var css = require('./index.css');
 
 // TODO(aghassemi) we need a separate repo. Update Url when we do.
-var QUERY_STRING = '?title=' + 'Vanadium Namespace Browser: ';
-var BUG_REPORT_URL = 'https://github.com/veyron/release-issues/issues/new' +
+var QUERY_STRING = '?title=' + 'Namespace Browser: ';
+var BUG_REPORT_URL = 'https://github.com/vanadium/issues/issues/new' +
   QUERY_STRING;
 
 var BUG_REPORT_ICON = 'bug-report';
