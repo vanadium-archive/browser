@@ -1,10 +1,10 @@
 # Vanadium Namespace Browser
 The namespace browser is a web application that lets developers and other
 users view and interact with the Vanadium world.
-Starting from their namespace root, a user can see where services are mounted
-and browse through the mount table hierarchy. The user can select a service to
+Starting from their namespace root, users can browse through the mount table hierarchy
+and see where services are mounted. The user can select a service to
 see more detailed information about it, and can also interact with the
-service; by invoking methods they can examine or modify the service's state.
+service, invokinging methods to examine or modify the state of the service.
 
 ## Installing the Vanadium Extension
 
@@ -19,7 +19,7 @@ https://chrome.google.com/webstore/detail/vanadium-extension/jcaelnibllfoobpedof
 ## Building the Namespace Browser
 
 You do not need to build your own copy of the namespace browser in
-order to use it; just if you want to modify it or see how it works.
+order to use it, unless you want to modify it or see how it works.
 
 To build a local copy, install the Vanadium environment and be sure to
 include the web profile.
@@ -68,8 +68,9 @@ Run these tests with the following command:
 make test
 ```
 
-There are no UI tests yet.
-
 ## Contributing
-Coming Soon!
-Meanwhile, you can submit bugs, issues and suggestions from the namespace browser itself.
+
+The code repository for the Namespace Browser is on [GitHub](https://github.com/vanadium/browser).
+
+Bugs and other issues can be submitted to the
+[Vanadium Issue Tracker](https://github.com/vanadium/issues/issues).
