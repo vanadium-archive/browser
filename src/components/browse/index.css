@@ -105,12 +105,12 @@
 .breadcrumb-item:before
 {
   content: '/';
-  padding:0 var(--size-space-xxsmall);
+  padding: 0 var(--size-space-xxsmall);
   display: inline-block;
   color: var(--color-text-secondary);
 }
 
-.breadcrumb-item:first-child:before
+.breadcrumb-item.relative-name:first-child:before
 {
   display: none;
 }

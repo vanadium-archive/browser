@@ -621,7 +621,8 @@ function renderBreadcrumbs(browseState, navEvents) {
     var rootUrl = browseRoute.createUrl(browseState, {
       namespace: ''
     });
-    breadCrumbs.push(h('li.breadcrumb-item.breadcrumb-item-prefix', [
+    breadCrumbs.push(h('li.breadcrumb-item.relative-name' +
+      (parentParts.length ? '.breadcrumb-item-prefix' : ''), [
       //TODO(aghassemi) refactor link generation code
       h('a', {
         'href': rootUrl,
@@ -631,6 +632,8 @@ function renderBreadcrumbs(browseState, navEvents) {
       }, '<Home>')
     ]));
   }
+
+  parentParts.pop();  // remove last part (current view root)
 
   for (var i = 0; i < namespaceParts.length; i++) {
     var namePart = namespaceParts[i].trim();
@@ -643,7 +646,7 @@ function renderBreadcrumbs(browseState, navEvents) {
 
     var isPartOfParent = parentParts.indexOf(namePart) > -1;
     var cssClass = 'breadcrumb-item';
-    if(isPartOfParent) {
+    if (isPartOfParent) {
       cssClass += '.breadcrumb-item-prefix';
     }
     var listItem = h('li.' + cssClass, [
