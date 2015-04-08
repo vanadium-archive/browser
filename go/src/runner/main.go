@@ -238,7 +238,7 @@ func run() bool {
 	exitOnError(err, "Failed to obtain hostname")
 
 	// Run the host mounttable.
-	rootName := fmt.Sprintf("%s-home", strings.TrimSpace(string(hostName))) // Must trim; hostname has \n at the end.
+	rootName := fmt.Sprintf("%s-SampleWorld", strings.TrimSpace(string(hostName))) // Must trim; hostname has \n at the end.
 	hRoot, err := sh.Start(RunMTCommand, nil, "--v23.tcp.protocol=wsh", fmt.Sprintf("--v23.tcp.address=%s:%d", host, port), rootName)
 	exitOnError(err, "Failed to start root mount table")
 	exitOnError(updateVars(hRoot, vars, "MT_NAME"), "Failed to get MT_NAME")
