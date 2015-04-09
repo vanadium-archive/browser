@@ -10,13 +10,13 @@
 }
 
 .tabs::shadow #selectionBar {
-  background-color: var(--color-bright);
+  background-color: var(--color-secondary-800);
   height: 3px;
 }
 
 .tab {
-  background-color: var(--color-secondary-700);
-  color: var(--color-white);
+  background-color: var(--color-white);
+  color: var(--color-text-primary);
 }
 
 .tab::shadow #ink {
