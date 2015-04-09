@@ -89,6 +89,12 @@ paper-icon-button.bookmarked {
   border-bottom: var(--border);
 }
 
+/* Method column */
+.method-output th:nth-of-type(2) ,
+.method-output td:nth-of-type(2) pre {
+  white-space: nowrap;
+}
+
 .method-output th, .method-output td {
   text-align: left;
   padding: 0.2em;
