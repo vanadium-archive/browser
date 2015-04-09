@@ -1,20 +1,27 @@
 # Vanadium Namespace Browser
+
 The namespace browser is a web application that lets developers and other
 users view and interact with the Vanadium world.
-Starting from their namespace root, users can browse through the mount table hierarchy
+Starting from their namespace root or other mount table,
+users can browse through the mount table hierarchy
 and see where services are mounted. The user can select a service to
 see more detailed information about it, and can also interact with the
-service, invokinging methods to examine or modify the state of the service.
+service, invoking methods to examine or modify the state of the service.
 
 ## Installing the Vanadium Extension
 
 As a Vanadium web application, the namespace browser requires that users
 install the Vanadium Extension from the Chrome Web Store.
-If you try to run the webapp without the extension, it will
-prompt you to install it.
+If you try to run the web app without the extension,
+it will prompt you to install it.
 
 Here is the link to the Vanadium Extension:
 https://chrome.google.com/webstore/detail/vanadium-extension/jcaelnibllfoobpedofhlaobfcoknpap
+
+## Hosted Namespace Browser
+
+The Vanadium Namespace Browser lives online at
+https://browser.v.io/
 
 ## Building the Namespace Browser
 
@@ -27,7 +34,7 @@ include the web profile.
 Here is the link to the development instructions for Vanadium:
 https://v.io/community/contributing.html
 
-Next, to build your own copy of the namespace browser, simply run:
+Next, to build your own copy of the namespace browser, run:
 
 ```sh
 cd $V23_ROOT/release/projects/browser
@@ -45,11 +52,8 @@ You can serve a local instance with the following command:
 make start
 ```
 
-This command compiles and launches the web app. Additionally, demo services that
-represent a virtual house and cottage are added to your local namespace.
-
-Navigate to http://localhost:9001 to access the namespace browser.
-You can quit by using `CTRL-C` on the console running `make start`
+Navigate to http://localhost:9001 to compile and launch the namespace browser.
+You can quit by using `CTRL-C` on the console running `make start`.
 
 If you have any problems after updating the code, try cleaning the build.
 
@@ -58,10 +62,14 @@ make clean
 make start
 ```
 
+Additionally, demo services and mount tables that represent
+a virtual house and cottage are added to your local namespace.
+For more information, see the help pages in the Namespace Browser application
+(click on the menu icon in the upper-left corner, then select Help).
+
 ## Testing
 
 The namespace browser has some unit and integration tests that verify basic functionality.
-
 Run these tests with the following command:
 
 ```sh
