@@ -233,12 +233,18 @@ func run() bool {
 	defer errFile.Close()
 	defer sh.Cleanup(outFile, errFile)
 
-	// Determine the hostname; this name will be used for mounting.
-	hostName, err := exec.Command("hostname", "-s").Output()
+	// ns.dev.v.io Mounttable only allows one to publish under users/<name>
+	// for a user that poses the blessing /dev.v.io/root/users/<name>
+	// therefore to find a <name> we can publish under, we remove /dev.v.io/root/users/
+	// from the default blessing name.
+	blessing := v23.GetPrincipal(ctx).BlessingStore().Default().String()
+	name := strings.Trim(blessing, "/dev.v.io/root/users/")
+	nsPrefix := fmt.Sprintf("/ns.dev.v.io:8101/users/%s", name)
 	exitOnError(err, "Failed to obtain hostname")
 
 	// Run the host mounttable.
-	rootName := fmt.Sprintf("%s-SampleWorld", strings.TrimSpace(string(hostName))) // Must trim; hostname has \n at the end.
+	rootName := fmt.Sprintf("%s/sample-world", nsPrefix)
+	fmt.Printf("Publishing under %s\n", rootName)
 	hRoot, err := sh.Start(RunMTCommand, nil, "--v23.tcp.protocol=wsh", fmt.Sprintf("--v23.tcp.address=%s:%d", host, port), rootName)
 	exitOnError(err, "Failed to start root mount table")
 	exitOnError(updateVars(hRoot, vars, "MT_NAME"), "Failed to get MT_NAME")
