@@ -285,21 +285,24 @@ function renderTabTitles(state, events) {
   // Server details tab
   if (state.item && state.item.hasServer) {
     allTabs.push(
-      renderTabTitle(state, events, DETAILS_TAB_KEY, 'Service')
+      renderTabTitle(state, events, DETAILS_TAB_KEY,
+        'vanadium:service', 'Service')
     );
   }
 
   // Mount point tab
   if (state.item && state.item.hasMountPoint) {
     allTabs.push(
-      renderTabTitle(state, events, MOUNTPOINT_TAB_KEY, 'Mount Point')
+      renderTabTitle(state, events, MOUNTPOINT_TAB_KEY,
+        'vanadium:mountpoint', 'MountPoint')
     );
   }
 
   // Plugin tabs
   var pluginTabs = state.plugins.map(function(p) {
     var pluginTabKey = p.id;
-    return renderTabTitle(state, events, pluginTabKey, p.title);
+    var pluginIcon = p.icon || 'help';
+    return renderTabTitle(state, events, pluginTabKey, pluginIcon, p.title);
   });
 
   return allTabs.concat(pluginTabs);
@@ -338,17 +341,25 @@ function renderSelectedTabContent(state, events, browseState, navEvents) {
 /*
  * Render tab title given a title string and tab key
  */
-function renderTabTitle(state, events, tabKey, title) {
+function renderTabTitle(state, events, tabKey, icon, title) {
   return h('paper-tab.tab', {
     attributes: {
       'tabkey': tabKey
     },
     'ev-click': new polymerEvent(function(data) {
-      events.tabSelected({
-        tabKey: data.target.getAttribute('tabkey')
-      });
-    })
-  }, title);
+        events.tabSelected({
+          tabKey: data.target.getAttribute('tabkey')
+        });
+      })
+    }, [
+      h('core-icon.tab-icon', {
+        attributes: {
+          'icon': icon,
+          'alt': '' // because we have the title beside it
+        }
+      }), title
+    ]
+  );
 }
 
 /*

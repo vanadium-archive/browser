@@ -10,6 +10,12 @@ paper-icon-button.bookmarked {
   color: var(--color-bright);
 }
 
+.tab-icon {
+  width: var(--size-font-xlarge);
+  height: var(--size-font-xlarge);
+  margin-right: var(--size-font-xsmall);
+}
+
 .item-actions {
   margin: 0 -var(--size-space-xsmall);
   display: inline-block;

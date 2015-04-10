@@ -89,7 +89,7 @@ function render(state, events, browseState, browseEvents) {
 /*
  * Recursively render tree from the bottom up
  * Has to be from bottom up because virtual DOM is immutable.
- * events is extra properties to add (used for root events)
+ * extraprops is extra properties to add (used for root events)
  */
 function createTreeNode(state, selected, item, extraprops) {
   var childrenArr = state.childrenMap[item.objectName];
