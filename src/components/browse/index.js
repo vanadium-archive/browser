@@ -502,15 +502,15 @@ function renderViewActions(browseState, navEvents) {
         viewType: 'tree'
       }), selectedActionKey === 'tree'
     ),
-    createActionIcon('Grid view', 'apps',
-      browseRoute.createUrl(browseState, {
-        viewType: 'grid'
-      }), selectedActionKey === 'grid'
-    ),
     createActionIcon('Radial view', 'image:filter-tilt-shift',
       browseRoute.createUrl(browseState, {
         viewType: 'visualize'
       }), selectedActionKey === 'visualize'
+    ),
+    createActionIcon('Grid view', 'apps',
+      browseRoute.createUrl(browseState, {
+        viewType: 'grid'
+      }), selectedActionKey === 'grid'
     )
   ]);
   var ruler = h('div.vertical-ruler');
