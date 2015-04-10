@@ -17,9 +17,12 @@ function getServiceIcon(item) {
   } else if (item.hasServer) {
     icon = 'vanadium:service';
     title = 'Service';
-  } else {
+  } else if (item.hasMountPoint) {
     icon = 'vanadium:mountpoint';
     title = 'MountPoint';
+  } else {
+    icon = 'error';
+    title = 'Inaccessible';
   }
 
   return {

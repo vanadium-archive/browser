@@ -54,6 +54,10 @@ function displayItemDetails(state, events, data) {
     state.put('showLoadingIndicator', true);
   }, SHOW_LOADING_THRESHOLD);
 
+  loadBookmark().catch(function(err) {
+    log.error('Could not load bookmark status for', name, err);
+  });
+
   return namespaceService.getNamespaceItem(name).then(loadDetails).
   catch(function(err) {
     log.error('Error while loading ', name, err);
@@ -93,12 +97,7 @@ function displayItemDetails(state, events, data) {
         });
     }
 
-    var allPromises = Promise.all([
-      loadBookmark(),
-      loadPlugins(itemObs())
-    ]);
-
-    return allPromises.then(function() {
+    return loadPlugins(itemObs()).then(function() {
       // Log the name to the smart service as a potential shortcut, since it was
       // successfully visited.
       smartService.update('learner-shortcut', {
@@ -125,7 +124,7 @@ function displayItemDetails(state, events, data) {
 
   function loadPlugins(item) {
     if (!item.hasServer) {
-      return;
+      return Promise.resolve();
     }
 
     return namespaceService.getSignature(name).then(function(sig) {

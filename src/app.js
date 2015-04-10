@@ -6,6 +6,7 @@ var uuid = require('uuid');
 var mercury = require('mercury');
 var vanadium = require('vanadium');
 var addDelegatedEvents = require('./lib/mercury/add-delegated-events');
+var onboarding = require('./onboarding');
 var router = require('./router');
 var registerItemPlugins = require('./item-plugins/register-plugins');
 var debug = require('./components/debug/index');
@@ -191,6 +192,9 @@ function initVanadium() {
     vruntime.once('crash', onVanadiumCrash);
     viewport.setSplashMessage('Initialized');
     state.initialized.set(true);
+
+    // Onboarding Hook for new users after Vanadium is initialized.
+    onboarding(vruntime, state);
   }).catch(function(err) {
     if (err instanceof vanadium.errors.ExtensionNotInstalledError) {
       vanadium.extension.promptUserToInstallExtension();

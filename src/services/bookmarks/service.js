@@ -12,6 +12,7 @@ var freeze = require('../../lib/mercury/freeze');
 var sortedPush = require('../../lib/mercury/sorted-push-array');
 
 var namespaceService = require('../namespace/service');
+var namespaceItem = require('../namespace/item');
 
 var log = require('../../lib/log')('services:bookmarks:service');
 
@@ -53,7 +54,7 @@ function getAll() {
           name: name,
           error: err
         });
-        log.error('Failed to create item for "' + name + '"', err);
+        log.warn('Failed to create item for "' + name + '"', err);
       });
     });
 
@@ -75,6 +76,12 @@ function addNamespaceItem(name) {
     .then(function(item) {
       var sorter = 'objectName';
       sortedPush(bookmarksObs, item, sorter);
+    }).catch(function(err) {
+      // Add the object, anyway. It will show as inaccessible.
+      sortedPush(bookmarksObs, namespaceItem.createItem({
+        objectName: name
+      }), 'objectName');
+      throw err;
     });
 }
 
@@ -95,7 +102,9 @@ function isBookmarked(name) {
 function bookmark(name, isBookmarked) {
   if (isBookmarked) {
     // new bookmark, add it to the state
-    addNamespaceItem(name);
+    addNamespaceItem(name).catch(function(err) {
+      log.warn('Bookmarking inaccessible item "' + name + '"', err);
+    });
   } else {
     // remove bookmark
     arraySet.set(bookmarksObs, null, false, indexOf.bind(null, name));
