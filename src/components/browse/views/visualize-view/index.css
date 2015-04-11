@@ -58,7 +58,7 @@ paper-shadow.contextmenu paper-item div.ksc {
     cursor: pointer;
 }
 
-.node circle {
+.node path {
   fill: var(--color-white);
 }
 
@@ -98,7 +98,7 @@ paper-shadow.contextmenu paper-item div.ksc {
   100% { opacity: 1; }
 }
 
-.node circle.loading {
+.node path.loading {
   -webkit-animation: blinking 0.7s ease infinite;
   animation: blinking 0.7s ease infinite;
 }

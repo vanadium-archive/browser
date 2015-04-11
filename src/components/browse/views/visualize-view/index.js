@@ -24,12 +24,11 @@ module.exports.render = render;
 
 var DURATION = 500; // d3 animation duration
 var STAGGER = 5; // mS delay for each node
-var NODE_DIAMETER = 4; // diameter of circular nodes
 var MIN_ZOOM = 0.5; // minimum zoom allowed
 var MAX_ZOOM = 20;  // maximum zoom allowed
-var CIRCLE_STROKE_COLOR = '#00838F';
-var HAS_CHILDREN_COLOR = '#00ACC1';
-var NO_CHILDREN_COLOR = 'white';
+var SYMBOL_STROKE_COLOR = '#00838F';
+// var HAS_CHILDREN_COLOR = 'gray';
+// var NO_CHILDREN_COLOR = 'white';
 var SELECTED_COLOR = '#E65100';  // color of selected node
 var ZOOM_INC = 0.06;  // zoom factor per animation frame
 var PAN_INC = 3;  //  pan per animation frame
@@ -44,7 +43,8 @@ var selectItem;  // function to select item in app
 
 var width, height;  // size of the visualization diagram
 
-var curX, curY, curZ, curR; // transforms (x, y, zoom, rotate)
+var curX, curY, curR, curZ; // transforms (x, y, rotate, zoom)
+var modZ; // modified zoom for nodes and text
 
 var diagonal; // d3 diagonal projection for use by the node paths
 var treeD3; // d3 tree layout
@@ -233,8 +233,8 @@ D3Widget.prototype.updateRoot = function() {
       nn.id = buildId;
       nn.name = v || RELATIVE_ROOT;
       nn.isLeaf = false;
-      // nn.hasServer
-      // nn.MountPoint
+      nn.hasServer = true;
+      nn.hasMountPoint = true;
       if (parent !== undefined) {
         nn.parent = parent;
         if (parent.children === undefined && parent._children === undefined) {
@@ -270,7 +270,7 @@ function initD3() {
   // current pan, zoom, and rotation
   curX = width / 2; // center
   curY = height / 2;
-  curZ = 1.0; // current zoom
+  curZ = modZ = 1.0; // current zoom
   curR = 270; // current rotation
 
   // d3 diagonal projection for use by the node paths
@@ -339,6 +339,7 @@ function updateD3(subroot, doAni) {
   // Enter any new nodes at the parent's previous position
   var nodeEnter = gnode.enter().insert('g', ':first-child').
     attr('class', 'node').
+    attr('opacity', 0).
     attr('transform', 'rotate(' + (subroot.x - 90) +
         ')translate(' + subroot.y + ')').
     on('click', click).on('dblclick', dblclick).
@@ -348,37 +349,37 @@ function updateD3(subroot, doAni) {
       return getServiceIcon(d).title;
   });
 
-  nodeEnter.append('circle').
-    attr('r', 1e-6).
-    style('fill', function(d) {
-      // only show children_color if the children are not shown
-      return d.isLeaf || d.children ? NO_CHILDREN_COLOR : HAS_CHILDREN_COLOR;
-    });
+  nodeEnter.filter(function(d) {  // Mount Point
+      return d.hasMountPoint;
+    }).append('path').
+    attr('d', d3.svg.symbol().type('square'));
+
+  nodeEnter.filter(function(d) {  // Server
+      return d.hasServer;
+    }).append('path').
+    attr('d', d3.svg.symbol().type('circle').size(60));
 
   nodeEnter.append('text').
-    text(function(d) {
-      return d.name;
-    }).
-    style('opacity', 0.9).
-    style('fill-opacity', 0).
+    text(function(d) { return d.name; }).
     attr('transform', ((subroot.x + curR) % 360 <= 180 ?
-            'translate(8)scale(' : 'rotate(180)translate(-8)scale('
-          ) + reduceZ(curZ) + ')' );
+            'rotate(-7)translate(8)scale(' : 'rotate(187)translate(-8)scale('
+          ) + modZ + ')' );
 
   // update existing graph nodes
 
-  // set circle fill depending on whether it has children and is collapsed
-  gnode.select('circle').
-    attr('r', NODE_DIAMETER * reduceZ(curZ)).
-    attr('class', function(d) { return d.loading ? 'loading' : ''; }).
-    style('fill', function(d) {
-      return d.isLeaf || d.children ? NO_CHILDREN_COLOR : HAS_CHILDREN_COLOR;
-    }).
+  // set symbol style depending on whether it has children and is collapsed
+  gnode.select('.node path').
+    attr('transform', 'scale(' + modZ + ')').
+    classed('loading', function(d) { return d.loading; }).
+    // style('fill', function(d) {
+    //   // only show children_color if the children are not shown
+    //   return d.isLeaf || d.children ? NO_CHILDREN_COLOR : HAS_CHILDREN_COLOR;
+    // }).
     attr('stroke', function(d) {
-        return d === selNode ? SELECTED_COLOR : CIRCLE_STROKE_COLOR;
+        return d === selNode ? SELECTED_COLOR : SYMBOL_STROKE_COLOR;
     }).
     attr('stroke-width', function(d) {
-        return (d === selNode ? 3 : 1.5) / curZ;
+        return d === selNode ? 3 : 2;
     });
 
   gnode.select('title').text(function(d) {
@@ -391,13 +392,14 @@ function updateD3(subroot, doAni) {
     }).
     attr('transform', function(d) {
       return ((d.x + curR) % 360 <= 180 ?
-          'translate(8)scale(' :
-          'rotate(180)translate(-8)scale('
-        ) + reduceZ(curZ) +')';
+          'rotate(-7)translate(8)scale(' :
+          'rotate(187)translate(-8)scale('
+        ) + modZ +')';
     }).
     attr('fill', function(d) {
         return d === selNode ? SELECTED_COLOR : 'black';
-    }).attr('dy', '.35em');
+    }).
+    attr('dy', '5px');
 
   var nodeUpdate = (doAni ?
       gnode.transition().duration(duration).
@@ -407,13 +409,10 @@ function updateD3(subroot, doAni) {
 
   nodeUpdate.attr('transform', function(d) {
       return 'rotate(' + (d.x - 90) + ')translate(' + d.y + ')';
-    });
+    }).style('opacity', 1);
 
-  nodeUpdate.select('circle').
-    attr('r', NODE_DIAMETER * reduceZ(curZ));
-
-  nodeUpdate.select('text').
-    style('fill-opacity', 1);
+  nodeUpdate.select('path').
+    attr('transform', 'scale(' + modZ + ')');
 
   // Transition exiting nodes to the parent's new position and remove
   var nodeExit = doAni ? gnode.exit().transition().duration(duration).
@@ -422,10 +421,11 @@ function updateD3(subroot, doAni) {
   nodeExit.attr('transform', function(d) {
         return 'rotate(' + (subroot.x - 90) +')translate(' + subroot.y + ')';
     }).
+    attr('opacity', 0).
     remove();
 
-  nodeExit.select('circle').attr('r', 0);
-  nodeExit.select('text').style('fill-opacity', 0);
+  nodeExit.select('.node path').attr('transform', 'scale(0)');
+  nodeExit.select('.node text').style('fill-opacity', 0);
 
   // Update the links…
   var glink = svgGroup.selectAll('path.link').
@@ -580,22 +580,22 @@ function setview() {
       }).
       attr('transform', function(d) {
           return ((d.x + curR) % 360 <= 180 ?
-              'translate(8)scale(' :
-              'rotate(180)translate(-8)scale('
-            ) + reduceZ(curZ) +')';
+              'rotate(-7)translate(8)scale(' :
+              'rotate(187)translate(-8)scale('
+            ) + modZ +')';
       });
-  svgGroup.selectAll('circle').
-    attr('r', NODE_DIAMETER * reduceZ(curZ)).
+  svgGroup.selectAll('.node path').
+    attr('transform', 'scale(' + modZ + ')').
     attr('stroke-width', function(d) {
-        return (d === selNode ? 3 : 1.5) / curZ;
+        return d === selNode ? 3 : 2;
     });
 }
 
 // show nodes that are loading
 function showLoading(node, v) {
   node.loading = v;
-  svgGroup.selectAll('circle').
-    attr('class', function(d) { return d.loading ? 'loading' : ''; });
+  svgGroup.selectAll('.node path').
+    classed('loading', function(d) { return d.loading; });
 }
 
 //
@@ -671,6 +671,7 @@ function frame(frametime) {
   var newZ = limitZ(curZ * dz);
   dz = newZ / curZ;
   curZ = newZ;
+  modZ = Math.pow(1.1, -curZ);  // limit text and node size as scale increases
   curX += diff * moveX - (width / 2- curX) * (dz - 1);
   curY += diff * moveY - (height / 2 - curY) * (dz - 1);
   curR = limitR(curR + diff * moveR);
@@ -686,11 +687,6 @@ function limitZ(z) {
 // keep rotation between 0 and 360
 function limitR(r) {
   return (r + 360) % 360;
-}
-
-// limit size of text and nodes as scale increases
-function reduceZ(z) {
-  return Math.pow(1.1, -z);
 }
 
 //
