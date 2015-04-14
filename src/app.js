@@ -196,7 +196,7 @@ function initVanadium() {
     // Onboarding Hook for new users after Vanadium is initialized.
     onboarding(vruntime, state);
   }).catch(function(err) {
-    if (err instanceof vanadium.errors.ExtensionNotInstalledError) {
+    if (err instanceof vanadium.verror.ExtensionNotInstalledError) {
       vanadium.extension.promptUserToInstallExtension();
     } else {
       var isError = true;

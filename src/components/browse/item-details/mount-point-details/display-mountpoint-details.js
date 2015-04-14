@@ -79,7 +79,7 @@ function displayMountPointDetails(state, events, data) {
         state.put('permissions', permissions);
       }
     }).catch(function(err) {
-      if (err instanceof vanadium.errors.NoAccessError) {
+      if (err instanceof vanadium.verror.NoAccessError) {
         state.put('notAuthorizedToSeePermissions', true);
       }
       log.error('Failed to get mountpoint permissions for:', name, err);
