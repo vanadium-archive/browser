@@ -95,8 +95,8 @@ go/bin: directories
 	v23 go install v.io/x/ref/services/mounttable/mounttabled
 	v23 go install v.io/x/ref/cmd/principal
 	v23 go install v.io/x/ref/cmd/servicerunner
-	v23 go install sample/sampled
-	v23 go install runner
+	v23 go install v.io/x/browser/sample/sampled
+	v23 go install v.io/x/browser/runner
 
 # PHONY targets:
 

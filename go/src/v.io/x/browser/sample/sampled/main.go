@@ -5,9 +5,8 @@
 package main
 
 import (
-	"sample/sampleworld"
-
 	"v.io/v23"
+	"v.io/x/browser/sample/sampleworld"
 	_ "v.io/x/ref/profiles/static"
 )
 

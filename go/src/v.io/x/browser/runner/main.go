@@ -19,11 +19,9 @@ import (
 	"syscall"
 	"time"
 
-	"sample/sampleworld"
-
 	"v.io/v23"
 	"v.io/v23/options"
-
+	"v.io/x/browser/sample/sampleworld"
 	"v.io/x/ref/envvar"
 	"v.io/x/ref/lib/signals"
 	"v.io/x/ref/profiles"

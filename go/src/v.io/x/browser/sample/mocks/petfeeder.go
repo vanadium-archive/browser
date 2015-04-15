@@ -11,8 +11,8 @@ import (
 	"strings"
 	"time"
 
-	"sample"
 	"v.io/v23/rpc"
+	"v.io/x/browser/sample"
 )
 
 const (

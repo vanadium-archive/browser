@@ -8,13 +8,12 @@ import (
 	"fmt"
 	"log"
 
-	"sample"
-	"sample/mocks"
-
 	"v.io/v23"
 	"v.io/v23/context"
 	"v.io/v23/security"
 	"v.io/v23/security/access"
+	"v.io/x/browser/sample"
+	"v.io/x/browser/sample/mocks"
 	"v.io/x/ref/lib/signals"
 )
 

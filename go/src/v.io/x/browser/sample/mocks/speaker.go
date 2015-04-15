@@ -8,8 +8,8 @@ import (
 	"errors"
 	"fmt"
 
-	"sample"
 	"v.io/v23/rpc"
+	"v.io/x/browser/sample"
 )
 
 const speakerDefaultVolume = uint16(10)
