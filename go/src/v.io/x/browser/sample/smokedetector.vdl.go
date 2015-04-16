@@ -63,11 +63,11 @@ func (c implSmokeDetectorClientStub) Sensitivity(ctx *context.T, i0 int16, opts 
 // SmokeDetector allows clients to monitor and adjust a smoke detector.
 type SmokeDetectorServerMethods interface {
 	// Status retrieves the current status and sensitivity of the SmokeDetector.
-	Status(rpc.ServerCall) (status string, sensitivity int16, err error)
+	Status(*context.T, rpc.ServerCall) (status string, sensitivity int16, err error)
 	// Test the SmokeDetector to check if it is working.
-	Test(rpc.ServerCall) (bool, error)
+	Test(*context.T, rpc.ServerCall) (bool, error)
 	// Sensitivity adjusts the SmokeDetector's sensitivity to smoke.
-	Sensitivity(call rpc.ServerCall, sens int16) error
+	Sensitivity(ctx *context.T, call rpc.ServerCall, sens int16) error
 }
 
 // SmokeDetectorServerStubMethods is the server interface containing
@@ -105,16 +105,16 @@ type implSmokeDetectorServerStub struct {
 	gs   *rpc.GlobState
 }
 
-func (s implSmokeDetectorServerStub) Status(call rpc.ServerCall) (string, int16, error) {
-	return s.impl.Status(call)
+func (s implSmokeDetectorServerStub) Status(ctx *context.T, call rpc.ServerCall) (string, int16, error) {
+	return s.impl.Status(ctx, call)
 }
 
-func (s implSmokeDetectorServerStub) Test(call rpc.ServerCall) (bool, error) {
-	return s.impl.Test(call)
+func (s implSmokeDetectorServerStub) Test(ctx *context.T, call rpc.ServerCall) (bool, error) {
+	return s.impl.Test(ctx, call)
 }
 
-func (s implSmokeDetectorServerStub) Sensitivity(call rpc.ServerCall, i0 int16) error {
-	return s.impl.Sensitivity(call, i0)
+func (s implSmokeDetectorServerStub) Sensitivity(ctx *context.T, call rpc.ServerCall, i0 int16) error {
+	return s.impl.Sensitivity(ctx, call, i0)
 }
 
 func (s implSmokeDetectorServerStub) Globber() *rpc.GlobState {

@@ -63,11 +63,11 @@ func (c implSprinklerClientStub) Stop(ctx *context.T, opts ...rpc.CallOpt) (err 
 // Sprinkler allows clients to control the virtual sprinkler.
 type SprinklerServerMethods interface {
 	// Status retrieves the Sprinkler's status (i.e., active, idle)
-	Status(rpc.ServerCall) (string, error)
+	Status(*context.T, rpc.ServerCall) (string, error)
 	// Start causes the Sprinkler to emit water for the given duration (in seconds).
-	Start(call rpc.ServerCall, duration uint16) error
+	Start(ctx *context.T, call rpc.ServerCall, duration uint16) error
 	// Stop causes the Sprinkler to cease watering.
-	Stop(rpc.ServerCall) error
+	Stop(*context.T, rpc.ServerCall) error
 }
 
 // SprinklerServerStubMethods is the server interface containing
@@ -105,16 +105,16 @@ type implSprinklerServerStub struct {
 	gs   *rpc.GlobState
 }
 
-func (s implSprinklerServerStub) Status(call rpc.ServerCall) (string, error) {
-	return s.impl.Status(call)
+func (s implSprinklerServerStub) Status(ctx *context.T, call rpc.ServerCall) (string, error) {
+	return s.impl.Status(ctx, call)
 }
 
-func (s implSprinklerServerStub) Start(call rpc.ServerCall, i0 uint16) error {
-	return s.impl.Start(call, i0)
+func (s implSprinklerServerStub) Start(ctx *context.T, call rpc.ServerCall, i0 uint16) error {
+	return s.impl.Start(ctx, call, i0)
 }
 
-func (s implSprinklerServerStub) Stop(call rpc.ServerCall) error {
-	return s.impl.Stop(call)
+func (s implSprinklerServerStub) Stop(ctx *context.T, call rpc.ServerCall) error {
+	return s.impl.Stop(ctx, call)
 }
 
 func (s implSprinklerServerStub) Globber() *rpc.GlobState {

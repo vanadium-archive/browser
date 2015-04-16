@@ -77,15 +77,15 @@ func (c implAlarmClientStub) Panic(ctx *context.T, opts ...rpc.CallOpt) (err err
 // Alarm allows clients to manipulate an alarm and query its status.
 type AlarmServerMethods interface {
 	// Status returns the current status of the Alarm (i.e., armed, unarmed, panicking).
-	Status(rpc.ServerCall) (string, error)
+	Status(*context.T, rpc.ServerCall) (string, error)
 	// Arm sets the Alarm to the armed state.
-	Arm(rpc.ServerCall) error
+	Arm(*context.T, rpc.ServerCall) error
 	// DelayArm sets the Alarm to the armed state after the given delay in seconds.
-	DelayArm(call rpc.ServerCall, seconds float32) error
+	DelayArm(ctx *context.T, call rpc.ServerCall, seconds float32) error
 	// Unarm sets the Alarm to the unarmed state.
-	Unarm(rpc.ServerCall) error
+	Unarm(*context.T, rpc.ServerCall) error
 	// Panic sets the Alarm to the panicking state.
-	Panic(rpc.ServerCall) error
+	Panic(*context.T, rpc.ServerCall) error
 }
 
 // AlarmServerStubMethods is the server interface containing
@@ -123,24 +123,24 @@ type implAlarmServerStub struct {
 	gs   *rpc.GlobState
 }
 
-func (s implAlarmServerStub) Status(call rpc.ServerCall) (string, error) {
-	return s.impl.Status(call)
+func (s implAlarmServerStub) Status(ctx *context.T, call rpc.ServerCall) (string, error) {
+	return s.impl.Status(ctx, call)
 }
 
-func (s implAlarmServerStub) Arm(call rpc.ServerCall) error {
-	return s.impl.Arm(call)
+func (s implAlarmServerStub) Arm(ctx *context.T, call rpc.ServerCall) error {
+	return s.impl.Arm(ctx, call)
 }
 
-func (s implAlarmServerStub) DelayArm(call rpc.ServerCall, i0 float32) error {
-	return s.impl.DelayArm(call, i0)
+func (s implAlarmServerStub) DelayArm(ctx *context.T, call rpc.ServerCall, i0 float32) error {
+	return s.impl.DelayArm(ctx, call, i0)
 }
 
-func (s implAlarmServerStub) Unarm(call rpc.ServerCall) error {
-	return s.impl.Unarm(call)
+func (s implAlarmServerStub) Unarm(ctx *context.T, call rpc.ServerCall) error {
+	return s.impl.Unarm(ctx, call)
 }
 
-func (s implAlarmServerStub) Panic(call rpc.ServerCall) error {
-	return s.impl.Panic(call)
+func (s implAlarmServerStub) Panic(ctx *context.T, call rpc.ServerCall) error {
+	return s.impl.Panic(ctx, call)
 }
 
 func (s implAlarmServerStub) Globber() *rpc.GlobState {

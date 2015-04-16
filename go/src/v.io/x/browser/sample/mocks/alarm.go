@@ -7,6 +7,7 @@ package mocks
 import (
 	"time"
 
+	"v.io/v23/context"
 	"v.io/v23/rpc"
 )
 
@@ -23,18 +24,18 @@ type alarm struct {
 }
 
 // Status returns the current status of the Alarm (i.e., armed, unarmed, panicking).
-func (a *alarm) Status(rpc.ServerCall) (string, error) {
+func (a *alarm) Status(*context.T, rpc.ServerCall) (string, error) {
 	return a.status, nil
 }
 
 // Arm sets the Alarm to the armed state
-func (a *alarm) Arm(rpc.ServerCall) error {
+func (a *alarm) Arm(*context.T, rpc.ServerCall) error {
 	a.status = alarmArmed
 	return nil
 }
 
 // DelayArm sets the Alarm to the armed state after the given delay in seconds.
-func (a *alarm) DelayArm(_ rpc.ServerCall, delay float32) error {
+func (a *alarm) DelayArm(_ *context.T, _ rpc.ServerCall, delay float32) error {
 	time.AfterFunc(
 		time.Duration(delay)*time.Second,
 		func() {
@@ -45,13 +46,13 @@ func (a *alarm) DelayArm(_ rpc.ServerCall, delay float32) error {
 }
 
 // Unarm sets the Alarm to the unarmed state.
-func (a *alarm) Unarm(rpc.ServerCall) error {
+func (a *alarm) Unarm(*context.T, rpc.ServerCall) error {
 	a.status = alarmUnarmed
 	return nil
 }
 
 // Panic sets the Alarm to the panicking state.
-func (a *alarm) Panic(rpc.ServerCall) error {
+func (a *alarm) Panic(*context.T, rpc.ServerCall) error {
 	a.status = alarmPanicking
 	return nil
 }

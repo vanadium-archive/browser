@@ -180,25 +180,25 @@ func (c *implSpeakerPlayStreamClientCall) Finish() (err error) {
 // Speaker allows clients to control the music being played.
 type SpeakerServerMethods interface {
 	// Play starts or continues the current song.
-	Play(rpc.ServerCall) error
+	Play(*context.T, rpc.ServerCall) error
 	// PlaySong plays back the given song title, if possible.
-	PlaySong(call rpc.ServerCall, songName string) error
+	PlaySong(ctx *context.T, call rpc.ServerCall, songName string) error
 	// PlayStream plays the given stream of music data.
-	PlayStream(SpeakerPlayStreamServerCall) error
+	PlayStream(*context.T, SpeakerPlayStreamServerCall) error
 	// GetSong retrieves the title of the Speaker's current song, if any.
-	GetSong(rpc.ServerCall) (string, error)
+	GetSong(*context.T, rpc.ServerCall) (string, error)
 	// Pause playback of the Speaker's current song.
-	Pause(rpc.ServerCall) error
+	Pause(*context.T, rpc.ServerCall) error
 	// Stop playback of the Speaker's current song.
-	Stop(rpc.ServerCall) error
+	Stop(*context.T, rpc.ServerCall) error
 	// Volume adjusts the Speaker's volume.
-	Volume(call rpc.ServerCall, volumeLevel uint16) error
+	Volume(ctx *context.T, call rpc.ServerCall, volumeLevel uint16) error
 	// GetVolume retrieves the Speaker's volume.
-	GetVolume(rpc.ServerCall) (uint16, error)
+	GetVolume(*context.T, rpc.ServerCall) (uint16, error)
 	// AddSongs adds the list of given songs to the song library.
-	AddSongs(call rpc.ServerCall, songs []string) error
+	AddSongs(ctx *context.T, call rpc.ServerCall, songs []string) error
 	// Delete removes the list of given songs from the song library.
-	Delete(call rpc.ServerCall, songs []string) error
+	Delete(ctx *context.T, call rpc.ServerCall, songs []string) error
 }
 
 // SpeakerServerStubMethods is the server interface containing
@@ -207,25 +207,25 @@ type SpeakerServerMethods interface {
 // is the streaming methods.
 type SpeakerServerStubMethods interface {
 	// Play starts or continues the current song.
-	Play(rpc.ServerCall) error
+	Play(*context.T, rpc.ServerCall) error
 	// PlaySong plays back the given song title, if possible.
-	PlaySong(call rpc.ServerCall, songName string) error
+	PlaySong(ctx *context.T, call rpc.ServerCall, songName string) error
 	// PlayStream plays the given stream of music data.
-	PlayStream(*SpeakerPlayStreamServerCallStub) error
+	PlayStream(*context.T, *SpeakerPlayStreamServerCallStub) error
 	// GetSong retrieves the title of the Speaker's current song, if any.
-	GetSong(rpc.ServerCall) (string, error)
+	GetSong(*context.T, rpc.ServerCall) (string, error)
 	// Pause playback of the Speaker's current song.
-	Pause(rpc.ServerCall) error
+	Pause(*context.T, rpc.ServerCall) error
 	// Stop playback of the Speaker's current song.
-	Stop(rpc.ServerCall) error
+	Stop(*context.T, rpc.ServerCall) error
 	// Volume adjusts the Speaker's volume.
-	Volume(call rpc.ServerCall, volumeLevel uint16) error
+	Volume(ctx *context.T, call rpc.ServerCall, volumeLevel uint16) error
 	// GetVolume retrieves the Speaker's volume.
-	GetVolume(rpc.ServerCall) (uint16, error)
+	GetVolume(*context.T, rpc.ServerCall) (uint16, error)
 	// AddSongs adds the list of given songs to the song library.
-	AddSongs(call rpc.ServerCall, songs []string) error
+	AddSongs(ctx *context.T, call rpc.ServerCall, songs []string) error
 	// Delete removes the list of given songs from the song library.
-	Delete(call rpc.ServerCall, songs []string) error
+	Delete(ctx *context.T, call rpc.ServerCall, songs []string) error
 }
 
 // SpeakerServerStub adds universal methods to SpeakerServerStubMethods.
@@ -257,44 +257,44 @@ type implSpeakerServerStub struct {
 	gs   *rpc.GlobState
 }
 
-func (s implSpeakerServerStub) Play(call rpc.ServerCall) error {
-	return s.impl.Play(call)
+func (s implSpeakerServerStub) Play(ctx *context.T, call rpc.ServerCall) error {
+	return s.impl.Play(ctx, call)
 }
 
-func (s implSpeakerServerStub) PlaySong(call rpc.ServerCall, i0 string) error {
-	return s.impl.PlaySong(call, i0)
+func (s implSpeakerServerStub) PlaySong(ctx *context.T, call rpc.ServerCall, i0 string) error {
+	return s.impl.PlaySong(ctx, call, i0)
 }
 
-func (s implSpeakerServerStub) PlayStream(call *SpeakerPlayStreamServerCallStub) error {
-	return s.impl.PlayStream(call)
+func (s implSpeakerServerStub) PlayStream(ctx *context.T, call *SpeakerPlayStreamServerCallStub) error {
+	return s.impl.PlayStream(ctx, call)
 }
 
-func (s implSpeakerServerStub) GetSong(call rpc.ServerCall) (string, error) {
-	return s.impl.GetSong(call)
+func (s implSpeakerServerStub) GetSong(ctx *context.T, call rpc.ServerCall) (string, error) {
+	return s.impl.GetSong(ctx, call)
 }
 
-func (s implSpeakerServerStub) Pause(call rpc.ServerCall) error {
-	return s.impl.Pause(call)
+func (s implSpeakerServerStub) Pause(ctx *context.T, call rpc.ServerCall) error {
+	return s.impl.Pause(ctx, call)
 }
 
-func (s implSpeakerServerStub) Stop(call rpc.ServerCall) error {
-	return s.impl.Stop(call)
+func (s implSpeakerServerStub) Stop(ctx *context.T, call rpc.ServerCall) error {
+	return s.impl.Stop(ctx, call)
 }
 
-func (s implSpeakerServerStub) Volume(call rpc.ServerCall, i0 uint16) error {
-	return s.impl.Volume(call, i0)
+func (s implSpeakerServerStub) Volume(ctx *context.T, call rpc.ServerCall, i0 uint16) error {
+	return s.impl.Volume(ctx, call, i0)
 }
 
-func (s implSpeakerServerStub) GetVolume(call rpc.ServerCall) (uint16, error) {
-	return s.impl.GetVolume(call)
+func (s implSpeakerServerStub) GetVolume(ctx *context.T, call rpc.ServerCall) (uint16, error) {
+	return s.impl.GetVolume(ctx, call)
 }
 
-func (s implSpeakerServerStub) AddSongs(call rpc.ServerCall, i0 []string) error {
-	return s.impl.AddSongs(call, i0)
+func (s implSpeakerServerStub) AddSongs(ctx *context.T, call rpc.ServerCall, i0 []string) error {
+	return s.impl.AddSongs(ctx, call, i0)
 }
 
-func (s implSpeakerServerStub) Delete(call rpc.ServerCall, i0 []string) error {
-	return s.impl.Delete(call, i0)
+func (s implSpeakerServerStub) Delete(ctx *context.T, call rpc.ServerCall, i0 []string) error {
+	return s.impl.Delete(ctx, call, i0)
 }
 
 func (s implSpeakerServerStub) Globber() *rpc.GlobState {

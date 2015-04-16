@@ -81,11 +81,11 @@ func (c implPetFeederClientStub) Empty(ctx *context.T, opts ...rpc.CallOpt) (err
 // PetFeeder allows clients to remotely feed their pets.
 type PetFeederServerMethods interface {
 	// Status returns the current status of the PetFeeder (how full the bowl is).
-	Status(rpc.ServerCall) (float64, error)
+	Status(*context.T, rpc.ServerCall) (float64, error)
 	// Fill fills the pet feeder bowl with food. Errors if the bowl will overflow.
-	Fill(call rpc.ServerCall, amount float64) error
+	Fill(ctx *context.T, call rpc.ServerCall, amount float64) error
 	// Empty removes all food from the pet feeder bowl.
-	Empty(rpc.ServerCall) error
+	Empty(*context.T, rpc.ServerCall) error
 }
 
 // PetFeederServerStubMethods is the server interface containing
@@ -123,16 +123,16 @@ type implPetFeederServerStub struct {
 	gs   *rpc.GlobState
 }
 
-func (s implPetFeederServerStub) Status(call rpc.ServerCall) (float64, error) {
-	return s.impl.Status(call)
+func (s implPetFeederServerStub) Status(ctx *context.T, call rpc.ServerCall) (float64, error) {
+	return s.impl.Status(ctx, call)
 }
 
-func (s implPetFeederServerStub) Fill(call rpc.ServerCall, i0 float64) error {
-	return s.impl.Fill(call, i0)
+func (s implPetFeederServerStub) Fill(ctx *context.T, call rpc.ServerCall, i0 float64) error {
+	return s.impl.Fill(ctx, call, i0)
 }
 
-func (s implPetFeederServerStub) Empty(call rpc.ServerCall) error {
-	return s.impl.Empty(call)
+func (s implPetFeederServerStub) Empty(ctx *context.T, call rpc.ServerCall) error {
+	return s.impl.Empty(ctx, call)
 }
 
 func (s implPetFeederServerStub) Globber() *rpc.GlobState {
@@ -230,14 +230,14 @@ func (c implRoboDogClientStub) SetName(ctx *context.T, i0 string, opts ...rpc.Ca
 // RoboDog allows clients to play with a virtual robotic dog.
 type RoboDogServerMethods interface {
 	// Status returns the state of the robotic dog.
-	Status(rpc.ServerCall) (RoboDogStatus, error)
+	Status(*context.T, rpc.ServerCall) (RoboDogStatus, error)
 	// Speak allows a client to speak with the robotic dog.
-	Speak(call rpc.ServerCall, words string) (string, error)
+	Speak(ctx *context.T, call rpc.ServerCall, words string) (string, error)
 	// Play allows a client to play with the robotic dog.
 	// Errors if the dog does not want to play.
-	Play(call rpc.ServerCall, duration uint32) error
+	Play(ctx *context.T, call rpc.ServerCall, duration uint32) error
 	// SetName allows a client to set the robotic dog's name.
-	SetName(call rpc.ServerCall, name string) error
+	SetName(ctx *context.T, call rpc.ServerCall, name string) error
 }
 
 // RoboDogServerStubMethods is the server interface containing
@@ -275,20 +275,20 @@ type implRoboDogServerStub struct {
 	gs   *rpc.GlobState
 }
 
-func (s implRoboDogServerStub) Status(call rpc.ServerCall) (RoboDogStatus, error) {
-	return s.impl.Status(call)
+func (s implRoboDogServerStub) Status(ctx *context.T, call rpc.ServerCall) (RoboDogStatus, error) {
+	return s.impl.Status(ctx, call)
 }
 
-func (s implRoboDogServerStub) Speak(call rpc.ServerCall, i0 string) (string, error) {
-	return s.impl.Speak(call, i0)
+func (s implRoboDogServerStub) Speak(ctx *context.T, call rpc.ServerCall, i0 string) (string, error) {
+	return s.impl.Speak(ctx, call, i0)
 }
 
-func (s implRoboDogServerStub) Play(call rpc.ServerCall, i0 uint32) error {
-	return s.impl.Play(call, i0)
+func (s implRoboDogServerStub) Play(ctx *context.T, call rpc.ServerCall, i0 uint32) error {
+	return s.impl.Play(ctx, call, i0)
 }
 
-func (s implRoboDogServerStub) SetName(call rpc.ServerCall, i0 string) error {
-	return s.impl.SetName(call, i0)
+func (s implRoboDogServerStub) SetName(ctx *context.T, call rpc.ServerCall, i0 string) error {
+	return s.impl.SetName(ctx, call, i0)
 }
 
 func (s implRoboDogServerStub) Globber() *rpc.GlobState {

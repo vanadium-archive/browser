@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 
+	"v.io/v23/context"
 	"v.io/v23/rpc"
 	"v.io/x/browser/sample"
 )
@@ -23,7 +24,7 @@ type speaker struct {
 }
 
 // Play starts or continues the current song.
-func (s *speaker) Play(rpc.ServerCall) error {
+func (s *speaker) Play(*context.T, rpc.ServerCall) error {
 	if s.currentSong == "" {
 		return errors.New("no current song")
 	}
@@ -32,7 +33,7 @@ func (s *speaker) Play(rpc.ServerCall) error {
 }
 
 // PlaySong plays back the given song title, if possible.
-func (s *speaker) PlaySong(_ rpc.ServerCall, title string) error {
+func (s *speaker) PlaySong(_ *context.T, _ rpc.ServerCall, title string) error {
 	if !s.speakerLibrary[title] {
 		return errors.New(fmt.Sprintf("%q does not exist", title))
 	}
@@ -42,43 +43,43 @@ func (s *speaker) PlaySong(_ rpc.ServerCall, title string) error {
 }
 
 // PlayStream plays the given stream of music data.
-func (s *speaker) PlayStream(sample.SpeakerPlayStreamServerCall) error {
+func (s *speaker) PlayStream(*context.T, sample.SpeakerPlayStreamServerCall) error {
 	s.currentSong = ""
 	s.playing = true
 	return nil
 }
 
 // GetSong retrieves the title of the Speaker's current song, if any.
-func (s *speaker) GetSong(rpc.ServerCall) (string, error) {
+func (s *speaker) GetSong(*context.T, rpc.ServerCall) (string, error) {
 	return s.currentSong, nil
 }
 
 // Pause playback of the Speaker's current song.
-func (s *speaker) Pause(rpc.ServerCall) error {
+func (s *speaker) Pause(*context.T, rpc.ServerCall) error {
 	s.playing = false
 	return nil
 }
 
 // Stop playback of the Speaker's current song.
-func (s *speaker) Stop(rpc.ServerCall) error {
+func (s *speaker) Stop(*context.T, rpc.ServerCall) error {
 	s.currentSong = ""
 	s.playing = false
 	return nil
 }
 
 // Volume adjusts the Speaker's volume.
-func (s *speaker) Volume(_ rpc.ServerCall, volume uint16) error {
+func (s *speaker) Volume(_ *context.T, _ rpc.ServerCall, volume uint16) error {
 	s.volume = volume
 	return nil
 }
 
 // GetVolume retrieves the Speaker's volume.
-func (s *speaker) GetVolume(rpc.ServerCall) (uint16, error) {
+func (s *speaker) GetVolume(*context.T, rpc.ServerCall) (uint16, error) {
 	return s.volume, nil
 }
 
 // AddSongs adds the list of given songs to the song library.
-func (s *speaker) AddSongs(_ rpc.ServerCall, songs []string) error {
+func (s *speaker) AddSongs(_ *context.T, _ rpc.ServerCall, songs []string) error {
 	for _, song := range songs {
 		s.speakerLibrary[song] = true // No-op if the song is there.
 	}
@@ -86,7 +87,7 @@ func (s *speaker) AddSongs(_ rpc.ServerCall, songs []string) error {
 }
 
 // Delete removes the list of given songs from the song library.
-func (s *speaker) Delete(_ rpc.ServerCall, songs []string) error {
+func (s *speaker) Delete(_ *context.T, _ rpc.ServerCall, songs []string) error {
 	for _, song := range songs {
 		delete(s.speakerLibrary, song) // No-op if the song isn't there.
 		if s.currentSong == song {     // Stop playing the current song if it was removed.

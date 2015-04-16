@@ -63,11 +63,11 @@ func (c implPoolHeaterClientStub) Stop(ctx *context.T, opts ...rpc.CallOpt) (err
 // PoolHeater allows clients to control when the pool is being heated.
 type PoolHeaterServerMethods interface {
 	// Status retrieves the PoolHeater's status (i.e., active, idle) and temperature.
-	Status(rpc.ServerCall) (running string, temperature uint64, err error)
+	Status(*context.T, rpc.ServerCall) (running string, temperature uint64, err error)
 	// Start informs the PoolHeater to heat the pool to the given temperature until the duration expires.
-	Start(call rpc.ServerCall, temperature uint64, duration uint64) error
+	Start(ctx *context.T, call rpc.ServerCall, temperature uint64, duration uint64) error
 	// Stop informs the PoolHeater to cease heating the pool.
-	Stop(rpc.ServerCall) error
+	Stop(*context.T, rpc.ServerCall) error
 }
 
 // PoolHeaterServerStubMethods is the server interface containing
@@ -105,16 +105,16 @@ type implPoolHeaterServerStub struct {
 	gs   *rpc.GlobState
 }
 
-func (s implPoolHeaterServerStub) Status(call rpc.ServerCall) (string, uint64, error) {
-	return s.impl.Status(call)
+func (s implPoolHeaterServerStub) Status(ctx *context.T, call rpc.ServerCall) (string, uint64, error) {
+	return s.impl.Status(ctx, call)
 }
 
-func (s implPoolHeaterServerStub) Start(call rpc.ServerCall, i0 uint64, i1 uint64) error {
-	return s.impl.Start(call, i0, i1)
+func (s implPoolHeaterServerStub) Start(ctx *context.T, call rpc.ServerCall, i0 uint64, i1 uint64) error {
+	return s.impl.Start(ctx, call, i0, i1)
 }
 
-func (s implPoolHeaterServerStub) Stop(call rpc.ServerCall) error {
-	return s.impl.Stop(call)
+func (s implPoolHeaterServerStub) Stop(ctx *context.T, call rpc.ServerCall) error {
+	return s.impl.Stop(ctx, call)
 }
 
 func (s implPoolHeaterServerStub) Globber() *rpc.GlobState {

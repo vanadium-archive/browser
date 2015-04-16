@@ -56,9 +56,9 @@ func (c implLightSwitchClientStub) FlipSwitch(ctx *context.T, i0 bool, opts ...r
 // LightSwitch allows clients to manipulate a virtual light switch.
 type LightSwitchServerMethods interface {
 	// Status indicates whether the light is on or off.
-	Status(rpc.ServerCall) (string, error)
+	Status(*context.T, rpc.ServerCall) (string, error)
 	// FlipSwitch sets the light to on or off, depending on the input.
-	FlipSwitch(call rpc.ServerCall, toOn bool) error
+	FlipSwitch(ctx *context.T, call rpc.ServerCall, toOn bool) error
 }
 
 // LightSwitchServerStubMethods is the server interface containing
@@ -96,12 +96,12 @@ type implLightSwitchServerStub struct {
 	gs   *rpc.GlobState
 }
 
-func (s implLightSwitchServerStub) Status(call rpc.ServerCall) (string, error) {
-	return s.impl.Status(call)
+func (s implLightSwitchServerStub) Status(ctx *context.T, call rpc.ServerCall) (string, error) {
+	return s.impl.Status(ctx, call)
 }
 
-func (s implLightSwitchServerStub) FlipSwitch(call rpc.ServerCall, i0 bool) error {
-	return s.impl.FlipSwitch(call, i0)
+func (s implLightSwitchServerStub) FlipSwitch(ctx *context.T, call rpc.ServerCall, i0 bool) error {
+	return s.impl.FlipSwitch(ctx, call, i0)
 }
 
 func (s implLightSwitchServerStub) Globber() *rpc.GlobState {
