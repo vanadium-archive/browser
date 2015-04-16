@@ -23,6 +23,7 @@
 .field .header {
   display: flex;
   flex-direction: row;
+  word-break: break-word;
 }
 
 .field .content {
