@@ -6,7 +6,7 @@ var helpRoute = require('../../routes/help');
 
 var tabKeys = Object.freeze({
   MAIN: 'main',       // Describes the Vanadium Browser to new users.
-  DETAILS: 'details', // Defines service information and icons.
+  VIEWS: 'views', // Defines service information and icons.
   BROWSE: 'browse',   // Introduces how to browse the namespace.
   METHODS: 'methods', // Explains how to make RPCs.
   FAQ: 'faq'          // Frequently asked questions and contact information.
@@ -19,11 +19,11 @@ var sections = Object.freeze(new Map([
     markdownContent: require('./content/main.md'),
     path: helpRoute.createUrl(tabKeys.MAIN)
   }],
-  [tabKeys.DETAILS, {
+  [tabKeys.VIEWS, {
     index: 1,
     header: 'What You See',
-    markdownContent: require('./content/details.md'),
-    path: helpRoute.createUrl(tabKeys.DETAILS)
+    markdownContent: require('./content/views.md'),
+    path: helpRoute.createUrl(tabKeys.VIEWS)
   }],
   [tabKeys.BROWSE, {
     index: 2,
@@ -33,7 +33,7 @@ var sections = Object.freeze(new Map([
   }],
   [tabKeys.METHODS, {
     index: 3,
-    header: 'Invoking Services',
+    header: 'Invoking Methods',
     markdownContent: require('./content/methods.md'),
     path: helpRoute.createUrl(tabKeys.METHODS)
   }],
