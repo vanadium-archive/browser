@@ -39,13 +39,19 @@ COMPRESS_OPTS := --compress [ --no-unused --no-evaluate ]
 
 BROWSERIFY_OPTIONS = --transform ./main-transform --debug
 
+# Work-around for Browserify opening too many files by increasing the limit on file descriptors.
+# https://github.com/substack/node-browserify/issues/431
+INCREASE_FILE_DESC = ulimit -S -n 2560
+
 # Browserify and extract sourcemap, but do not minify.
 define BROWSERIFY
+	$(INCREASE_FILE_DESC); \
 	browserify $1 $(BROWSERIFY_OPTIONS) | exorcist $2.map > $2
 endef
 
 # Browserify, minify, and extract sourcemap.
 define BROWSERIFY-MIN
+	$(INCREASE_FILE_DESC); \
 	browserify $1 $(BROWSERIFY_OPTIONS) --g [ uglifyify $(MANGLE_OPTS) $(COMPRESS_OPTS) ] | exorcist $2.map > $2
 endef
 
