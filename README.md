@@ -81,4 +81,4 @@ make test
 The code repository for the Namespace Browser is on [GitHub](https://github.com/vanadium/browser).
 
 Bugs and other issues can be submitted to the
-[Vanadium Issue Tracker](https://github.com/vanadium/issues/issues).
+[Vanadium Issue Tracker](https://github.com/vanadium/browser/issues).
