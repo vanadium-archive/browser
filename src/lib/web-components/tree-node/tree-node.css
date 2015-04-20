@@ -48,6 +48,13 @@ paper-spinner {
   margin-top: 4px;
 }
 
+.empty {
+  font-size: 0.9em;
+  color: rgba(0,0,0, 0.56);
+  margin-left: 50px;
+  padding: 3px 0 3px 0;
+}
+
 /* how to add content to item on highlight
 span.item.highlight::after {
   content: " \0025B6";

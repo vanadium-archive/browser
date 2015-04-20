@@ -103,6 +103,7 @@ function createTreeNode(state, selected, item, extraprops) {
   var props = {
     attributes: {
       label: item.mountedName || '<Home>',
+      emptytext: 'No visible children',
       icon: iconInfo.icon,
       itemTitle: iconInfo.title,
       open: !!state.expandedMap[item.objectName],
