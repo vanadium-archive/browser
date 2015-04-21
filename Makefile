@@ -17,7 +17,7 @@ export GOPATH:=$(V23_ROOT)/release/projects/browser/go
 export VDLPATH:=$(V23_ROOT)/release/projects/browser/go
 export GOBIN:=$(V23_ROOT)/release/projects/browser/go/bin
 
-PATH:=$(V23_ROOT)/environment/cout/node/bin:$(PATH)
+PATH:=$(V23_ROOT)/third_party/cout/node/bin:$(PATH)
 PATH:=node_modules/.bin:$(GOBIN):$(PATH)
 
 VANADIUM_JS:=$(V23_ROOT)/release/javascript/core
