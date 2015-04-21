@@ -348,7 +348,7 @@ function renderTabTitle(state, events, tabKey, icon, title) {
     },
     'ev-click': new polymerEvent(function(data) {
         events.tabSelected({
-          tabKey: data.target.getAttribute('tabkey')
+          tabKey: tabKey
         });
       })
     }, [
