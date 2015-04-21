@@ -8,7 +8,7 @@ How can I report bugs or suggest features?<a name="2"></a>
 
 Visit us on github to make suggestions and report bugs.
 
-https://github.com/vanadium/browser/issues/new?title=Namespace%20Browser
+https://github.com/vanadium/browser/issues/new
 
 How can I contribute to the namespace browser?<a name="3"></a>
 ----------------------------------------------
