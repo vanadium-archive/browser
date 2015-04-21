@@ -98,9 +98,9 @@ bower_components: bower.json node_modules
 	touch bower_components
 
 go/bin: directories
+	v23 go install -a -tags wspr v.io/x/ref/cmd/servicerunner
 	v23 go install v.io/x/ref/services/mounttable/mounttabled
 	v23 go install v.io/x/ref/cmd/principal
-	v23 go install v.io/x/ref/cmd/servicerunner
 	v23 go install v.io/x/browser/sample/sampled
 	v23 go install v.io/x/browser/runner
 
