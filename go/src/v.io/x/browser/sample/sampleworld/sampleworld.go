@@ -5,11 +5,13 @@
 package sampleworld
 
 import (
+	"flag"
 	"fmt"
 	"log"
 
 	"v.io/v23"
 	"v.io/v23/context"
+	"v.io/v23/naming"
 	"v.io/v23/security"
 	"v.io/v23/security/access"
 	"v.io/x/browser/sample"
@@ -50,6 +52,12 @@ func (o openAuthorizer) Authorize(*context.T, security.Call) error {
 	return nil
 }
 
+var namePrefix string
+
+func init() {
+	flag.StringVar(&namePrefix, "name", "", "Name prefix used to publish the sample world under.")
+}
+
 func RunSampleWorld(ctx *context.T) {
 	// Create new server and publish the given server under the given name
 	var listenAndServe = func(name string, server interface{}) func() {
@@ -67,8 +75,9 @@ func RunSampleWorld(ctx *context.T) {
 			log.Fatal("error listening to service: ", err)
 		}
 
+		fullName := naming.Join(namePrefix, name)
 		// Serve these services at the given name.
-		if err := s.Serve(name, server, openAuthorizer{}); err != nil {
+		if err := s.Serve(fullName, server, openAuthorizer{}); err != nil {
 			log.Fatal("error serving service: ", err)
 		}
 
