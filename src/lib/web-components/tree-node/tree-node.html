@@ -34,7 +34,7 @@ Events:
 author: wmleler@
 -->
 
-<polymer-element name="tree-node" attributes="label icon">
+<polymer-element name="tree-node" attributes="label icon emptytext">
   <template>
     <link rel="stylesheet" href="tree-node.css">
     <div class="indent" aria-expanded="{{open}}"
@@ -63,6 +63,9 @@ author: wmleler@
       <template if="{{isParent && open}}">
         <div id="children" role="group">
           <content></content>
+          <template if="{{showEmptyText}}">
+            <div class="indent empty">{{emptytext}}</div>
+          </template>
         </div>
       </template>
     </div>
@@ -71,6 +74,7 @@ author: wmleler@
   <script>
   Polymer('tree-node', {
     publish: {
+      emptytext: 'No children',
       iconalt: 'item icon',
       itemtitle: 'item',
       open: false,
@@ -79,6 +83,7 @@ author: wmleler@
       isExpandable: false
     },
     isParent: false,
+    showEmptyText: false,
     ready: function() {
       this.isExpandableChanged();
       this.onMutation(this, this.childrenUpdated);
@@ -89,6 +94,18 @@ author: wmleler@
     },
     isExpandableChanged: function() {
       this.isParent = !!this.firstElementChild || this.isExpandable;
+    },
+    openChanged: function() {
+      this.updateShowEmptyText();
+    },
+    loadingChanged: function() {
+      this.updateShowEmptyText();
+    },
+    updateShowEmptyText: function() {
+      var me = this;
+      setTimeout(function() {
+        me.showEmptyText = (!me.firstElementChild && !me.loading && me.open);
+      }, 30); // delay showing the empty text by a bit so it is less jarring
     },
     openme: function(e, d, sender) {
       this.open = !this.open;

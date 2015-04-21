@@ -12,7 +12,7 @@ function create() {}
 
 function render(viewsState, browseState, browseEvents, navEvents) {
   var isSearch = !!browseState.globQuery;
-  var emptyText = (isSearch ? 'No glob search results' : 'No children');
+  var emptyText = (isSearch ? 'No glob search results' : 'No visible children');
   var title;
   if (isSearch) {
     title = 'Glob Search Results';
