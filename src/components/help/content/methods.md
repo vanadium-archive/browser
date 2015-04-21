@@ -138,7 +138,7 @@ Click the
 ![saved arguments](helpimg/noargs.png) icon to invoke the method with the
 saved arguments. You can also click the star to delete these saved arguments.
 You can create as many sets of saved arguments as you want for each method.
-Also note that saved arguments are carry over to other services of the
+Also note that saved arguments carry over to other services of the
 same type.
 
 Mount Tables as Services
