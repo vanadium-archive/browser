@@ -1,79 +1,81 @@
 In Browse mode, the left pane is used to browse the current namespace.
 
-There are three views for browsing: Tree, Grid, and Radial.
-In any view, you can click on an item to show details in the right pane.
+There are three views for browsing: Tree, Radial and Grid.
+As discussed in the [Overview and Concepts](#/help/main) tab,
+a Vanadium name consists of a list of mounted names separated by slashes.
+All views show a set of *items*, and in all views each item includes a
+mounted name and an icon.
+
+Item Icons
+----------
+
+If the icon for an item is a square
+<img src="helpimg/square.png" style="border:none" />,
+then the item represents a mount point in a mount table.
+If the icon is a circle
+<img src="helpimg/circle.png" style="border:none" />,
+then the item points at a service.
+If the icon includes both a square and a circle
+<img src="helpimg/squarecircle.png" style="border:none" />,
+then the name both represents a mount point and it also points at a service.
+If the namespace browser cannot access the name
+(typically because of permissions), then the icon indicates an error
+<img src="helpimg/inaccessible.png" style="border:none" />.
+
+Put another way, the mount point represents the mounted name itself,
+and the service represents what the name points to.
+This is significant because permissions (such as Access Control Lists)
+can be set both on names (mount points) and on services.
+
+In any view, you can select an item to show details for it in the right pane.
+The right pane will contain one or two tabs, depending on whether the selected
+item represents a mount point, has a pointer to a service, or both.
 
 Tree View
 ---------
 
-The Tree View browses a namespace as a hierarchy:
+The Tree View browses a namespace as a hierarchy.
+The tree view shows each item on a separate line.
+Each item consists of an arrow, an icon, and a mounted name.
 
 ![Tree View](helpimg/tree.png)
 
-Like the Grid View, each item contain an icon and a name.
-The icon shows if the item is a mount table, subtable, or service.
-As above, house is a mount table, kitchen is a subtable ,
-and alarm is a service.
+The arrow is used to expand and collapse the children of the item.
+It will only appear if an item can have children,
+but will appear even if the item currently does not have any children
+(or only has children that the current user does not have permission to view).
+Click on a right-pointing arrow to expand its children.
 
-To the left of the item is a widget showing if the item has children.
-Again, only mount tables and subtables can have children.
+Because an item's children may be distributed across multiple devices,
+it may take a moment before the children appear.
+A loading icon is shown circling the arrow while children are still loading.
 
-If no widget is shown, then the item has no children.
-Because a namespace is often distributed across multiple computers,
-it may take a moment before this widget appears.
-
-If the widget contains a right-pointing arrow, then the item has children but
-they are not shown. Click on the widget to expand the tree.
-
-If the widget contains a down-pointing arrow, then the children are shown.
-Again, because a namespace is distributed,
-it may take a moment for all children to appear.
-Click on the widget to collapse the sub-tree.
-
-Grid View
----------
-
-The Grid View show a set of items.
-It is the default view for Bookmarks and Recent.
-
-![Grid View](helpimg/grid.png)
-
-The breadcrumbs in the toolbar ("localhost:5167")
-shows the name of the parent of these items.
-
-This Grid View shows four items. Each item has an icon and a name:
-* The icon for house and cottage show that they are mount tables.
-* The icon for kitchen shows that it is a subtable
-(a folder in a mount table).
-* The icon for alarm shows that it is a service.
-
-Some items can have children. For example, mount tables can always
-have children, and other services can be written to allow children
-by extending the namespace.
-If an item can have children, the item  has an action button on the right
-side to browse those children.
-Conversely, some services (like alarm) do not have children.
+The icon is discussed above.
 
 Radial View
 --------------
 
-The Radial View shows a namespace as a network graph with
-nodes and edges.
+The Radial View browses a namespace as items radiating out from the root,
+using a circular network graph with nodes and edges.
+The nodes are shown as the icons for each item (square and/or circle).
+The edges are shown as curved lines.
 
-![Radial View](helpimg/visualize.png)
+![Radial View](helpimg/radial.png)
 
-An item in the namespace is represented by a circular node.
-You can click on a node to select it,
-which shows details for that item in the right pane.
-If the circle has a solid center, then that item may have children.
-You can double-click on the node to expand the children.
+You can click on a node to select it.
+You can double-click on the node to expand its children (if any).
+You can expand a whole level of the graph (children, grandchildren, etc.)
+by clicking repeatedly on the expand widget
+<img src="helpimg/unfold-more.png" style="border:none" />.
+The node blinks while children are loading.
 
-You can interact with the visualization using the widget buttons,
-by right-clicking on a node to get a context menu,
+You can interact with the visualization using the five widget buttons,
+by right-clicking on a node to see a context menu,
 or using keyboard shortcuts:
 
 <style>
-thead td { font-weight: bold; font-size: 1.1em; }
+thead td { font-weight: bold; font-size: 1.1em; border-bottom: solid gray 1px; }
+table tr:nth-child(even) { background-color: rgba(220, 220, 220, 0.8); }
 td.big { font-size: 1.2em; }
 td:nth-child(1), td:nth-child(2), td:nth-child(3), td:nth-child(4) { text-align: center; }
 td:nth-child(5) { padding-left: 5px; }
@@ -91,10 +93,28 @@ td:nth-child(5) { padding-left: 5px; }
   <tr><td></td><td>Center Selected</td><td>End</td><td></td><td>center selected node</tr>
   <tr><td></td><td>Center Root</td><td>Home</td><td></td><td>reset rotate and zoom</td></tr>
   <tr><td></td><td>Show Loaded</td><td>Shift + Return</td><td></td><td>show all loaded children</tr>
-  <tr><td></td><td>Browse Into</td><td>/</td><td>breadcrumbs</td><td>change root to selection</tr>
+  <tr><td></td><td>Browse Into</td><td>/</td><td>breadcrumbs</td><td>change current root to selection</tr>
 </table>
 
-<br/>
-For example, click on the <img src="helpimg/unfold-more.png" style="border:none">
-widget to see additional levels in the namespace.
+Grid View
+---------
+
+The Grid View shows a set of items, typically the children of an item.
+
+![Grid View](helpimg/grid.png)
+
+The blue name (`identity`) is the parent of the items.
+
+Unlike the tree view, in the grid view the arrow is shown on the right
+side of the item.
+If an item does not include an arrow, then it cannot have children.
+
+Click on the arrow for an item to show its children (if any),
+or click on the "browse into" widget
+![Browse Into](helpimg/browseInto.png) in the right pane to display
+the children of the currently selected item.
+You can also use the breadcrumbs to move up and down the hierarchy.
+
+Grid View is also used for Bookmarks and Recent, and to show the results
+of a search.
 <p>&nbsp;</p>

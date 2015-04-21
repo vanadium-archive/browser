@@ -9,6 +9,7 @@ var tabKeys = Object.freeze({
   VIEWS: 'views', // Defines service information and icons.
   BROWSE: 'browse',   // Introduces how to browse the namespace.
   METHODS: 'methods', // Explains how to make RPCs.
+  SAMPLE: 'sample', // Sample world (house and cottage)
   FAQ: 'faq'          // Frequently asked questions and contact information.
 });
 
@@ -33,12 +34,18 @@ var sections = Object.freeze(new Map([
   }],
   [tabKeys.METHODS, {
     index: 3,
-    header: 'Invoking Methods',
+    header: 'Details and Methods',
     markdownContent: require('./content/methods.md'),
     path: helpRoute.createUrl(tabKeys.METHODS)
   }],
-  [tabKeys.FAQ, {
+  [tabKeys.SAMPLE, {
     index: 4,
+    header: 'Sample World',
+    markdownContent: require('./content/sample.md'),
+    path: helpRoute.createUrl(tabKeys.SAMPLE)
+  }],
+  [tabKeys.FAQ, {
+    index: 5,
     header: 'FAQ',
     markdownContent: require('./content/faq.md'),
     path: helpRoute.createUrl(tabKeys.FAQ)
