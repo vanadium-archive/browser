@@ -46,6 +46,7 @@
 
 .browse-main-wrapper core-tooltip {
   position: absolute;
+  top: 0;
 }
 
 .browse-main-wrapper h2 {
