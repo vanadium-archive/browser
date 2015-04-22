@@ -736,7 +736,8 @@ function mousedown() {  // pan action from mouse drag
   startposY = curY - d3.event.clientY;
   d3.select(document).on('mousemove', mousemove, true);
   d3.select(document).on('mouseup', mouseup, true);
-  networkElem.focus();
+  // TODO: should have focus unless some other input element has focus
+  networkElem.focus();  // ensure that keyboard events work on left pane
   d3.event.preventDefault();
 }
 
