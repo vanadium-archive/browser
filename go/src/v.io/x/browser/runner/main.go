@@ -70,7 +70,7 @@ func runMT(stdin io.Reader, stdout, stderr io.Writer, env map[string]string, arg
 		return fmt.Errorf("root failed: %v", err)
 	}
 	mp := args[0]
-	mt, err := mounttablelib.NewMountTableDispatcher("", "mounttable")
+	mt, err := mounttablelib.NewMountTableDispatcher("", "", "mounttable")
 	if err != nil {
 		return fmt.Errorf("mounttablelib.NewMountTableDispatcher failed: %s", err)
 	}
