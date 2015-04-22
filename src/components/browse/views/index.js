@@ -94,9 +94,14 @@ function load(state, namespace, globQuery) {
 
   if (state.viewType() === 'tree') {
     TreeView.expand(state.tree, namespace);
-    return namespaceService.getNamespaceItem(namespace).then(function(item) {
-        state.tree.put('rootItem', item); // WooHoo! fixed the bug!
-    });
+    return namespaceService.getNamespaceItem(namespace)
+      .then(function(item) {
+        state.tree.put('rootItem', item);
+      })
+      .catch(function(err) {
+        state.tree.put('rootItem', null);
+        return Promise.reject(err);
+      });
   }
 
   if (state.viewType() !== 'grid') {
@@ -145,7 +150,7 @@ function render(state, events, browseState, browseEvents, navEvents) {
       return GridView.render(state, browseState, browseEvents, navEvents);
     case 'tree':
       return TreeView.render(state.tree, events.tree,
-          browseState, browseEvents);
+        browseState, browseEvents);
     case 'visualize':
       return VisualizeView.render(state, browseState, browseEvents, navEvents);
     default:
