@@ -606,6 +606,7 @@ function renderMethodInput(state, events, index) {
     attributes: {
       'label': argName + ' (' + argTypeStr + ')',
       'value': args[index],
+      'spellcheck': 'false',
       'maxItems': METHOD_INPUT_MAX_ITEMS
     },
     'ev-change': changeEvent,

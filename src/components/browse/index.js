@@ -456,6 +456,7 @@ function renderNamespaceBox(browseState, browseEvents, navEvents) {
             'value': browseState.namespace,
             'delimiter': '/',
             'flex': 'true',
+            'spellcheck': 'false',
             'maxItems': NAMESPACE_AUTOCOMPLETE_MAX_ITEMS
           },
           'ev-focus': focusEvent,
@@ -589,6 +590,7 @@ function renderSearch(browseState, navEvents) {
         h('paper-input.input', {
           attributes: {
             'flex': 'true',
+            'spellcheck': 'false',
             'label': 'Glob Search'
           },
           'name': 'globQuery',
