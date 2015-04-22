@@ -43,22 +43,13 @@ func makePetFeederAndRoboDog() (interface{}, interface{}) {
 	return sample.PetFeederServer(p), sample.RoboDogServer(r)
 }
 
-// openAuthorizer allows RPCs from all clients.
-// TODO(aghassemi): Write a more strict authorizer with proper ACLs and
-// identity setup
-type openAuthorizer struct{}
-
-func (o openAuthorizer) Authorize(*context.T, security.Call) error {
-	return nil
-}
-
-var namePrefix string
-
-func init() {
-	flag.StringVar(&namePrefix, "name", "", "Name prefix used to publish the sample world under.")
-}
+var (
+	authorizedBlessingPattern = flag.String("authorize", string(security.AllPrincipals), "Blessing pattern that matches authorized users. By default all principals are authorized.")
+	namePrefix                = flag.String("name", "", "Name prefix used to publish the sample world under.")
+)
 
 func RunSampleWorld(ctx *context.T) {
+
 	// Create new server and publish the given server under the given name
 	var listenAndServe = func(name string, server interface{}) func() {
 
@@ -75,9 +66,16 @@ func RunSampleWorld(ctx *context.T) {
 			log.Fatal("error listening to service: ", err)
 		}
 
-		fullName := naming.Join(namePrefix, name)
+		acl := access.AccessList{
+			In: []security.BlessingPattern{
+				security.BlessingPattern(*authorizedBlessingPattern),
+			},
+		}
+
+		fullName := naming.Join(*namePrefix, name)
+
 		// Serve these services at the given name.
-		if err := s.Serve(fullName, server, openAuthorizer{}); err != nil {
+		if err := s.Serve(fullName, server, acl); err != nil {
 			log.Fatal("error serving service: ", err)
 		}
 

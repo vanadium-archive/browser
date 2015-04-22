@@ -21,6 +21,7 @@ import (
 
 	"v.io/v23"
 	"v.io/v23/options"
+	"v.io/v23/security"
 	"v.io/x/browser/sample/sampleworld"
 	"v.io/x/ref/envvar"
 	"v.io/x/ref/lib/signals"
@@ -235,7 +236,7 @@ func run() bool {
 	// for a user that poses the blessing /dev.v.io/root/users/<name>
 	// therefore to find a <name> we can publish under, we remove /dev.v.io/root/users/
 	// from the default blessing name.
-	blessing := v23.GetPrincipal(ctx).BlessingStore().Default().String()
+	blessing := string(security.DefaultBlessingPatterns(v23.GetPrincipal(ctx))[0])
 	name := strings.Trim(blessing, "/dev.v.io/root/users/")
 	nsPrefix := fmt.Sprintf("/ns.dev.v.io:8101/users/%s", name)
 	exitOnError(err, "Failed to obtain hostname")
@@ -266,8 +267,9 @@ func run() bool {
 
 	// Possibly run the sample world.
 	if runSample {
+		authorize := security.DefaultBlessingPatterns(v23.GetPrincipal(ctx))[0]
 		fmt.Println("Running Sample World")
-		hSample, err := sh.Start(SampleWorldCommand, nil, "--v23.tcp.protocol=wsh", fmt.Sprintf("--v23.tcp.address=%s:0", host))
+		hSample, err := sh.Start(SampleWorldCommand, nil, "--v23.tcp.protocol=wsh", fmt.Sprintf("--v23.tcp.address=%s:0", host), fmt.Sprintf("--authorize=%s", authorize))
 		exitOnError(err, "Failed to start sample world")
 		expect.NewSession(nil, hSample.Stdout(), 30*time.Second)
 		defer hSample.Shutdown(outFile, errFile)
