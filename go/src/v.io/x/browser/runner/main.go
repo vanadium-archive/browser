@@ -21,8 +21,9 @@ import (
 
 	"v.io/v23"
 	"v.io/v23/options"
+	"v.io/v23/rpc"
 	"v.io/v23/security"
-	"v.io/x/browser/sample/sampleworld"
+
 	"v.io/x/ref/envvar"
 	"v.io/x/ref/lib/signals"
 	"v.io/x/ref/profiles"
@@ -30,6 +31,8 @@ import (
 	"v.io/x/ref/services/mounttable/mounttablelib"
 	"v.io/x/ref/test/expect"
 	"v.io/x/ref/test/modules"
+
+	"v.io/x/browser/sample/sampleworld"
 )
 
 const (
@@ -291,7 +294,9 @@ func run() bool {
 		// Also set HOUSE_MOUNTTABLE (used in the tests)
 		os.Setenv("HOUSE_MOUNTTABLE", fmt.Sprintf("/%s:%d", host, housePort))
 
-		proxyShutdown, proxyEndpoint, err := profiles.NewProxy(ctx, "wsh", ":0", "", "test/proxy")
+		lspec := v23.GetListenSpec(ctx)
+		lspec.Addrs = rpc.ListenAddrs{{"wsh", ":0"}}
+		proxyShutdown, proxyEndpoint, err := profiles.NewProxy(ctx, lspec, "test/proxy")
 		exitOnError(err, "Failed to start proxy")
 		defer proxyShutdown()
 		vars["PROXY_NAME"] = proxyEndpoint.Name()
