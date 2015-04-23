@@ -411,6 +411,15 @@ function makeMethodTooltip(state, child) {
     });
   }
 
+  // If the method has tags, show the tag types and values.
+  if (methodSig.tags.length > 0) {
+    tooltip += '\n\nTags';
+    methodSig.tags.forEach(function(tag) {
+      tooltip += '\n';
+      tooltip += '- ' + tag.val + ': ' + tag._type.name;
+    });
+  }
+
   return h('core-tooltip.tooltip.method-tooltip', {
     'label': tooltip,
     'position': 'top'
