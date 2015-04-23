@@ -331,8 +331,7 @@ function render(browseState, browseEvents, navEvents) {
 
   var view = [
     h('core-toolbar.browse-toolbar.core-narrow', [
-      renderBreadcrumbs(browseState, navEvents),
-      renderViewActions(browseState, navEvents)
+      renderToolbar(browseState, navEvents)
     ]),
     h('core-drawer-panel', {
       attributes: {
@@ -490,7 +489,7 @@ function createActionIcon(tooltip, icon, href, isSelected) {
 /*
  * Renders the view switchers for different views and bookmarks, recommendations
  */
-function renderViewActions(browseState, navEvents) {
+function renderToolbar(browseState, navEvents) {
 
   var selectedActionKey = browseState.subPage;
   if (browseState.subPage === 'views') {
@@ -514,6 +513,7 @@ function renderViewActions(browseState, navEvents) {
       }), selectedActionKey === 'grid'
     )
   ]);
+  var breadcrumbs = renderBreadcrumbs(browseState, navEvents);
   var ruler = h('div.vertical-ruler');
   var bookmarkGroup = h('div.icon-group', [
     createActionIcon('Bookmarks', 'bookmark-outline',
@@ -525,13 +525,16 @@ function renderViewActions(browseState, navEvents) {
       selectedActionKey === 'recommendations')
   ]);
   var searchGroup = renderSearch(browseState, navEvents);
-  var view = h('div', {
+
+  var view = h('div.browse-toolbar-layout', {
     attributes: {
       'layout': 'true',
       'horizontal': 'true'
     }
   }, [
     switchGroup,
+    ruler,
+    breadcrumbs,
     ruler,
     bookmarkGroup,
     ruler,
@@ -540,6 +543,7 @@ function renderViewActions(browseState, navEvents) {
 
   return view;
 }
+
 
 /*
  * Renders the globquery searchbox, used to filter the globbed names.
@@ -613,7 +617,7 @@ function renderBreadcrumbs(browseState, navEvents) {
   // only render the breadcrumbs for items and not bookmarks/recommendations
   if (browseState.subPage !== 'views') {
     // use a flex div to leave white-space inplace of breadcrumbs
-    return h('div', {
+    return h('div.breadcrumbs-wrapper', {
       attributes: {
         'flex': 'true'
       }
