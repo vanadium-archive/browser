@@ -186,7 +186,6 @@ D3Widget.prototype.init = function() {
     networkElem = document.createElement('div');
     networkElem.className = 'network';
     networkElem.setAttribute('tabindex', 0);  // allow focus
-
     selectItem = this.browseEvents.selectItem.bind(this.browseEvents);
     requestAnimationFrame(initD3);
   }
@@ -213,6 +212,8 @@ D3Widget.prototype.update = function(browseState, browseEvents) {
   if (width !== networkElem.offsetWidth) { resize(); }
 
   this.updateRoot();
+
+  networkElem.focus();
 };
 
 // build new data tree
@@ -742,8 +743,7 @@ function mousedown() {  // pan action from mouse drag
   startposY = curY - d3.event.clientY;
   d3.select(document).on('mousemove', mousemove, true);
   d3.select(document).on('mouseup', mouseup, true);
-  // TODO: should have focus unless some other input element has focus
-  networkElem.focus();  // ensure that keyboard events work on left pane
+  networkElem.focus();
   d3.event.preventDefault();
 }
 
@@ -831,6 +831,7 @@ function hideContextMenu() {
   d3.select('.contextmenu').style('display', 'none');
   doc.on('mouseup.cm', null);
   doc.on('mousedown.cm', null);
+  networkElem.focus();
 }
 
 
@@ -983,4 +984,5 @@ function actionUp(key) {
   if (keysdown.length > 0 || animation === null) { return; }
   cancelAnimationFrame(animation);
   animation = aniTime = null;
+  networkElem.focus();
 }
