@@ -614,16 +614,6 @@ function renderSearch(browseState, navEvents) {
  */
 function renderBreadcrumbs(browseState, navEvents) {
 
-  // only render the breadcrumbs for items and not bookmarks/recommendations
-  if (browseState.subPage !== 'views') {
-    // use a flex div to leave white-space inplace of breadcrumbs
-    return h('div.breadcrumbs-wrapper', {
-      attributes: {
-        'flex': 'true'
-      }
-    });
-  }
-
   var name = browseState.selectedItemName || browseState.namespace;
   var isRooted = namespaceService.util.isRooted(name);
   var namespaceParts = namespaceService.util.parseName(name);
