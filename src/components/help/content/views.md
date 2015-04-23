@@ -52,7 +52,15 @@ Toolbar
 
 ![Toolbar](helpimg/toolbar.png)
 
-The left side of the toolbar contains a list of (slash separated) names showing
+The left side of the toolbar contains three icons for the views
+shown in the left pane:
+1. Tree view (selected) shows items in a hierarchical tree.
+2. Radial view shows a visualization of the namespace,
+good for getting an overview.
+3. Grid view shows items as individual objects.
+<br /><br />
+
+Next is a list of (slash separated) names showing
 what is being browsed, commonly called "breadcrumbs".
 The breadcrumbs start with the root name (for rooted names),
 and end at the currently selected node (if any).
@@ -66,13 +74,6 @@ In the above figure, the breadcrumbs show three names:
 The first breadcrumb shown in black (`identity`) is the root of the current view.
 You can click on any name in the breadcrumbs to change the root of the current
 view, which makes it easy to navigate up and down a Vanadium name.
-
-Next there are three icons for the views shown in the left pane:
-1. Tree view (selected) shows items in a hierarchical tree.
-2. Radial view shows a visualization of the namespace,
-good for getting an overview.
-3. Grid view shows items as individual objects.
-<br /><br />
 
 Next there are two icons for Bookmarks
 ![bookmarks](helpimg/bookmarks.png)
