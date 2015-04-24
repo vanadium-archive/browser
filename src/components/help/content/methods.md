@@ -3,7 +3,7 @@ details for that item appear in the right pane.
 For the item named `applications`, the right pane has a header and
 a set of tabs that look like this:
 
-![details header](helpimg/detailsheader.png)
+![Details header](helpimg/detailsheader.png)
 
 On the left side between the header and the tabs is a widget
 ![hide](helpimg/hide.png) that hides the right pane.
@@ -23,7 +23,7 @@ When you browse into an item, the browse into widget changes to
 The `applications` item has two tabs, because it has a mount point and
 it also points to a service.
 
-MountPoint Tab
+MountPoint tab
 --------------
 
 The MountPoint tab shows details about the mount point associated
@@ -42,7 +42,7 @@ and what the name points to.
 See [the Security concepts document](https://v.io/concepts/security.html)
 for information about permissions.
 
-Service Tab
+Service tab
 -----------
 
 The Service tab shows details about the Vanadium service pointed to by this name:
@@ -61,7 +61,7 @@ Next is a set of interfaces that are supported by this service.
 For each interface, the first line shows the name of the interface
 (from the VDL file used to define the service),
 an information widget
-![Information](helpimg/info.png),
+![information](helpimg/info.png),
 and an arrow
 ![show/hide methods](helpimg/right.png)
 to show or hide the methods associated with this interface.
@@ -86,7 +86,7 @@ By default, the methods for this interface are not displayed,
 but you can click the
 ![show methods](helpimg/right.png) icon to show (and even invoke) its methods.
 
-Invoking Methods on Services
+Invoking methods on services
 ----------------------------
 
 Each service has one or more methods associated with it.
@@ -110,7 +110,7 @@ The Output will look like:
 This shows (from the bottom up) that the alarm is initially not armed,
 until after you click on the Arm method.
 
-Invoking Methods with Arguments
+Invoking methods with arguments
 -------------------------------
 
 If a method takes arguments, then the name of the method
@@ -132,7 +132,7 @@ Arguments are remembered between calls, but
 if you think you will call a method more than once with different sets of arguments,
 you can also click the "Save" button. This saves the arguments like this:
 
-![save arguments](helpimg/savedarg.png)
+![Save arguments](helpimg/savedarg.png)
 
 Click the
 ![saved arguments](helpimg/noargs.png) icon to invoke the method with the
@@ -141,7 +141,7 @@ You can create as many sets of saved arguments as you want for each method.
 Also note that saved arguments carry over to other services of the
 same type.
 
-Mount Tables as Services
+Mount tables as services
 ------------------------
 
 A mount table is also a service. The methods for a mount table allow you

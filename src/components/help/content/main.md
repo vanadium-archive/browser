@@ -24,7 +24,7 @@ A *method* can then be called on this object; for example,
 `User/jane/images/vacation/42.jpg.Get()` might return the image,
 or `Delete()` might delete it.
 
-Mount Tables
+Mount tables
 ------------
 
 A *mount table* is a kind of Vanadium server used to find other services.
@@ -36,14 +36,14 @@ Like other Vanadium servers, a mount table has a dispatcher that is
 used to help resolve names. In the above example the name
 `User/jane/images` may have been created in more than one way.
 
-![two mount tables](helpimg/name2.png)
+![Two mount tables](helpimg/name2.png)
 
 In this figure `User` resolves to a mount table that
 contains a mount point named `jane`. This mount point then points
 to another mount table (possibly on another device)
 that contains a mount point named `images`.
 
-![single mount table](helpimg/name1.png)
+![Single mount table](helpimg/name1.png)
 
 Alternatively, in this figure the `User` mount table contains a mount point named
 `jane` that does not have a distributed pointer associated with it.
@@ -68,13 +68,13 @@ In addition, more than one mount point in different mount tables can point to
 the same server (including to mount tables), so the same service can be accessed
 via more than one name.
 
-Rooted and Relative Names
+Rooted and relative names
 -------------------------
 
 Names in Vanadium can either be *rooted* or *relative*.
 A rooted name begins with a slash (/), while a relative name does not.
 
-Rooted Names
+Rooted names
 ------------
 
 The name following the (required) initial slash of a rooted name is the *root*,
@@ -87,7 +87,7 @@ like "ns.dev.v.io:8101" or "localhost:5167",
 3. or a Vanadium endpoint address for a mount table, which will look something like
 "@3@@batman.com:2345@00000000000000000000000000000000@2@3@s@@".
 
-Relative Names
+Relative names
 --------------
 
 A relative name does not begin with a slash.
@@ -108,11 +108,11 @@ In Vanadium, mount tables (and thus names) are by default secure.
 What names are accessible to a user depend on the identity of the user, and
 the services (including mount tables) to which the user has been given access.
 
-Help Topics
+Help topics
 -----------
 
 * [What You See](#/help/views) –
-the different parts of the namespace browser and what they do.
+the visible parts of the namespace browser and what they do.
 
 * [Browse](#/help/browse) – how to browse a namespace,
 including the different views provided by the namespace browser.

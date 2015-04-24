@@ -6,7 +6,7 @@ a Vanadium name consists of a list of mounted names separated by slashes.
 All views show a set of *items*, and in all views each item includes a
 mounted name and an icon.
 
-Item Icons
+Item icons
 ----------
 
 If the icon for an item is a square
@@ -31,20 +31,21 @@ In any view, you can select an item to show details for it in the right pane.
 The right pane will contain one or two tabs, depending on whether the selected
 item represents a mount point, has a pointer to a service, or both.
 
-Tree View
+Tree view
 ---------
 
-The Tree View browses a namespace as a hierarchy.
+Tree view browses a namespace as a hierarchy.
 The tree view shows each item on a separate line.
 Each item consists of an arrow, an icon, and a mounted name.
 
 ![Tree View](helpimg/tree.png)
 
 The arrow is used to expand and collapse the children of the item.
-It will only appear if an item can have children,
-but will appear even if the item currently does not have any children
-(or only has children that the current user does not have permission to view).
+Items that cannot have children do not show an arrow.
 Click on a right-pointing arrow to expand its children.
+If the arrow changes to a dash (&mdash;)
+then the item currently does not have any children
+(or has children that the current user does not have permission to view).
 
 Because an item's children may be distributed across multiple devices,
 it may take a moment before the children appear.
@@ -52,15 +53,15 @@ A loading icon is shown circling the arrow while children are still loading.
 
 The icon is discussed above.
 
-Radial View
+Radial view
 --------------
 
-The Radial View browses a namespace as items radiating out from the root,
+Radial view browses a namespace as items radiating out from the root,
 using a circular network graph with nodes and edges.
 The nodes are shown as the icons for each item (square and/or circle).
 The edges are shown as curved lines.
 
-![Radial View](helpimg/radial.png)
+![Radial view](helpimg/radial.png)
 
 You can click on a node to select it.
 You can double-click on the node to expand its children (if any).
@@ -96,12 +97,12 @@ td:nth-child(5) { padding-left: 5px; }
   <tr><td></td><td>Browse Into</td><td>/</td><td>breadcrumbs</td><td>change current root to selection</tr>
 </table>
 
-Grid View
+Grid view
 ---------
 
-The Grid View shows a set of items, typically the children of an item.
+Grid view shows a set of items, typically the children of an item.
 
-![Grid View](helpimg/grid.png)
+![Grid view](helpimg/grid.png)
 
 The blue name (`identity`) is the parent of the items.
 
@@ -111,10 +112,10 @@ If an item does not include an arrow, then it cannot have children.
 
 Click on the arrow for an item to show its children (if any),
 or click on the "browse into" widget
-![Browse Into](helpimg/browseInto.png) in the right pane to display
+![Browse into](helpimg/browseInto.png) in the right pane to display
 the children of the currently selected item.
 You can also use the breadcrumbs to move up and down the hierarchy.
 
-Grid View is also used for Bookmarks and Recent, and to show the results
+Grid view is also used for Bookmarks and Recent, and to show the results
 of a search.
 <p>&nbsp;</p>
