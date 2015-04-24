@@ -40,11 +40,21 @@ author: wmleler@
     <div class="indent" aria-expanded="{{open}}"
         aria-owns="{{isParent && open?'children':''}}">
       <div class="row">
-        <core-icon id="expander" on-tap="{{openme}}"
+        <template if="{{showEmptyIcon}}">
+          <core-icon id="expander"
+            icon="remove"
+            alt="{{emptytext}}"
+            title="{{emptytext}}">
+          </core-icon>
+        </template>
+        <template if="{{!showEmptyIcon}}">
+          <core-icon id="expander" on-tap="{{openme}}"
             class="{{isParent?'':'notParent'}}"
             icon="{{open?'expand-more':'chevron-right'}}"
-            alt="{{open?'collapse':'expand'}}">
-        </core-icon>
+            alt="{{open?'Collapse':'Expand'}}"
+            title="{{open?'Collapse':'Expand'}}">
+          </core-icon>
+        </template>
         <paper-spinner active="{{loading}}" aria-label="loading">
         </paper-spinner>
         <span on-tap="{{activate}}" role="treeitem" aria-selected="{{highlight}}"
@@ -63,9 +73,6 @@ author: wmleler@
       <template if="{{isParent && open}}">
         <div id="children" role="group">
           <content></content>
-          <template if="{{showEmptyText}}">
-            <div class="indent empty">{{emptytext}}</div>
-          </template>
         </div>
       </template>
     </div>
@@ -83,7 +90,7 @@ author: wmleler@
       isExpandable: false
     },
     isParent: false,
-    showEmptyText: false,
+    showEmptyIcon: false,
     ready: function() {
       this.isExpandableChanged();
       this.onMutation(this, this.childrenUpdated);
@@ -91,21 +98,27 @@ author: wmleler@
     childrenUpdated: function(observer, mutations) {
       this.isExpandableChanged();
       this.onMutation(this, this.childrenUpdated);
+      this.updateShowEmptyIcon();
     },
     isExpandableChanged: function() {
       this.isParent = !!this.firstElementChild || this.isExpandable;
     },
     openChanged: function() {
-      this.updateShowEmptyText();
+      this.updateShowEmptyIcon();
     },
     loadingChanged: function() {
-      this.updateShowEmptyText();
+      this.updateShowEmptyIcon();
     },
-    updateShowEmptyText: function() {
+    updateShowEmptyIcon: function() {
       var me = this;
       setTimeout(function() {
-        me.showEmptyText = (!me.firstElementChild && !me.loading && me.open);
-      }, 30); // delay showing the empty text by a bit so it is less jarring
+        me.showEmptyIcon = (
+          !me.firstElementChild &&
+          !me.loading &&
+           me.isExpandable &&
+           me.open
+        );
+      }, 30); // delay showing the empty icon by a bit so it is less jarring
     },
     openme: function(e, d, sender) {
       this.open = !this.open;
