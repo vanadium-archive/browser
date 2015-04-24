@@ -62,11 +62,13 @@ VDL_FILES = $(shell find go -name "*.vdl")
 .DEFAULT_GOAL := default
 default: build
 
+.PHONY: deploy-production
+deploy-production: build
+	make -C $(V23_ROOT)/infrastructure/deploy browser-production
+
 .PHONY: deploy-staging
 deploy-staging: build
-	git rev-parse --verify HEAD >> public/version
-	gcloud config set project vanadium-staging
-	gsutil -m rsync -d -r public gs://browser.staging.v.io
+	make -C $(V23_ROOT)/infrastructure/deploy browser-staging
 
 # Creating the bundle JS file.
 public/bundle.js: $(SOURCE_FILES) node_modules
