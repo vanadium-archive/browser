@@ -29,7 +29,8 @@
   padding:  1px 5px 2px 3px;
   cursor: pointer;
 }
-.item .itemcontent:hover, .item .itemcontent:focus {
+.item:hover .itemcontent, .item:focus .itemcontent,
+.expander-anchor:hover, .expander-anchor:focus {
   opacity: 0.7;
 }
 .item.highlight {
@@ -53,6 +54,13 @@ paper-spinner {
   color: rgba(0,0,0, 0.56);
   margin-left: 50px;
   padding: 3px 0 3px 0;
+}
+
+.expander-anchor, .item {
+  display: inline-block;
+  text-decoration: none;
+  color: initial;
+  outline: none;
 }
 
 /* how to add content to item on highlight

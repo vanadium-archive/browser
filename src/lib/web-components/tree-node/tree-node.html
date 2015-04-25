@@ -48,17 +48,27 @@ author: wmleler@
           </core-icon>
         </template>
         <template if="{{!showEmptyIcon}}">
-          <core-icon id="expander" on-tap="{{openme}}"
-            class="{{isParent?'':'notParent'}}"
-            icon="{{open?'expand-more':'chevron-right'}}"
-            alt="{{open?'Collapse':'Expand'}}"
-            title="{{open?'Collapse':'Expand'}}">
-          </core-icon>
+          <a class="expander-anchor"
+             href="javascript:void(0);"
+             on-click="{{openme}}"
+             tabindex="{{isParent?'0':'-1'}}">
+            <core-icon id="expander"
+              class="{{isParent?'':'notParent'}}"
+              icon="{{open?'expand-more':'chevron-right'}}"
+              alt="{{open?'Collapse':'Expand'}}"
+              title="{{open?'Collapse':'Expand'}}"
+              >
+            </core-icon>
+          </a>
         </template>
         <paper-spinner active="{{loading}}" aria-label="loading">
         </paper-spinner>
-        <span on-tap="{{activate}}" role="treeitem" aria-selected="{{highlight}}"
-            class="item{{highlight?' highlight':''}}" title="{{itemtitle}}">
+        <a href="javascript:void(0);"
+          on-click="{{activate}}"
+          role="treeitem"
+          aria-selected="{{highlight}}"
+          class="item{{highlight?' highlight':''}}"
+          title="{{itemtitle}}">
           <span class="itemcontent">
             <template if="{{icon}}">
               <core-icon class="itemicon" icon="{{icon}}" alt="{{iconalt}}">
@@ -68,7 +78,7 @@ author: wmleler@
               {{label}}
             </span>
           </span>
-        </span>
+        </a>
       </div>
       <template if="{{isParent && open}}">
         <div id="children" role="group">
