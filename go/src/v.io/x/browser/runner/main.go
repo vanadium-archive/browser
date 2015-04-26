@@ -23,6 +23,7 @@ import (
 	"v.io/v23/options"
 	"v.io/v23/rpc"
 	"v.io/v23/security"
+	"v.io/v23/security/access"
 
 	"v.io/x/ref/envvar"
 	"v.io/x/ref/lib/signals"
@@ -296,7 +297,9 @@ func run() bool {
 
 		lspec := v23.GetListenSpec(ctx)
 		lspec.Addrs = rpc.ListenAddrs{{"wsh", ":0"}}
-		proxyShutdown, proxyEndpoint, err := profiles.NewProxy(ctx, lspec, "test/proxy")
+		// Allow all processes started by this runner to use the proxy.
+		proxyACL := access.AccessList{In: security.DefaultBlessingPatterns(v23.GetPrincipal(ctx))}
+		proxyShutdown, proxyEndpoint, err := profiles.NewProxy(ctx, lspec, proxyACL, "test/proxy")
 		exitOnError(err, "Failed to start proxy")
 		defer proxyShutdown()
 		vars["PROXY_NAME"] = proxyEndpoint.Name()
