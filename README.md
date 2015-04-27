@@ -54,10 +54,11 @@ This command lives in the Vanadium source:
 $V23_ROOT/release/go/src/v.io/x/ref/cmd/vbash
 ```
 
-You can run the Namespace Browser without vbash,
-but you would have to take care of permissions manually.
+You can run the Namespace Browser without `vbash`
+if you manually set up your environment's credentials.
 
-Once inside vbash, you can serve a local instance with the following command:
+Once inside `vbash`, you can serve a local instance of
+the Namespace Browser by executing the following command:
 
 ```sh
 make start
