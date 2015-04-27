@@ -12,9 +12,10 @@ See [the Naming concepts document](https://v.io/concepts/naming.html) for more i
 Names in Vanadium are a sequence of simple name components –
 called *mounted names* – separated by slashes (/).
 The process of using a Vanadium name to find a service on a server is
-called *name resolution*. Names are resolved from left to right.
+called *name resolution*.
 A name is resolved by special servers called *mount tables*,
-and (optionally) by (all other) servers using something called a *dispatcher*.
+and (optionally) by (all) servers using something called a *dispatcher*.
+Names are resolved from left to right.
 
 For example, the Vanadium name `User/jane/images/vacation/42.jpg`
 could be used to access a photo on an image storage server.

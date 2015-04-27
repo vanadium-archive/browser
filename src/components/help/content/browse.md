@@ -89,12 +89,12 @@ td:nth-child(5) { padding-left: 5px; }
   <tr><td></td><td></td><td>arrow keys</td><td>drag with mouse</td><td>move visualization</tr>
   <tr><td class="big">+ &minus;</td><td></td><td>+ &minus;</td><td>mouse scrollwheel</td><td>zoom</td></tr>
   <tr><td class="big">&#8634; &#8635;</td><td></td><td>PageUp PageDown</td><td>Shift + scrollwheel</td><td>rotate</td></tr>
-  <tr><td><img src="helpimg/unfold-more.png" style="border:none"></td><td>Load +1 Level</td><td>Return</td><td>Shift + double-click</td><td>load 1 additional level, from selection</tr>
-  <tr><td></td><td>Expand/Collapse</td><td>space bar</td><td>double-click</td><td>expand/collapse immediate children</tr>
+  <tr><td><img src="helpimg/unfold-more.png" style="border:none"></td><td>Load +1 Level</td><td>space bar</td><td>Shift + double-click</td><td>load 1 additional level, from selection</tr>
+  <tr><td></td><td>Browse Into</td><td>Shift + space bar</td><td>breadcrumbs</td><td>change current root to selection</tr>
+  <tr><td></td><td>Expand/Collapse</td><td>Return</td><td>double-click</td><td>expand/collapse immediate children</tr>
+  <tr><td></td><td>Show Loaded</td><td>Shift + Return</td><td></td><td>show all loaded children</tr>
   <tr><td></td><td>Center Selected</td><td>End</td><td></td><td>center selected node</tr>
   <tr><td></td><td>Center Root</td><td>Home</td><td></td><td>reset rotate and zoom</td></tr>
-  <tr><td></td><td>Show Loaded</td><td>Shift + Return</td><td></td><td>show all loaded children</tr>
-  <tr><td></td><td>Browse Into</td><td>/</td><td>breadcrumbs</td><td>change current root to selection</tr>
 </table>
 
 Grid view

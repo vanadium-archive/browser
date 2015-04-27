@@ -1,3 +1,7 @@
+##Currently, you can see the Sample World only if you run the Namespace Browser on your local machine. See $V23_ROOT/release/projects/browser/README.md
+
+##If you run the hosted version (https://browser.v.io) you will not see the Sample World. This issue will be fixed in the near future. The issue is allowing multiple users to experiment with the Sample World without interfering with each other.
+
 Sample World is a sample namespace that allows you to experiment
 with the Namespace Browser:
 

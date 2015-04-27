@@ -56,7 +56,6 @@ var rootIndex = {}; // index id to nodes
 // keyboard key codes
 var KEY_PLUS = 187;     // + (zoom in)
 var KEY_MINUS = 189;    // - (zoom out)
-var KEY_SLASH = 191;    // / (slash)
 var KEY_PAGEUP = 33;    // (rotate CCW)
 var KEY_PAGEDOWN = 34;  // (rotate CW)
 var KEY_LEFT = 37;      // left arrow
@@ -134,10 +133,10 @@ function render(itemsState, browseState, browseEvents, navEvents) {
         attributes: {
           mini: true,
           icon: 'unfold-more', // 'expand-less',
-          title: 'Load +1 Level (Return)',
+          title: 'Load +1 Level (space bar)',
           'aria-label': 'load +1 level'
         },
-        'ev-click': menu.bind(undefined, KEY_RETURN, false)
+        'ev-click': menu.bind(undefined, KEY_SPACE, false)
       })
     ] ),
     h('paper-shadow.contextmenu', { // context menu
@@ -146,29 +145,29 @@ function render(itemsState, browseState, browseEvents, navEvents) {
           }
       }, [  // context menu
         h('paper-item',
-            { 'ev-mouseup': menu.bind(undefined, KEY_SPACE, false),
-              'ev-mousedown': menu.bind(undefined, KEY_SPACE, false) },
-            [ h('div.ecnode', 'Expand Node'), h('div.ksc', 'Space') ]),
+          { 'ev-mouseup': menu.bind(undefined, KEY_RETURN, false),
+            'ev-mousedown': menu.bind(undefined, KEY_RETURN, false) },
+            [ h('div.ecnode', 'Expand Node'), h('div.ksc', 'Return') ]),
         h('paper-item',
-            { 'ev-mouseup': menu.bind(undefined, KEY_RETURN, false),
-              'ev-mousedown': menu.bind(undefined, KEY_RETURN, false) },
-            [ h('div', 'Load +1 Level'), h('div.ksc', 'Return') ]),
-        h('paper-item',
-            { 'ev-mouseup': menu.bind(undefined, KEY_RETURN, true),
-              'ev-mousedown': menu.bind(undefined, KEY_RETURN, true) },
+          { 'ev-mouseup': menu.bind(undefined, KEY_RETURN, true),
+            'ev-mousedown': menu.bind(undefined, KEY_RETURN, true) },
             [ h('div', 'Show Loaded'), h('div.ksc', '\u21E7 Return') ]),
         h('paper-item',
-            { 'ev-mouseup': menu.bind(undefined, KEY_END, false),
-              'ev-mousedown': menu.bind(undefined, KEY_END, false) },
+          { 'ev-mouseup': menu.bind(undefined, KEY_SPACE, false),
+            'ev-mousedown': menu.bind(undefined, KEY_SPACE, false) },
+            [ h('div', 'Load +1 Level'), h('div.ksc', 'space bar') ]),
+        h('paper-item',
+          { 'ev-mouseup': menu.bind(undefined, KEY_SPACE, true),
+            'ev-mousedown': menu.bind(undefined, KEY_SPACE, true) },
+            [ h('div', 'Browse Into'), h('div.ksc', '\u21E7 space bar') ]),
+        h('paper-item',
+          { 'ev-mouseup': menu.bind(undefined, KEY_END, false),
+            'ev-mousedown': menu.bind(undefined, KEY_END, false) },
             [ h('div', 'Center Selected'), h('div.ksc', 'End') ]),
         h('paper-item',
-            { 'ev-mouseup': menu.bind(undefined, KEY_HOME, false),
-              'ev-mousedown': menu.bind(undefined, KEY_HOME, false) },
-            [ h('div', 'Center Root'), h('div.ksc', 'Home') ]),
-        h('paper-item',
-            { 'ev-mouseup': menu.bind(undefined, KEY_SLASH, false),
-              'ev-mousedown': menu.bind(undefined, KEY_SLASH, false) },
-            [ h('div', 'Browse Into'), h('div.ksc', '/') ])
+          { 'ev-mouseup': menu.bind(undefined, KEY_HOME, false),
+            'ev-mousedown': menu.bind(undefined, KEY_HOME, false) },
+            [ h('div', 'Center Root'), h('div.ksc', 'Home') ])
     ] )
   ];
 }
@@ -854,9 +853,6 @@ function actionDown(key, shift, alt) {
     case KEY_MINUS: // zoom out
       moveZ = -ZOOM_INC * slow;
       break;
-    case KEY_SLASH: // set root to selection
-      browseInto(selNode);
-      return;
     case KEY_PAGEUP: // rotate counterclockwise
       moveR = -ROT_INC * slow;
       break;
@@ -916,24 +912,28 @@ function actionDown(key, shift, alt) {
       }
       moveY = PAN_INC * slow;  // pan down
       break;
-    case KEY_SPACE: // expand/collapse node
+    case KEY_RETURN:
       if (!selNode) {
         selectNode(root);
       }
-      toggle(selNode);
-      updateD3(selNode, true);
-      return;
-    case KEY_RETURN: // expand/collapse tree
-      if (!selNode) {
-        selectNode(root);
-      }
-      if (shift) {
+      if (shift) {  // show loaded
         expandTree(selNode);
         loadSubItems(selNode);
       } else {
-        expand1Level(selNode);
+        toggle(selNode);  // expand/collapse node
       }
       updateD3(selNode, true);
+      return;
+    case KEY_SPACE:
+      if (!selNode) {
+        selectNode(root);
+      }
+      if (shift) { // browse into
+        browseInto(selNode);
+      } else { // load +1 level
+        expand1Level(selNode);
+        updateD3(selNode, true);
+      }
       return;
     case KEY_HOME: // reset transform
       curX = width / 2;

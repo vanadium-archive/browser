@@ -10,7 +10,7 @@ service, invoking methods to examine or modify the state of the service.
 
 ## Installing the Vanadium Extension
 
-As a Vanadium web application, the namespace browser requires that users
+As a Vanadium web application, the Namespace Browser requires that users
 install the Vanadium Extension from the Chrome Web Store.
 If you try to run the web app without the extension,
 it will prompt you to install it.
@@ -46,13 +46,24 @@ assets inside must be served as your own instance of the web app.
 
 ### Running locally for development
 
-You can serve a local instance with the following command:
+When running the Namespace Browser on your local machine,
+you should run it inside `vbash`, the Vanadium Shell.
+This command lives in the Vanadium source:
+
+```sh
+$V23_ROOT/release/go/src/v.io/x/ref/cmd/vbash
+```
+
+You can run the Namespace Browser without vbash,
+but you would have to take care of permissions manually.
+
+Once inside vbash, you can serve a local instance with the following command:
 
 ```sh
 make start
 ```
 
-Navigate to http://localhost:9001 to compile and launch the namespace browser.
+Navigate to http://localhost:9001 to launch the namespace browser.
 You can quit by using `CTRL-C` on the console running `make start`.
 
 If you have any problems after updating the code, try cleaning the build.
@@ -63,7 +74,8 @@ make start
 ```
 
 Additionally, demo services and mount tables that represent
-a virtual house and cottage are added to your local namespace.
+a virtual house and cottage are added to your local namespace,
+under `users`.
 For more information, see the help pages in the Namespace Browser application
 (click on the menu icon in the upper-left corner, then select Help).
 
