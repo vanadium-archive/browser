@@ -41,8 +41,6 @@ function addDefaultBookmarks(rt) {
     // Point to their personal section of the global namespace.
     personal = globalMT + '/users/' + email;
   }
-  // TODO(alexfandrianto): Global sample world '/ns.dev.v.io:8101/sample-world'
-  // https://github.com/veyron/release-issues/issues/919
 
   // If the bookmark already exists, then Mercury's observ-array will add it a
   // 2nd time, so check if it's already bookmarked.
