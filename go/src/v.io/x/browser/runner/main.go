@@ -208,10 +208,6 @@ func run() bool {
 	housePort := 8886
 	host := "localhost"
 	if !runTests {
-		port = 5180
-		cottagePort = 5181
-		housePort = 5182
-
 		// Get the IP address to serve at, since this is external-facing.
 		sampleHost, err := getFirstIPv4Address()
 		exitOnError(err, "Could not get host IP address")
@@ -246,32 +242,34 @@ func run() bool {
 	nsPrefix := fmt.Sprintf("/ns.dev.v.io:8101/users/%s", name)
 	exitOnError(err, "Failed to obtain hostname")
 
-	// Run the host mounttable.
 	rootName := fmt.Sprintf("%s/sample-world", nsPrefix)
-	if runTests {
-		rootName = ""
-	}
 	fmt.Printf("Publishing under %s\n", rootName)
-	hRoot, err := sh.Start(RunMTCommand, nil, "--v23.tcp.protocol=wsh", fmt.Sprintf("--v23.tcp.address=%s:%d", host, port), rootName)
-	exitOnError(err, "Failed to start root mount table")
-	exitOnError(updateVars(hRoot, vars, "MT_NAME"), "Failed to get MT_NAME")
-	defer hRoot.Shutdown(outFile, errFile)
+	if runTests {
+		// Run a mounttable for tests
+		hRoot, err := sh.Start(RunMTCommand, nil, "--v23.tcp.protocol=wsh", fmt.Sprintf("--v23.tcp.address=%s:%d", host, port), "root")
+		exitOnError(err, "Failed to start root mount table")
+		exitOnError(updateVars(hRoot, vars, "MT_NAME"), "Failed to get MT_NAME")
+		defer hRoot.Shutdown(outFile, errFile)
 
-	// Set envvar.NamespacePrefix env var, consumed downstream.
-	sh.SetVar(envvar.NamespacePrefix, vars["MT_NAME"])
-	v23.GetNamespace(ctx).SetRoots(vars["MT_NAME"])
+		// Set envvar.NamespacePrefix env var, consumed downstream.
+		sh.SetVar(envvar.NamespacePrefix, vars["MT_NAME"])
+		v23.GetNamespace(ctx).SetRoots(vars["MT_NAME"])
 
-	// Run the cottage mounttable at host/cottage.
-	hCottage, err := sh.Start(RunMTCommand, nil, "--v23.tcp.protocol=wsh", fmt.Sprintf("--v23.tcp.address=%s:%d", host, cottagePort), "cottage")
-	exitOnError(err, "Failed to start cottage mount table")
-	expect.NewSession(nil, hCottage.Stdout(), 30*time.Second)
-	defer hCottage.Shutdown(outFile, errFile)
+		// Run the cottage mounttable at host/cottage.
+		hCottage, err := sh.Start(RunMTCommand, nil, "--v23.tcp.protocol=wsh", fmt.Sprintf("--v23.tcp.address=%s:%d", host, cottagePort), "cottage")
+		exitOnError(err, "Failed to start cottage mount table")
+		expect.NewSession(nil, hCottage.Stdout(), 30*time.Second)
+		defer hCottage.Shutdown(outFile, errFile)
 
-	// run the house mounttable at host/house.
-	hHouse, err := sh.Start(RunMTCommand, nil, "--v23.tcp.protocol=wsh", fmt.Sprintf("--v23.tcp.address=%s:%d", host, housePort), "house")
-	exitOnError(err, "Failed to start house mount table")
-	expect.NewSession(nil, hHouse.Stdout(), 30*time.Second)
-	defer hHouse.Shutdown(outFile, errFile)
+		// run the house mounttable at host/house.
+		hHouse, err := sh.Start(RunMTCommand, nil, "--v23.tcp.protocol=wsh", fmt.Sprintf("--v23.tcp.address=%s:%d", host, housePort), "house")
+		exitOnError(err, "Failed to start house mount table")
+		expect.NewSession(nil, hHouse.Stdout(), 30*time.Second)
+		defer hHouse.Shutdown(outFile, errFile)
+	} else {
+		sh.SetVar(envvar.NamespacePrefix, rootName)
+		v23.GetNamespace(ctx).SetRoots(rootName)
+	}
 
 	// Possibly run the sample world.
 	if runSample {
