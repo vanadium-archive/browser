@@ -238,7 +238,7 @@ func run() bool {
 	// therefore to find a <name> we can publish under, we remove /dev.v.io/root/users/
 	// from the default blessing name.
 	blessing := string(security.DefaultBlessingPatterns(v23.GetPrincipal(ctx))[0])
-	name := strings.Trim(blessing, "/dev.v.io/root/users/")
+	name := strings.TrimPrefix(blessing, "dev.v.io/root/users/")
 	nsPrefix := fmt.Sprintf("/ns.dev.v.io:8101/users/%s", name)
 	exitOnError(err, "Failed to obtain hostname")
 
