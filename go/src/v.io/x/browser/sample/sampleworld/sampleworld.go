@@ -16,7 +16,6 @@ import (
 	"v.io/v23/security/access"
 	"v.io/x/browser/sample"
 	"v.io/x/browser/sample/mocks"
-	"v.io/x/ref/lib/signals"
 )
 
 func makeServerAlarm() interface{} {
@@ -48,7 +47,7 @@ var (
 	namePrefix                = flag.String("name", "", "Name prefix used to publish the sample world under.")
 )
 
-func RunSampleWorld(ctx *context.T) {
+func RunSampleWorld(ctx *context.T, wait func()) {
 
 	// Create new server and publish the given server under the given name
 	var listenAndServe = func(name string, server interface{}) func() {
@@ -132,6 +131,6 @@ func RunSampleWorld(ctx *context.T) {
 	}
 	ns := v23.GetNamespace(ctx)
 	ns.SetPermissions(ctx, "house/kitchen/secret-pantry", nobodyCanList, "")
-	// Wait forever.
-	<-signals.ShutdownOnSignals(ctx)
+
+	wait()
 }

@@ -136,9 +136,10 @@ func sampleWorld(stdin io.Reader, stdout, stderr io.Writer, env map[string]strin
 	ctx, shutdown := v23.Init()
 	defer shutdown()
 
-	sampleworld.RunSampleWorld(ctx)
+	sampleworld.RunSampleWorld(ctx, func() {
+		modules.WaitForEOF(stdin)
+	})
 
-	modules.WaitForEOF(stdin)
 	return nil
 }
 
@@ -247,6 +248,9 @@ func run() bool {
 
 	// Run the host mounttable.
 	rootName := fmt.Sprintf("%s/sample-world", nsPrefix)
+	if runTests {
+		rootName = ""
+	}
 	fmt.Printf("Publishing under %s\n", rootName)
 	hRoot, err := sh.Start(RunMTCommand, nil, "--v23.tcp.protocol=wsh", fmt.Sprintf("--v23.tcp.address=%s:%d", host, port), rootName)
 	exitOnError(err, "Failed to start root mount table")

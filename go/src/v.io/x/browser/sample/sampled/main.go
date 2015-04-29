@@ -7,6 +7,7 @@ package main
 import (
 	"v.io/v23"
 	"v.io/x/browser/sample/sampleworld"
+	"v.io/x/ref/lib/signals"
 	_ "v.io/x/ref/profiles/static"
 )
 
@@ -14,5 +15,7 @@ func main() {
 	ctx, shutdown := v23.Init()
 	defer shutdown()
 
-	sampleworld.RunSampleWorld(ctx)
+	sampleworld.RunSampleWorld(ctx, func() {
+		<-signals.ShutdownOnSignals(ctx)
+	})
 }
