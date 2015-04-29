@@ -6,6 +6,7 @@ public/version
 npm-debug.log
 go/bin/
 tmp/
+credentials/
 
 # Vanadium
 /.v23

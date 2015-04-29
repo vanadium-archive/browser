@@ -16,6 +16,7 @@
 export GOPATH:=$(V23_ROOT)/release/projects/browser/go
 export VDLPATH:=$(V23_ROOT)/release/projects/browser/go
 export GOBIN:=$(V23_ROOT)/release/projects/browser/go/bin
+export V23_CREDENTIALS=$(V23_ROOT)/release/projects/browser/credentials
 
 PATH:=$(V23_ROOT)/third_party/cout/node/bin:$(PATH)
 PATH:=node_modules/.bin:$(GOBIN):$(PATH)
@@ -105,6 +106,8 @@ go/bin: directories
 	v23 go install v.io/x/ref/cmd/principal
 	v23 go install v.io/x/browser/sample/sampled
 	v23 go install v.io/x/browser/runner
+	v23 go install v.io/x/ref/cmd/principal
+	v23 go install v.io/x/ref/services/agent/agentd
 
 # PHONY targets:
 
@@ -130,8 +133,12 @@ watch-test: go/bin
 
 # Serves the needed daemons and starts a server at http://localhost:9000
 # CTRL-C to stop
-start: all go/bin
-	:;./go/bin/runner -runSample=true -serveHTTP=true -portHTTP=9001 -rootHTTP=$(V23_ROOT)/release/projects/browser/public/ -alsologtostderr=false
+RUNNER := "${V23_ROOT}/release/projects/browser/go/bin/runner -runSample=true -serveHTTP=true -portHTTP=9001 -rootHTTP=$(V23_ROOT)/release/projects/browser/public/ -alsologtostderr=false"
+start: all go/bin credentials
+	./go/bin/agentd "${RUNNER}"
+
+credentials:
+	test -d credentials || ./go/bin/agentd "${V23_ROOT}/release/projects/browser/go/bin/principal" "seekblessings"
 
 # Create needed directories like TMPDIR.
 directories:
@@ -145,5 +152,6 @@ clean:
 	rm -rf bower_components
 	rm -rf $(TMPDIR)
 	rm -rf public/version
+	rm -rf credentials
 
 .PHONY: all build start clean watch test watch-test directories

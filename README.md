@@ -46,23 +46,17 @@ assets inside must be served as your own instance of the web app.
 
 ### Running locally for development
 
-When running the Namespace Browser on your local machine,
-you should run it inside `vbash`, the Vanadium Shell.
-This command lives in the Vanadium source:
-
-```sh
-$V23_ROOT/release/go/src/v.io/x/ref/cmd/vbash
-```
-
-You can run the Namespace Browser without `vbash`
-if you manually set up your environment's credentials.
-
-Once inside `vbash`, you can serve a local instance of
-the Namespace Browser by executing the following command:
+You can serve a local instance of the Namespace Browser by executing the following command:
 
 ```sh
 make start
 ```
+
+This will also generate Vanadium credentials (a new principal and a blessing) the
+first time it is run, which may prompt you for your Google Account password and
+caveats on the blessing in your web browser. You will also be prompted to
+select a password for encrypting the credentials on local disk. This is
+optional.
 
 Navigate to http://localhost:9001 to launch the namespace browser.
 You can quit by using `CTRL-C` on the console running `make start`.
