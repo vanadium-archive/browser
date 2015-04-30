@@ -239,8 +239,8 @@ D3Widget.prototype.updateRoot = function() {
       nn.id = buildId;
       nn.name = v || RELATIVE_ROOT;
       nn.isLeaf = false;
-      nn.hasServer = true;
-      nn.hasMountPoint = true;
+      nn.hasServer = true;  // assume true, fix later
+      nn.hasMountPoint = true;  // assume true, fix later
       if (parent !== undefined) {
         nn.parent = parent;
         if (parent.children === undefined && parent._children === undefined) {
@@ -357,12 +357,12 @@ function updateD3(subroot, doAni) {
 
   nodeEnter.filter(function(d) {  // Mount Point
       return d.hasMountPoint;
-    }).append('path').
+    }).append('path').attr('class', 'mountpointicon').
     attr('d', d3.svg.symbol().type('square'));
 
   nodeEnter.filter(function(d) {  // Server
       return d.hasServer;
-    }).append('path').
+    }).append('path').attr('class', 'servericon').
     attr('d', d3.svg.symbol().type('circle').size(60));
 
   nodeEnter.append('text').
@@ -373,8 +373,8 @@ function updateD3(subroot, doAni) {
 
   // update existing graph nodes
 
-  // set symbol style depending on whether it has children and is collapsed
-  gnode.select('.node path').
+  // set path style for selection, loading, and scale
+  gnode.select('path').
     attr('transform', 'scale(' + modZ + ')').
     classed('loading', function(d) { return d.loading; }).
     // style('fill', function(d) {
@@ -391,6 +391,14 @@ function updateD3(subroot, doAni) {
   gnode.select('title').text(function(d) {
       return getServiceIcon(d).title;
   });
+
+  // remove icons if assumed true but turn out to be false
+  gnode.select('path.servericon').filter(function(d) {
+    return !d.hasServer;
+  }).remove();
+  gnode.select('path.mountpointicon').filter(function(d) {
+    return !d.hasMountPoint;
+  }).remove();
 
   gnode.select('text').
     attr('text-anchor', function(d) {
