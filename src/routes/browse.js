@@ -69,7 +69,9 @@ function handleBrowseRoute(state, events, params) {
   }
 
   // Persist this namespace so that we know where to reload next time.
-  stateService.saveNamespace(namespace);
+  if (!state.demo) {
+    stateService.saveNamespace(namespace);
+  }
 
   // Trigger browse components browseNamespace event
   events.browse.browseNamespace({

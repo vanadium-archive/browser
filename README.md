@@ -52,12 +52,6 @@ You can serve a local instance of the Namespace Browser by executing the followi
 make start
 ```
 
-This will also generate Vanadium credentials (a new principal and a blessing) the
-first time it is run, which may prompt you for your Google Account password and
-caveats on the blessing in your web browser. You will also be prompted to
-select a password for encrypting the credentials on local disk. This is
-optional.
-
 Navigate to http://localhost:9001 to launch the namespace browser.
 You can quit by using `CTRL-C` on the console running `make start`.
 
@@ -67,12 +61,6 @@ If you have any problems after updating the code, try cleaning the build.
 make clean
 make start
 ```
-
-Additionally, demo services and mount tables that represent
-a virtual house and cottage are added to your local namespace,
-under `users`.
-For more information, see the help pages in the Namespace Browser application
-(click on the menu icon in the upper-left corner, then select Help).
 
 ## Testing
 

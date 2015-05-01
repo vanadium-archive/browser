@@ -1,11 +1,10 @@
-##Currently, you can see the Sample World only if you run the Namespace Browser on your local machine. See $V23_ROOT/release/projects/browser/README.md
-
-##If you run the hosted version (https://browser.v.io) you will not see the Sample World. This issue will be fixed in the near future. See https://github.com/vanadium/browser/issues/64 for more information.
-
 Sample World is a sample namespace that allows you to experiment
 with the Namespace Browser:
 
 ![Sample world radial view](helpimg/sample-world.gif)
+
+To enable the Sample World demo, visit [/#/demo](/#/demo) or pick
+"Sample World Demo" from the side navigation menu.
 
 You can browse through the Sample World namespace, and call methods.
 
@@ -16,4 +15,7 @@ smoke alarms, and feed the pet. The included (robotic) pet tests
 your ability to keep it well fed and happy.
 
 ![Sample world tree view](helpimg/sampletree.png)
+
+The code for the Sample World services can be found on
+[Github](https://github.com/vanadium/browser/tree/master/src/services/sample-world).
 <p>&nbsp;</p>

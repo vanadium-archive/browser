@@ -16,8 +16,11 @@ var help = require('./components/help/index');
 var viewport = require('./components/viewport/index');
 var userAccount = require('./components/user-account/index');
 var namespaceService = require('./services/namespace/service');
+var sampleWorld = require('./services/sample-world');
 var stateService = require('./services/state/service');
 var errorRoute = require('./routes/error');
+var browseRoute = require('./routes/browse');
+var log = require('./lib/log')('app');
 
 var browseComponent = browse();
 var errorComponent = error();
@@ -75,7 +78,15 @@ var state = mercury.struct({
   /*
    * Internal debugging state
    */
-  debug: debugComponent.state
+  debug: debugComponent.state,
+
+  /*
+   * Boolean indicating whether we are in demo mode.
+   * In demo mode, a sample-world is created and user is redirected to it as
+   * the starting namespace.
+   * @type {boolean}
+   */
+  demo: mercury.value(false),
 });
 
 // To level events
@@ -141,7 +152,8 @@ mercury.app(document.body, state, render);
 
 // Add additional events that mercury's delegator should listenTo.
 addDelegatedEvents(['core-overlay-open-completed',
-    'down', 'up', 'tap', 'openchange', 'activate', 'delete-item']);
+  'down', 'up', 'tap', 'openchange', 'activate', 'delete-item'
+]);
 
 function wireEvents() {
   // TODO(aghassemi): Make these events global.
@@ -210,18 +222,56 @@ function initVanadium() {
   viewport.setSplashMessage('Initializing Vanadium...');
   namespaceService.initVanadium().then(function(vruntime) {
     vruntime.once('crash', onVanadiumCrash);
-    viewport.setSplashMessage('Initialized');
 
     // Onboarding Hook for new users (async). Currently does not block.
     onboarding(vruntime, state);
 
-    state.initialized.set(true);
+    window.addEventListener('beforeunload', function() {
+      log.debug('closing runtime');
+      vruntime.close();
+    });
+
+    if (state.demo()) {
+      return intializeDemo();
+    } else {
+      return initialized();
+    }
+
+    /*
+     * Called when Vanadium initialization is complete
+     */
+    function initialized() {
+      viewport.setSplashMessage('Initialized');
+      state.initialized.set(true);
+    }
+
+    /*
+     * Initialized the demo mode
+     */
+    function intializeDemo() {
+      viewport.setSplashMessage('Initializing Sample World Demo...');
+      var sampleWorldDirectory = '';
+      return sampleWorld.getRootedName().then(function(name) {
+        sampleWorldDirectory = name;
+        return sampleWorld.create(sampleWorldDirectory);
+      }).then(function() {
+        initialized();
+        // Navigate to the home directory
+        events.navigation.navigate({
+          path: browseRoute.createUrl(state.browse, {
+            namespace: sampleWorldDirectory,
+            viewType: 'tree'
+          })
+        });
+      });
+    }
   }).catch(function(err) {
     if (err instanceof vanadium.verror.ExtensionNotInstalledError) {
       vanadium.extension.promptUserToInstallExtension();
     } else {
       var isError = true;
       viewport.setSplashMessage(err.toString(), isError);
+      log.error(err);
     }
   });
 }

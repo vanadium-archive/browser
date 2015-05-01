@@ -18,8 +18,8 @@ Starting from the left, the header contains a widget
 ![menu icon](helpimg/menuicon.png)
 to bring up a menu drawer for changing modes.
 The current mode (in this case, Browse) is displayed next.
-There are other modes for Help and submitting bugs and suggestions.
-Additional modes are planned for the future.
+There are other modes for starting the [Sample World Demo](#/help/sample),
+viewing the Help pages, and submitting bugs/suggestions.
 
 In Browse mode, the header also shows the Vanadium name being used
 as the root of the current view.

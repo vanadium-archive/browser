@@ -1,0 +1,19 @@
+// Copyright 2015 The Vanadium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
+package sample
+
+// Alarm allows clients to manipulate an alarm and query its status.
+type Alarm interface {
+  // Status returns the current status of the Alarm (i.e., armed, unarmed, panicking).
+  Status() (string | error)
+  // Arm sets the Alarm to the armed state.
+  Arm() error
+  // DelayArm sets the Alarm to the armed state after the given delay in seconds.
+  DelayArm(seconds float32) error
+  // Unarm sets the Alarm to the unarmed state.
+  Unarm() error
+  // Panic sets the Alarm to the panicking state.
+  Panic() error
+}

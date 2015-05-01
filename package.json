@@ -19,7 +19,8 @@
     "tap-xunit": "~1.1.1",
     "envify": "~3.2.0",
     "vulcanize": "~0.7.9",
-    "uglifyify": "~3.0.1"
+    "uglifyify": "~3.0.1",
+    "serve": "~1.4.0"
   },
   "dependencies": {
     "bars": "git+https://github.com/steel/bars.git#1.2.2",

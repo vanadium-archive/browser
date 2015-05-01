@@ -21,12 +21,6 @@
   margin-bottom: 0.25em;
 }
 
-/* Recover some sane version of link color. */
-.markdown a {
-  color: -webkit-link;
-  text-decoration: underline;
-}
-
 /* Recover some sane version of list bullets. */
 .markdown ul, .markdown ol {
   padding-left: 2em;
@@ -40,4 +34,13 @@
 
 .markdown img {
   border: solid black 1px;
+}
+
+.markdown a {
+  text-decoration: none;
+  color: var(--color-text-link);
+}
+
+.markdown a:hover, .markdown a:focus {
+  color: var(--color-text-link-hover);
 }

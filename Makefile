@@ -31,7 +31,7 @@ ORIG_TMPDIR:=$(TMPDIR)
 TMPDIR:=$(TMPDIR)/nsb
 
 # Names that should not be mangled by minification.
-RESERVED_NAMES := 'context,ctx,callback,cb,$$stream'
+RESERVED_NAMES := 'context,ctx,callback,cb,$$stream,serverCall'
 # Don't mangle RESERVED_NAMES, and screw ie8.
 MANGLE_OPTS := --mangle [--except $(RESERVED_NAMES) --screw_ie8 ]
 # Don't remove unused variables from function arguments, which could mess up signatures.
@@ -72,7 +72,7 @@ deploy-staging: build
 	make -C $(V23_ROOT)/infrastructure/deploy browser-staging
 
 # Creating the bundle JS file.
-public/bundle.js: $(SOURCE_FILES) node_modules
+public/bundle.js: $(SOURCE_FILES) node_modules src/services/sample-world/ifc
 	:;jshint src # lint all src JavaScript files.
 ifdef NOMINIFY
 	$(call BROWSERIFY,src/app.js,$@)
@@ -83,6 +83,12 @@ endif
 # Creating the bundle HTML file.
 public/bundle.html: $(SOURCE_FILES) node_modules bower_components
 	:;vulcanize --output public/bundle.html web-component-dependencies.html --inline
+
+# Generate VDL for JavaScript
+src/services/sample-world/ifc:
+	VDLPATH=$(V23_ROOT)/release/projects/browser \
+	vdl generate -lang=javascript -js-out-dir=$(V23_ROOT)/release/projects/browser/src \
+	services/sample-world/ifc
 
 # Install what we need from NPM.
 node_modules: package.json
@@ -133,12 +139,9 @@ watch-test: go/bin
 
 # Serves the needed daemons and starts a server at http://localhost:9000
 # CTRL-C to stop
-RUNNER := "${V23_ROOT}/release/projects/browser/go/bin/runner -runSample=true -serveHTTP=true -portHTTP=9001 -rootHTTP=$(V23_ROOT)/release/projects/browser/public/ -alsologtostderr=false"
-start: all go/bin credentials
-	./go/bin/agentd "${RUNNER}"
-
-credentials:
-	test -d credentials || ./go/bin/agentd "${V23_ROOT}/release/projects/browser/go/bin/principal" "seekblessings"
+start: build
+	echo "Serving at http://localhost:9001"
+	@serve ./public --port 9001 > /dev/null
 
 # Create needed directories like TMPDIR.
 directories:
@@ -152,6 +155,5 @@ clean:
 	rm -rf bower_components
 	rm -rf $(TMPDIR)
 	rm -rf public/version
-	rm -rf credentials
 
 .PHONY: all build start clean watch test watch-test directories

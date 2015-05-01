@@ -6,6 +6,7 @@ var mercury = require('mercury');
 var insertCss = require('insert-css');
 var browseRoute = require('../../routes/browse');
 var helpRoute = require('../../routes/help');
+var demoRoute = require('../../routes/demo');
 
 var BugReport = require('../bug-report/index');
 
@@ -37,6 +38,11 @@ function render(state, events) {
       label: 'Browse',
       icon: 'explore',
       href: browseRoute.createUrl(state.browse)
+    }, {
+      key: 'demo',
+      label: 'Sample World Demo',
+      icon: 'av:play-circle-fill',
+      href: demoRoute.createUrl()
     }, {
       key: 'help',
       label: 'Help',

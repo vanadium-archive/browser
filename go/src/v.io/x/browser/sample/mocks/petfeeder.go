@@ -169,6 +169,7 @@ func (r *RoboDog) eatCycle() {
 	}
 }
 
+// Status returns the state of the robotic dog.
 func (r *RoboDog) Status(*context.T, rpc.ServerCall) (sample.RoboDogStatus, error) {
 	dogMoods := moods[r.mood]
 	dogMood := dogMoods[rand.Intn(len(dogMoods))] // pick a random mood

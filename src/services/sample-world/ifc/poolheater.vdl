@@ -1,0 +1,15 @@
+// Copyright 2015 The Vanadium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
+package sample
+
+// PoolHeater allows clients to control when the pool is being heated.
+type PoolHeater interface {
+ // Status retrieves the PoolHeater's status (i.e., active, idle) and temperature.
+ Status() (running string, temperature uint64 | error)
+ // Start informs the PoolHeater to heat the pool to the given temperature until the duration expires.
+ Start(temperature uint64, duration uint64) error
+ // Stop informs the PoolHeater to cease heating the pool.
+ Stop() error
+}

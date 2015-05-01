@@ -14,4 +14,5 @@ function registerRoutes(routes) {
   require('./error')(routes);
   require('./recommendations')(routes);
   require('./bookmarks')(routes);
+  require('./demo')(routes);
 }

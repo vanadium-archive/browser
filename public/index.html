@@ -25,7 +25,7 @@
     #splash.fade #splashMessage {
       display: none;
     }
-    #splashMessage {
+    #splashMessageWrapper {
       color: #ffffff;
       font-size: 2.5em;
       align-self: center;
@@ -55,6 +55,30 @@
       left: 0;
       z-index: 9999999;
     }
+    #progressbar {
+      width: 100%;
+      -webkit-animation:delayed-progressbar 1s;
+    }
+    #progressbar::shadow #activeProgress {
+      background-color: #FF6E40;
+    }
+    #progressbar::shadow #progressContainer {
+      background-color: rgba(255,255,255,0.2);
+      border-radius: 3px;
+    }
+    @-webkit-keyframes delayed-progressbar{
+      0%{visibility:hidden;}
+      99%{visibility:hidden;}
+      100%{visibility:visible;}
+    }
+    #progressbarWrapper {
+      margin-top: -35px;
+      box-sizing: border-box;
+      position: absolute;
+      left: 0;
+      width: 100%;
+      padding: 10px 20%;
+    }
     body, #splash {
       background-repeat: no-repeat;
       background-position: top left;
@@ -68,8 +92,15 @@
 <head>
 <body fullbleed>
   <div id="splash">
-    <div id="splashMessage">Loading Files...</div>
+    <div id="splashMessageWrapper">
+      <div id="splashMessage">Loading Files...</div>
+      <div id="progressbarWrapper">
+        <paper-progress id="progressbar" indeterminate></paper-progress>
+      </div>
+    </div>
   </div>
   <script src="bundle.js"></script>
   <script src="analytics.js"></script>
+  <style>
+  </style>
 </body>
