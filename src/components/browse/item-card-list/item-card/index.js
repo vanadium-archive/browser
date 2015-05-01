@@ -77,7 +77,7 @@ function render(item, browseState, browseEvents, navEvents, showShortName,
         })
     }, [
       iconNode,
-      h('span', cardLabel)
+      h('span.right-justify', cardLabel)
     ]),
     expandAction,
     hoverAction

@@ -103,6 +103,11 @@ paper-spinner::shadow .circle {
   color: var(--color-text-secondary);
 }
 
+.right-justify {
+  direction: rtl;
+  overflow: hidden;
+}
+
 .grayed-out, tree-node.grayed-out::shadow .item {
   opacity: 0.5;
 }
