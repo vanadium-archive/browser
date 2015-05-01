@@ -378,7 +378,8 @@ function assertServer(t, item, vals) {
     assertIsNotLeaf(t, item);
   }
 
-  t.equals(!!item.isMounttable, !!vals.isMounttable, ': is a mounttable');
+  t.equals(!!item.isMounttable, !!vals.isMounttable,
+    item.mountedName + ': is a mounttable');
 }
 
 function assertSubtableName(t, item, vals) {
@@ -399,7 +400,7 @@ function assertObjectName(t, item, val) {
 }
 
 function assertIsServer(t, item) {
-  t.ok(item.hasServer, ': is a server');
+  t.ok(item.hasServer, item.mountedName + ': is a server');
 }
 
 function assertIsLeaf(t, item) {
