@@ -16,6 +16,7 @@ var help = require('./components/help/index');
 var viewport = require('./components/viewport/index');
 var userAccount = require('./components/user-account/index');
 var namespaceService = require('./services/namespace/service');
+var stateService = require('./services/state/service');
 var errorRoute = require('./routes/error');
 
 var browseComponent = browse();
@@ -117,14 +118,17 @@ events.viewport = viewportComponent.events;
 // Wire Events
 wireEvents();
 
-// Start the router which will register the application routes
-router(state, events);
-
 // Register the plugins
 registerItemPlugins();
 
-// Initialize Vanadium
-initVanadium();
+// Load the user's saved state, followed by other dependencies.
+loadUserState().then(function() {
+  // Start the router which will register the application routes
+  router(state, events);
+
+  // Initialize Vanadium
+  initVanadium();
+});
 
 // Debugging related exports
 exportDebugging();
@@ -184,6 +188,22 @@ function exportDebugging() {
 }
 
 /*
+ * Load any of the user's application state.
+ * Note: This promise will always resolve.
+ */
+function loadUserState() {
+  var loads = [];
+
+  // Set the initial namespace for the user. This guarantees that regardless
+  // of starting route, that the user continues where they last left off.
+  loads.push(stateService.loadNamespace().then(function(namespace) {
+    state.browse.namespace.set(namespace);
+  }));
+
+  return Promise.all(loads).catch(function() {});
+}
+
+/*
  * Initialized vanadium and sets appropriate messages on the splash screen
  */
 function initVanadium() {
@@ -191,10 +211,11 @@ function initVanadium() {
   namespaceService.initVanadium().then(function(vruntime) {
     vruntime.once('crash', onVanadiumCrash);
     viewport.setSplashMessage('Initialized');
-    state.initialized.set(true);
 
-    // Onboarding Hook for new users after Vanadium is initialized.
+    // Onboarding Hook for new users (async). Currently does not block.
     onboarding(vruntime, state);
+
+    state.initialized.set(true);
   }).catch(function(err) {
     if (err instanceof vanadium.verror.ExtensionNotInstalledError) {
       vanadium.extension.promptUserToInstallExtension();

@@ -12,7 +12,7 @@ module.exports.createUrl = function() {
 
 function handleErrorRoute(state) {
 
-  // Set the page to help
+  // Set the page to error
   state.navigation.pageKey.set('error');
   state.viewport.title.set('Error');
 }

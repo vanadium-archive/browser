@@ -6,9 +6,7 @@ var urlUtil = require('url');
 var qsUtil = require('querystring');
 
 var exists = require('../lib/exists');
-var store = require('../lib/store');
-
-var log = require('../lib/log')('routes:browse');
+var stateService = require('../services/state/service');
 
 module.exports = function(routes) {
   // Url pattern: /browse/vanadiumNameSpace?glob=*&viewType=grid
@@ -70,10 +68,8 @@ function handleBrowseRoute(state, events, params) {
     }
   }
 
-  // Put the URL in the store, so we know where to reload next time.
-  store.setValue('index', namespace).catch(function(err) {
-    log.warn('Unable to save last name visited', err);
-  });
+  // Persist this namespace so that we know where to reload next time.
+  stateService.saveNamespace(namespace);
 
   // Trigger browse components browseNamespace event
   events.browse.browseNamespace({
