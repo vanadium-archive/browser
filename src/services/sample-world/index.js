@@ -83,10 +83,10 @@ function getRootedName() {
 }
 
 // Helper function that waits until name is published or unpublished,
-// it checks every 1000ms for a total of 20 tries before failing.
+// it checks every 1000ms for a total of 30 tries before failing.
 function waitUntilPublished(name, runtime) {
   var WAIT_TIME = 1000;
-  var MAX_TRIES = 20;
+  var MAX_TRIES = 30;
   return new Promise(function(resolve, reject) {
     var ns = runtime.namespace();
     var count = 0;

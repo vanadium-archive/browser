@@ -10,8 +10,6 @@ import (
 	"flag"
 	"fmt"
 	"io"
-	"net"
-	"net/http"
 	"os"
 	"os/exec"
 	"os/signal"
@@ -32,36 +30,21 @@ import (
 	"v.io/x/ref/services/mounttable/mounttablelib"
 	"v.io/x/ref/test/expect"
 	"v.io/x/ref/test/modules"
-
-	"v.io/x/browser/sample/sampleworld"
 )
 
 const (
-	SampleWorldCommand = "sampleWorld" // The modules library command.
-	RunMTCommand       = "runMT"
-	stdoutLog          = "tmp/runner.stdout.log" // Used as stdout drain when shutting down.
-	stderrLog          = "tmp/runner.stderr.log" // Used as stderr drain when shutting down.
+	RunMTCommand = "runMT"
+	stdoutLog    = "tmp/runner.stdout.log" // Used as stdout drain when shutting down.
+	stderrLog    = "tmp/runner.stderr.log" // Used as stderr drain when shutting down.
 )
 
 var (
-	// Flags used as input to this program.
-	runSample     bool
-	serveHTTP     bool
-	portHTTP      string
-	rootHTTP      string
-	runTests      bool
 	runTestsWatch bool
 )
 
 func init() {
-	modules.RegisterChild(SampleWorldCommand, "desc", sampleWorld)
 	modules.RegisterChild(RunMTCommand, "", runMT)
-	flag.BoolVar(&runSample, "runSample", false, "if true, runs sample services")
-	flag.BoolVar(&serveHTTP, "serveHTTP", false, "if true, serves HTTP")
-	flag.StringVar(&portHTTP, "portHTTP", "9001", "default 9001, the port to serve HTTP on")
-	flag.StringVar(&rootHTTP, "rootHTTP", ".", "default '.', the root HTTP folder path")
-	flag.BoolVar(&runTests, "runTests", false, "if true, runs the namespace browser tests")
-	flag.BoolVar(&runTestsWatch, "runTestsWatch", false, "if true && runTests, runs the tests in watch mode")
+	flag.BoolVar(&runTestsWatch, "runTestsWatch", false, "if true runs the tests in watch mode")
 }
 
 func runMT(stdin io.Reader, stdout, stderr io.Writer, env map[string]string, args ...string) error {
@@ -131,18 +114,6 @@ func updateVars(h modules.Handle, vars map[string]string, varNames ...string) er
 	return nil
 }
 
-// The module command for running the sample world.
-func sampleWorld(stdin io.Reader, stdout, stderr io.Writer, env map[string]string, args ...string) error {
-	ctx, shutdown := v23.Init()
-	defer shutdown()
-
-	sampleworld.RunSampleWorld(ctx, func() {
-		modules.WaitForEOF(stdin)
-	})
-
-	return nil
-}
-
 func main() {
 	if modules.IsModulesChildProcess() {
 		exitOnError(modules.Dispatch(), "Failed to dispatch module")
@@ -166,36 +137,6 @@ func main() {
 	}
 }
 
-// Returns the first ipv4 address found or an error
-func getFirstIPv4Address() (string, error) {
-	ifaces, err := net.Interfaces()
-	if err != nil {
-		return "", fmt.Errorf("No net interfaces found")
-	}
-	for _, i := range ifaces {
-		addrs, err := i.Addrs()
-		if err != nil {
-			continue
-		}
-
-		for _, addr := range addrs {
-			var ip net.IP
-			if v, ok := addr.(*net.IPNet); ok {
-				ip = v.IP
-			}
-			if ip == nil || ip.IsLoopback() {
-				continue
-			}
-			ip = ip.To4()
-			if ip == nil {
-				continue // not an ipv4 address
-			}
-			return ip.String(), nil
-		}
-	}
-	return "", fmt.Errorf("no ipv4 addresses were found")
-}
-
 // Runs the services and cleans up afterwards.
 // Returns true if the run was successful.
 func run() bool {
@@ -207,13 +148,6 @@ func run() bool {
 	cottagePort := 8885
 	housePort := 8886
 	host := "localhost"
-	if !runTests {
-		// Get the IP address to serve at, since this is external-facing.
-		sampleHost, err := getFirstIPv4Address()
-		exitOnError(err, "Could not get host IP address")
-		fmt.Printf("Using host %s\n", sampleHost)
-		host = sampleHost
-	}
 
 	// Start a new shell module.
 	vars := map[string]string{}
@@ -233,96 +167,61 @@ func run() bool {
 	defer errFile.Close()
 	defer sh.Cleanup(outFile, errFile)
 
-	// ns.dev.v.io Mounttable only allows one to publish under users/<name>
-	// for a user that poses the blessing /dev.v.io/root/users/<name>
-	// therefore to find a <name> we can publish under, we remove /dev.v.io/root/users/
-	// from the default blessing name.
-	blessing := string(security.DefaultBlessingPatterns(v23.GetPrincipal(ctx))[0])
-	name := strings.TrimPrefix(blessing, "dev.v.io/root/users/")
-	nsPrefix := fmt.Sprintf("/ns.dev.v.io:8101/users/%s", name)
-	exitOnError(err, "Failed to obtain hostname")
+	// Run a mounttable for tests
+	hRoot, err := sh.Start(RunMTCommand, nil, "--v23.tcp.protocol=wsh", fmt.Sprintf("--v23.tcp.address=%s:%d", host, port), "root")
+	exitOnError(err, "Failed to start root mount table")
+	exitOnError(updateVars(hRoot, vars, "MT_NAME"), "Failed to get MT_NAME")
+	defer hRoot.Shutdown(outFile, errFile)
 
-	rootName := fmt.Sprintf("%s/sample-world", nsPrefix)
-	fmt.Printf("Publishing under %s\n", rootName)
-	if runTests {
-		// Run a mounttable for tests
-		hRoot, err := sh.Start(RunMTCommand, nil, "--v23.tcp.protocol=wsh", fmt.Sprintf("--v23.tcp.address=%s:%d", host, port), "root")
-		exitOnError(err, "Failed to start root mount table")
-		exitOnError(updateVars(hRoot, vars, "MT_NAME"), "Failed to get MT_NAME")
-		defer hRoot.Shutdown(outFile, errFile)
+	// Set envvar.NamespacePrefix env var, consumed downstream.
+	sh.SetVar(envvar.NamespacePrefix, vars["MT_NAME"])
+	v23.GetNamespace(ctx).SetRoots(vars["MT_NAME"])
 
-		// Set envvar.NamespacePrefix env var, consumed downstream.
-		sh.SetVar(envvar.NamespacePrefix, vars["MT_NAME"])
-		v23.GetNamespace(ctx).SetRoots(vars["MT_NAME"])
+	// Run the cottage mounttable at host/cottage.
+	hCottage, err := sh.Start(RunMTCommand, nil, "--v23.tcp.protocol=wsh", fmt.Sprintf("--v23.tcp.address=%s:%d", host, cottagePort), "cottage")
+	exitOnError(err, "Failed to start cottage mount table")
+	expect.NewSession(nil, hCottage.Stdout(), 30*time.Second)
+	defer hCottage.Shutdown(outFile, errFile)
 
-		// Run the cottage mounttable at host/cottage.
-		hCottage, err := sh.Start(RunMTCommand, nil, "--v23.tcp.protocol=wsh", fmt.Sprintf("--v23.tcp.address=%s:%d", host, cottagePort), "cottage")
-		exitOnError(err, "Failed to start cottage mount table")
-		expect.NewSession(nil, hCottage.Stdout(), 30*time.Second)
-		defer hCottage.Shutdown(outFile, errFile)
-
-		// run the house mounttable at host/house.
-		hHouse, err := sh.Start(RunMTCommand, nil, "--v23.tcp.protocol=wsh", fmt.Sprintf("--v23.tcp.address=%s:%d", host, housePort), "house")
-		exitOnError(err, "Failed to start house mount table")
-		expect.NewSession(nil, hHouse.Stdout(), 30*time.Second)
-		defer hHouse.Shutdown(outFile, errFile)
-	} else {
-		sh.SetVar(envvar.NamespacePrefix, rootName)
-		v23.GetNamespace(ctx).SetRoots(rootName)
-	}
-
-	// Possibly run the sample world.
-	if runSample {
-		authorize := security.DefaultBlessingPatterns(v23.GetPrincipal(ctx))[0]
-		fmt.Println("Running Sample World")
-		hSample, err := sh.Start(SampleWorldCommand, nil, "--v23.tcp.protocol=wsh", fmt.Sprintf("--v23.tcp.address=%s:0", host), fmt.Sprintf("--authorize=%s", authorize))
-		exitOnError(err, "Failed to start sample world")
-		expect.NewSession(nil, hSample.Stdout(), 30*time.Second)
-		defer hSample.Shutdown(outFile, errFile)
-	}
-
-	// Possibly serve the public bundle at the portHTTP.
-	if serveHTTP {
-		fmt.Printf("Also serving HTTP at %s for %s\n", portHTTP, rootHTTP)
-		http.ListenAndServe(":"+portHTTP, http.FileServer(http.Dir(rootHTTP)))
-	}
+	// run the house mounttable at host/house.
+	hHouse, err := sh.Start(RunMTCommand, nil, "--v23.tcp.protocol=wsh", fmt.Sprintf("--v23.tcp.address=%s:%d", host, housePort), "house")
+	exitOnError(err, "Failed to start house mount table")
+	expect.NewSession(nil, hHouse.Stdout(), 30*time.Second)
+	defer hHouse.Shutdown(outFile, errFile)
 
 	// Just print out the collected variables. This is for debugging purposes.
 	bytes, err := json.Marshal(vars)
 	exitOnError(err, "Failed to marshal the collected variables")
 	fmt.Println(string(bytes))
 
-	// Possibly run the tests in Prova.
-	if runTests {
-		// Also set HOUSE_MOUNTTABLE (used in the tests)
-		os.Setenv("HOUSE_MOUNTTABLE", fmt.Sprintf("/%s:%d", host, housePort))
+	// Also set HOUSE_MOUNTTABLE (used in the tests)
+	os.Setenv("HOUSE_MOUNTTABLE", fmt.Sprintf("/%s:%d", host, housePort))
 
-		lspec := v23.GetListenSpec(ctx)
-		lspec.Addrs = rpc.ListenAddrs{{"wsh", ":0"}}
-		// Allow all processes started by this runner to use the proxy.
-		proxyACL := access.AccessList{In: security.DefaultBlessingPatterns(v23.GetPrincipal(ctx))}
-		proxyShutdown, proxyEndpoint, err := profiles.NewProxy(ctx, lspec, proxyACL, "test/proxy")
-		exitOnError(err, "Failed to start proxy")
-		defer proxyShutdown()
-		vars["PROXY_NAME"] = proxyEndpoint.Name()
+	lspec := v23.GetListenSpec(ctx)
+	lspec.Addrs = rpc.ListenAddrs{{"wsh", ":0"}}
+	// Allow all processes started by this runner to use the proxy.
+	proxyACL := access.AccessList{In: security.DefaultBlessingPatterns(v23.GetPrincipal(ctx))}
+	proxyShutdown, proxyEndpoint, err := profiles.NewProxy(ctx, lspec, proxyACL, "test/proxy")
+	exitOnError(err, "Failed to start proxy")
+	defer proxyShutdown()
+	vars["PROXY_NAME"] = proxyEndpoint.Name()
 
-		hIdentityd, err := sh.Start(identitylib.TestIdentitydCommand, nil, "--v23.tcp.protocol=wsh", "--v23.tcp.address=:0", "--v23.proxy=test/proxy", "--http-addr=localhost:0")
-		exitOnError(err, "Failed to start identityd")
-		exitOnError(updateVars(hIdentityd, vars, "TEST_IDENTITYD_NAME", "TEST_IDENTITYD_HTTP_ADDR"), "Failed to obtain identityd address")
-		defer hIdentityd.Shutdown(outFile, errFile)
+	hIdentityd, err := sh.Start(identitylib.TestIdentitydCommand, nil, "--v23.tcp.protocol=wsh", "--v23.tcp.address=:0", "--v23.proxy=test/proxy", "--http-addr=localhost:0")
+	exitOnError(err, "Failed to start identityd")
+	exitOnError(updateVars(hIdentityd, vars, "TEST_IDENTITYD_NAME", "TEST_IDENTITYD_HTTP_ADDR"), "Failed to obtain identityd address")
+	defer hIdentityd.Shutdown(outFile, errFile)
 
-		// Setup a lot of environment variables; these are used for the tests and building the test extension.
-		os.Setenv(envvar.NamespacePrefix, vars["MT_NAME"])
-		os.Setenv("PROXY_ADDR", vars["PROXY_NAME"])
-		os.Setenv("IDENTITYD", fmt.Sprintf("%s/google", vars["TEST_IDENTITYD_NAME"]))
-		os.Setenv("IDENTITYD_BLESSING_URL", fmt.Sprintf("%s/auth/blessing-root", vars["TEST_IDENTITYD_HTTP_ADDR"]))
-		os.Setenv("DEBUG", "false")
+	// Setup a lot of environment variables; these are used for the tests and building the test extension.
+	os.Setenv(envvar.NamespacePrefix, vars["MT_NAME"])
+	os.Setenv("PROXY_ADDR", vars["PROXY_NAME"])
+	os.Setenv("IDENTITYD", fmt.Sprintf("%s/google", vars["TEST_IDENTITYD_NAME"]))
+	os.Setenv("IDENTITYD_BLESSING_URL", fmt.Sprintf("%s/auth/blessing-root", vars["TEST_IDENTITYD_HTTP_ADDR"]))
+	os.Setenv("DEBUG", "false")
 
-		testsOk := runProva()
+	testsOk := runProva()
 
-		fmt.Println("Cleaning up launched services...")
-		return testsOk
-	}
+	fmt.Println("Cleaning up launched services...")
+	return testsOk
 
 	// Not in a test, so run until the program is killed.
 	<-signals.ShutdownOnSignals(ctx)

@@ -107,13 +107,8 @@ bower_components: bower.json node_modules
 	touch bower_components
 
 go/bin: directories
-	v23 go install -a -tags wspr v.io/x/ref/cmd/servicerunner
 	v23 go install v.io/x/ref/services/mounttable/mounttabled
-	v23 go install v.io/x/ref/cmd/principal
-	v23 go install v.io/x/browser/sample/sampled
 	v23 go install v.io/x/browser/runner
-	v23 go install v.io/x/ref/cmd/principal
-	v23 go install v.io/x/ref/services/agent/agentd
 
 # PHONY targets:
 
@@ -126,7 +121,7 @@ build: directories public/bundle.js public/bundle.html
 # Run unit and integration tests.
 test: all
 	:;jshint test # lint all test JavaScript files.
-	:;./go/bin/runner -v=3 -log_dir=$(V23_ROOT)/release/projects/browser/tmp/log -runSample=true -runTests=true -alsologtostderr=false
+	:;./go/bin/runner -v=3 -log_dir=$(V23_ROOT)/release/projects/browser/tmp/log -alsologtostderr=false
 
 # Continuously watch for changes to .js, .html or .css files.
 # Rebundles the appropriate bundles when local files change.
@@ -135,7 +130,7 @@ watch:
 
 # Continuously reruns the tests as they change.
 watch-test: go/bin
-	NOMINIFY=true ./go/bin/runner -v=3 -log_dir=$(V23_ROOT)/release/projects/browser/tmp/log -runSample=true -runTests=true -runTestsWatch=true -alsologtostderr=false
+	NOMINIFY=true ./go/bin/runner -v=3 -log_dir=$(V23_ROOT)/release/projects/browser/tmp/log -runTestsWatch=true -alsologtostderr=false
 
 # Serves the needed daemons and starts a server at http://localhost:9000
 # CTRL-C to stop

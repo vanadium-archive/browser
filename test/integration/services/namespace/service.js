@@ -7,6 +7,9 @@ var mercury = require('mercury');
 var _ = require('lodash');
 var proxyquire = require('proxyquireify')(require);
 var mockLRUCache = require('./mocks/lru-cache');
+var sampleWorld = require('../../../../src/services/sample-world');
+
+test.timeout(60 * 1000);
 
 // @noCallThru ensures this completely overrdies the original config
 // instead of inheriting the properties that are not defined here from
@@ -29,118 +32,140 @@ var namespaceService =
     }
   });
 
-test('getChildren of default namespace root', function(t) {
-  namespaceService.getChildren().
-  then(function assertResult(result) {
-    assertIsImmutable(t, result);
-    // Wait until we finish, we expect 2 top level items: cottage, house
-    result.events.on('end', function validate() {
-      mercury.watch(result, function(children) {
-        assertCottage(children[0]);
-        assertHouse(children[1]);
-        t.end();
-      });
-    });
-    result.events.on('globError', function(error) {
-      t.notOk(error, 'did not expect any globs errors');
-      t.end();
-    });
-  }).catch(t.end);
+var sw;
 
-  function assertCottage(item) {
-    assertServer(t, item, {
-      name: 'cottage',
-      objectName: 'cottage',
-      isLeaf: false,
-      isMounttable: true
-    });
+function initSampleWorld(t) {
+  if (!sw) {
+    var prefix = '';
+    sw = sampleWorld.create(prefix);
   }
 
-  function assertHouse(item) {
-    assertServer(t, item, {
-      name: 'house',
-      objectName: 'house',
-      isLeaf: false,
-      isMounttable: true
-    });
+  return sw.catch(function(err) {
+    t.fail(err);
+    t.end();
+    // Throw again so the promise is not resolved and test does not continue
+    // to run.
+    throw err;
+  });
+}
+
+test('getChildren of default namespace root', function(t) {
+  initSampleWorld(t).then(run);
+
+  function run() {
+    namespaceService.getChildren().
+    then(function assertResult(result) {
+      assertIsImmutable(t, result);
+      // Wait until we finish, we expect 2 top level items: cottage, house
+      result.events.on('end', function validate() {
+        mercury.watch(result, function(children) {
+          assertCottage(children[0]);
+          assertHouse(children[1]);
+          t.end();
+        });
+      });
+      result.events.on('globError', function(error) {
+        t.notOk(error, 'did not expect any globs errors');
+        t.end();
+      });
+    }).catch(t.end);
+
+    function assertCottage(item) {
+      assertServer(t, item, {
+        name: 'cottage',
+        objectName: 'cottage',
+        isLeaf: false,
+        isMounttable: true
+      });
+    }
+
+    function assertHouse(item) {
+      assertServer(t, item, {
+        name: 'house',
+        objectName: 'house',
+        isLeaf: false,
+        isMounttable: true
+      });
+    }
   }
 });
 
 test('getChildren of cottage/lawn', function(t) {
-  namespaceService.getChildren('cottage/lawn').
-  then(function assertResult(result) {
-    assertIsImmutable(t, result);
-    // Wait until we finish, we expect 3 items back, front and master-sprinkler
-    result.events.on('end', function validate() {
-      mercury.watch(result, function(children) {
-        assertBack(children[0]);
-        assertSprinkler(children[2]);
+  initSampleWorld(t).then(run);
+
+  function run() {
+    namespaceService.getChildren('cottage/lawn').
+    then(function assertResult(result) {
+      assertIsImmutable(t, result);
+      // Wait until we finish, we expect 3 items back, front and
+      // master-sprinkler
+      result.events.on('end', function validate() {
+        mercury.watch(result, function(children) {
+          assertBack(children[0]);
+          assertSprinkler(children[2]);
+          t.end();
+        });
+      });
+      result.events.on('globError', function(error) {
+        t.notOk(error, 'did not expect any globs errors');
         t.end();
       });
-    });
-    result.events.on('globError', function(error) {
-      t.notOk(error, 'did not expect any globs errors');
-      t.end();
-    });
-  }).catch(t.end);
+    }).catch(t.end);
 
-  function assertSprinkler(item) {
-    assertServer(t, item, {
-      name: 'master-sprinkler',
-      objectName: 'cottage/lawn/master-sprinkler',
-      isLeaf: true
-    });
-  }
+    function assertSprinkler(item) {
+      assertServer(t, item, {
+        name: 'master-sprinkler',
+        objectName: 'cottage/lawn/master-sprinkler',
+        isLeaf: true
+      });
+    }
 
-  function assertBack(item) {
-    assertSubtableName(t, item, {
-      name: 'back',
-      objectName: 'cottage/lawn/back'
-    });
+    function assertBack(item) {
+      assertSubtableName(t, item, {
+        name: 'back',
+        objectName: 'cottage/lawn/back'
+      });
+    }
   }
 });
 
 test('getChildren of rooted ' + globalRoot + '/house/kitchen', function(t) {
-  namespaceService.getChildren(globalRoot + '/house/kitchen').
-  then(function assertResult(result) {
-    assertIsImmutable(t, result);
-    // Wait until we finish, we expect 3 items, lights, secret-pantry
-    // and smoke-detector
-    result.events.on('end', function validate() {
-      mercury.watch(result, function(children) {
-        assertLightSwitch(children[0]);
-        assertSecretPantry(children[1]);
-        assertSmokeDetector(children[2]);
+  initSampleWorld(t).then(run);
+
+  function run() {
+    namespaceService.getChildren(globalRoot + '/house/kitchen').
+    then(function assertResult(result) {
+      assertIsImmutable(t, result);
+      // Wait until we finish, we expect 2 items, lights
+      // and smoke-detector
+      result.events.on('end', function validate() {
+        mercury.watch(result, function(children) {
+          assertLightSwitch(children[0]);
+          assertSmokeDetector(children[1]);
+          t.end();
+        });
+      });
+      result.events.on('globError', function(error) {
+        t.notOk(error, 'did not expect any globs errors');
         t.end();
       });
-    });
-    result.events.on('globError', function(error) {
-      t.notOk(error, 'did not expect any globs errors');
-      t.end();
-    });
-  }).catch(t.end);
+    }).catch(t.end);
 
-  function assertLightSwitch(item) {
-    assertServer(t, item, {
-      name: 'lights',
-      objectName: globalRoot + '/house/kitchen/lights',
-      isLeaf: true
-    });
-  }
+    function assertLightSwitch(item) {
+      assertServer(t, item, {
+        name: 'lights',
+        objectName: globalRoot + '/house/kitchen/lights',
+        isLeaf: true
+      });
+    }
 
-  function assertSecretPantry(item) {
-    assertSubtableName(t, item, {
-      name: 'secret-pantry',
-      objectName: globalRoot + '/house/kitchen/secret-pantry'
-    });
-  }
-
-  function assertSmokeDetector(item) {
-    assertServer(t, item, {
-      name: 'smoke-detector',
-      objectName: globalRoot + '/house/kitchen/smoke-detector',
-      isLeaf: true
-    });
+    function assertSmokeDetector(item) {
+      assertServer(t, item, {
+        name: 'smoke-detector',
+        objectName: globalRoot + '/house/kitchen/smoke-detector',
+        isLeaf: true
+      });
+    }
   }
 });
 
@@ -150,152 +175,172 @@ test('getChildren of rooted ' + globalRoot + '/house/kitchen', function(t) {
 var hostPortRoot = process.env.HOUSE_MOUNTTABLE;
 
 test('getChildren of rooted ' + hostPortRoot + '/kitchen', function(t) {
-  namespaceService.getChildren(hostPortRoot + '/kitchen').
-  then(function assertResult(result) {
-    assertIsImmutable(t, result);
-    // Wait until we finish, we expect 3 items, lights, secret-pantry
-    // and smoke-detector
-    result.events.on('end', function validate() {
-      mercury.watch(result, function(children) {
-        assertLightSwitch(children[0]);
-        assertSecretPantry(children[1]);
-        assertSmokeDetector(children[2]);
+  initSampleWorld(t).then(run);
+
+  function run() {
+    namespaceService.getChildren(hostPortRoot + '/kitchen').
+    then(function assertResult(result) {
+      assertIsImmutable(t, result);
+      // Wait until we finish, we expect 2 items, lights
+      // and smoke-detector
+      result.events.on('end', function validate() {
+        mercury.watch(result, function(children) {
+          assertLightSwitch(children[0]);
+          assertSmokeDetector(children[1]);
+          t.end();
+        });
+      });
+      result.events.on('globError', function(error) {
+        t.notOk(error, 'did not expect any globs errors');
         t.end();
       });
-    });
-    result.events.on('globError', function(error) {
-      t.notOk(error, 'did not expect any globs errors');
-      t.end();
-    });
-  }).catch(t.end);
+    }).catch(t.end);
 
-  function assertLightSwitch(item) {
-    assertServer(t, item, {
-      name: 'lights',
-      objectName: hostPortRoot + '/kitchen/lights',
-      isLeaf: true
-    });
-  }
+    function assertLightSwitch(item) {
+      assertServer(t, item, {
+        name: 'lights',
+        objectName: hostPortRoot + '/kitchen/lights',
+        isLeaf: true
+      });
+    }
 
-  function assertSecretPantry(item) {
-    assertSubtableName(t, item, {
-      name: 'secret-pantry',
-      objectName: hostPortRoot + '/kitchen/secret-pantry'
-    });
-  }
-
-  function assertSmokeDetector(item) {
-    assertServer(t, item, {
-      name: 'smoke-detector',
-      objectName: hostPortRoot + '/kitchen/smoke-detector',
-      isLeaf: true
-    });
+    function assertSmokeDetector(item) {
+      assertServer(t, item, {
+        name: 'smoke-detector',
+        objectName: hostPortRoot + '/kitchen/smoke-detector',
+        isLeaf: true
+      });
+    }
   }
 });
 
 test('getChildren of non-existing mounttable', function(t) {
-  // TODO(aghassemi) why does namespace library return empty results instead of
-  // error when globbing rooted names that don't exist?
-  namespaceService.getChildren('/DoesNotExist:666/What/Ever').
-  then(function assertResult(result) {
-    result.events.on('end', function validate() {
-      // Expect empty results
-      mercury.watch(result, function(children) {
-        t.deepEqual(children, []);
-        t.end();
+  initSampleWorld(t).then(run);
+
+  function run() {
+    // TODO(aghassemi) why does namespace library return empty results instead
+    // of error when globbing rooted names that don't exist?
+    namespaceService.getChildren('/DoesNotExist:666/What/Ever').
+    then(function assertResult(result) {
+      result.events.on('end', function validate() {
+        // Expect empty results
+        mercury.watch(result, function(children) {
+          t.deepEqual(children, []);
+          t.end();
+        });
       });
-    });
-    result.events.on('globError', function(error) {
-      // we do actually expect a glob error in this case
-      t.ok(error);
-    });
-  }).catch(t.end);
+      result.events.on('globError', function(error) {
+        // we do actually expect a glob error in this case
+        t.ok(error);
+      });
+    }).catch(t.end);
+  }
 });
 
 test('getNamespaceItem of leaf server', function(t) {
-  namespaceService.getNamespaceItem('cottage/lawn/master-sprinkler').
-  then(function assertItem(itemObs) {
-    assertIsImmutable(t, itemObs);
-    var item = itemObs();
-    assertServer(t, item, {
-      name: 'master-sprinkler',
-      objectName: 'cottage/lawn/master-sprinkler',
-      isLeaf: true
-    });
-    t.end();
-  }).catch(t.end);
+  initSampleWorld(t).then(run);
+
+  function run() {
+    namespaceService.getNamespaceItem('cottage/lawn/master-sprinkler').
+    then(function assertItem(itemObs) {
+      assertIsImmutable(t, itemObs);
+      var item = itemObs();
+      assertServer(t, item, {
+        name: 'master-sprinkler',
+        objectName: 'cottage/lawn/master-sprinkler',
+        isLeaf: true
+      });
+      t.end();
+    }).catch(t.end);
+  }
 });
 
 test('getNamespaceItem of subtable', function(t) {
-  namespaceService.getNamespaceItem('cottage/lawn/back').
-  then(function assertItem(itemObs) {
-    assertIsImmutable(t, itemObs);
-    var item = itemObs();
-    assertSubtableName(t, item, {
-      name: 'back',
-      objectName: 'cottage/lawn/back'
-    });
-    t.end();
-  }).catch(t.end);
+  initSampleWorld(t).then(run);
+
+  function run() {
+    namespaceService.getNamespaceItem('cottage/lawn/back').
+    then(function assertItem(itemObs) {
+      assertIsImmutable(t, itemObs);
+      var item = itemObs();
+      assertSubtableName(t, item, {
+        name: 'back',
+        objectName: 'cottage/lawn/back'
+      });
+      t.end();
+    }).catch(t.end);
+  }
 });
 
 test('getNamespaceItem of mounttable leaf server', function(t) {
-  namespaceService.getNamespaceItem('cottage').
-  then(function assertItem(itemObs) {
-    assertIsImmutable(t, itemObs);
-    var item = itemObs();
-    assertServer(t, item, {
-      name: 'cottage',
-      objectName: 'cottage',
-      isLeaf: false,
-      isMounttable: true
-    });
-    t.end();
-  }).catch(t.end);
+  initSampleWorld(t).then(run);
+
+  function run() {
+    namespaceService.getNamespaceItem('cottage').
+    then(function assertItem(itemObs) {
+      assertIsImmutable(t, itemObs);
+      var item = itemObs();
+      assertServer(t, item, {
+        name: 'cottage',
+        objectName: 'cottage',
+        isLeaf: false,
+        isMounttable: true
+      });
+      t.end();
+    }).catch(t.end);
+  }
 });
 
 test('search uses caching', function(t) {
-  mockLRUCache.reset();
+  initSampleWorld(t).then(run);
 
-  namespaceService.search('house', '*').
-  then(function assertNoCacheHit() {
-    t.notOk(mockLRUCache.wasCacheHit('glob|house/*'),
-      'first glob call is not a cache hit');
+  function run() {
+    mockLRUCache.reset();
 
-    // Call second time, there should have been a cache hit
-    return namespaceService.search('house', '*');
-  }).then(function assertCacheHit() {
-    t.ok(mockLRUCache.wasCacheHit('glob|house/*'),
-      'second glob call is a cache hit');
+    namespaceService.search('house', '*').
+    then(function assertNoCacheHit() {
+      t.notOk(mockLRUCache.wasCacheHit('glob|house/*'),
+        'first glob call is not a cache hit');
 
-    // Call glob with same name, different query
-    return namespaceService.search('house', 'foo*');
-  }).then(function assertNoCacheHit() {
-    t.notOk(mockLRUCache.wasCacheHit('glob|house/foo*'),
-      'third glob call with different query is not a cache hit');
-    t.end();
-  }).catch(t.end);
+      // Call second time, there should have been a cache hit
+      return namespaceService.search('house', '*');
+    }).then(function assertCacheHit() {
+      t.ok(mockLRUCache.wasCacheHit('glob|house/*'),
+        'second glob call is a cache hit');
+
+      // Call glob with same name, different query
+      return namespaceService.search('house', 'foo*');
+    }).then(function assertNoCacheHit() {
+      t.notOk(mockLRUCache.wasCacheHit('glob|house/foo*'),
+        'third glob call with different query is not a cache hit');
+      t.end();
+    }).catch(t.end);
+  }
 });
 
 test('getSignature uses caching', function(t) {
-  mockLRUCache.reset();
+  initSampleWorld(t).then(run);
 
-  namespaceService.getSignature('house/alarm').then(function() {
-    t.notOk(mockLRUCache.wasCacheHit('getSignature|house/alarm'),
-      'first getSignature call is not a cache hit');
-    // Call a second time
-    return namespaceService.getSignature('house/alarm');
-  }).then(function() {
-    t.ok(mockLRUCache.wasCacheHit('getSignature|house/alarm'),
-      'second getSignature call is a cache hit');
-    // Call a different name
-    return namespaceService.getSignature('house/kitchen/smoke-detector');
-  }).then(function() {
-    t.notOk(mockLRUCache.wasCacheHit(
-      'getSignature|house/kitchen/smoke-detector'
-    ), 'third getSignature call to a different name is not a cache hit');
-    t.end();
-  }).catch(t.end);
+  function run() {
+    mockLRUCache.reset();
+
+    namespaceService.getSignature('house/alarm').then(function() {
+      t.notOk(mockLRUCache.wasCacheHit('getSignature|house/alarm'),
+        'first getSignature call is not a cache hit');
+      // Call a second time
+      return namespaceService.getSignature('house/alarm');
+    }).then(function() {
+      t.ok(mockLRUCache.wasCacheHit('getSignature|house/alarm'),
+        'second getSignature call is a cache hit');
+      // Call a different name
+      return namespaceService.getSignature('house/kitchen/smoke-detector');
+    }).then(function() {
+      t.notOk(mockLRUCache.wasCacheHit(
+        'getSignature|house/kitchen/smoke-detector'
+      ), 'third getSignature call to a different name is not a cache hit');
+      t.end();
+    }).catch(t.end);
+  }
 });
 
 // Make RPC: good inputs => no error
@@ -338,32 +383,70 @@ _.forOwn(badRPCs, function run(params, inputType) {
 
 // Make RPC: outputs have the expected # of outputs
 test('makeRPC returns output properly', function(t) {
-  namespaceService.makeRPC('cottage/alarm', 'panic', []).then(
-    function got0Outputs(res) { // 0 outputs: has no result.
-      t.ok(res === undefined, '0 outputs => is undefined');
+  initSampleWorld(t).then(run);
 
-      return namespaceService.makeRPC('house/alarm', 'status', []);
-    }
-  ).then( // 1 output: (Non-array/slice output) is not an Array.
-    function got1Output(res) {
-      t.notOk(res instanceof Array, '1 output => not an Array');
+  function run() {
+    namespaceService.makeRPC('cottage/alarm', 'panic', []).then(
+      function got0Outputs(res) { // 0 outputs: has no result.
+        t.ok(res === undefined, '0 outputs => is undefined');
 
-      return namespaceService.makeRPC('cottage/smoke-detector', 'test', []);
-    }
-  ).then( // 1 output: Delayed return. Also not an array.
-    function got1OutputDelayed(res) {
-      t.notOk(res instanceof Array, '1 output => not an Array');
+        return namespaceService.makeRPC('house/alarm', 'status', []);
+      }
+    ).then( // 1 output: (Non-array/slice output) is not an Array.
+      function got1Output(res) {
+        t.notOk(res instanceof Array, '1 output => not an Array');
 
-      return namespaceService.makeRPC('cottage/pool/heater', 'status', []);
-    }
-  ).then( // 2 outputs: Is an Array of the correct length.
-    function got2Outputs(res) {
-      var ok = res instanceof Array && res.length === 2;
-      t.ok(ok, '2 outputs => length 2 Array');
-      t.end();
-    }
-  ).catch(t.end);
+        return namespaceService.makeRPC('cottage/smoke-detector', 'test', []);
+      }
+    ).then( // 1 output: Delayed return. Also not an array.
+      function got1OutputDelayed(res) {
+        t.notOk(res instanceof Array, '1 output => not an Array');
+
+        return namespaceService.makeRPC('cottage/pool/heater', 'status', []);
+      }
+    ).then( // 2 outputs: Is an Array of the correct length.
+      function got2Outputs(res) {
+        var ok = res instanceof Array && res.length === 2;
+        t.ok(ok, '2 outputs => length 2 Array');
+        t.end();
+      }
+    ).catch(t.end);
+  }
 });
+
+
+/*
+ * Runs a test to ensure the makeRPC call terminates without error.
+ */
+function testMakeRPCNoError(args, t) {
+  initSampleWorld(t).then(run);
+
+  function run() {
+    namespaceService.makeRPC.apply(null, args).then(function(result) {
+      t.pass('completed without error');
+      t.end();
+    }).catch(function(err) {
+      t.end(err);
+    });
+  }
+}
+
+/*
+ * Runs a test to ensure the makeRPC call terminates with an error.
+ */
+function testMakeRPCHasError(args, t) {
+  initSampleWorld(t).then(run);
+
+  function run() {
+    namespaceService.makeRPC.apply(null, args).then(function(result) {
+      t.fail('should not have completed without error');
+      t.end();
+    }).catch(function(err) {
+      t.pass('correctly returned an error');
+      t.end();
+    });
+  }
+}
 
 /*
  * Test helpers
@@ -412,31 +495,6 @@ function assertIsNotLeaf(t, item) {
 
 function assertIsImmutable(t, observable) {
   t.ok(observable.set === undefined, 'is immutable');
-}
-
-/*
- * Runs a test to ensure the makeRPC call terminates without error.
- */
-function testMakeRPCNoError(args, t) {
-  namespaceService.makeRPC.apply(null, args).then(function(result) {
-    t.pass('completed without error');
-    t.end();
-  }).catch(function(err) {
-    t.end(err);
-  });
-}
-
-/*
- * Runs a test to ensure the makeRPC call terminates with an error.
- */
-function testMakeRPCHasError(args, t) {
-  namespaceService.makeRPC.apply(null, args).then(function(result) {
-    t.fail('should not have completed without error');
-    t.end();
-  }).catch(function(err) {
-    t.pass('correctly returned an error');
-    t.end();
-  });
 }
 
 //TODO(aghassemi)

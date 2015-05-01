@@ -33,7 +33,7 @@ PoolHeater.prototype.start =
   clearTimeout(this.handle); // Clear timeout handle, if any.
 
   // Begin heating.
-  this.status = ACTIVE;
+  this.state = ACTIVE;
   this.currTemperature = temperature;
 
   // After duration, stop heating.

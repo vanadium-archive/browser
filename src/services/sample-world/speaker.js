@@ -73,7 +73,7 @@ Speaker.prototype.getVolume = function(context, serverCall) {
 Speaker.prototype.addSongs = function(context, serverCall, songs) {
   songs.forEach(function(song) {
     this.speakerLibrary.add(song); // No-op if the song is already there.
-  });
+  }, this);
 };
 
 // Delete removes the list of given songs from the song library.
@@ -84,5 +84,5 @@ Speaker.prototype.delete = function(context, serverCall, songs) {
       this.currentSong = null;
       this.playing = false;
     }
-  });
+  }, this);
 };
