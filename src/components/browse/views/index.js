@@ -10,6 +10,7 @@ var TreeView = require('./tree-view/index');
 var VisualizeView = require('./visualize-view/index');
 
 var namespaceService = require('../../../services/namespace/service');
+var stateService = require('../../../services/state/service');
 
 var log = require('../../../lib/log')('components:browse:items');
 
@@ -41,7 +42,8 @@ function create() {
 
     /*
      * Specifies the current view type of the items.
-     * One of: grid, tree, visualize
+     * One of: tree, radial, grid
+     * Note: This value is persisted between namespace browser sessions.
      */
     viewType: mercury.value('tree'),
 
@@ -70,6 +72,9 @@ function trySetViewType(state, viewType) {
   if (!isValid) {
     return false;
   }
+
+  // async call to persist the view type
+  stateService.saveBrowseViewType(viewType);
 
   state.viewType.set(viewType);
   return true;
