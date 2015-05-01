@@ -8,10 +8,10 @@ var insertCss = require('insert-css');
 var PropertyValueEvent = require('../../lib/mercury/property-value-event');
 
 var exists = require('../../lib/exists');
-var store = require('../../lib/store');
 
 var namespaceService = require('../../services/namespace/service');
 var smartService = require('../../services/smart/service');
+var stateService = require('../../services/state/service');
 
 var browseRoute = require('../../routes/browse');
 var bookmarksRoute = require('../../routes/bookmarks');
@@ -52,6 +52,7 @@ function create() {
   var state = mercury.varhash({
     /*
      * Vanadium namespace being displayed and queried
+     * Note: This value is persisted between namespace browser sessions.
      * @type {string}
      */
     namespace: mercury.value(''),
@@ -113,7 +114,7 @@ function create() {
 
     /*
      * Specifies what sub page is currently displayed.
-     * One of: items, bookmarks, recommendations
+     * One of: views, bookmarks, recommendations
      */
     subPage: mercury.value('views'),
 
@@ -125,17 +126,11 @@ function create() {
 
     /*
      * Width of the side panel
+     * Note: This value is persisted between namespace browser sessions.
      * @type {String}
      */
     sidePanelWidth: mercury.value('50%')
 
-  });
-
-  // get sidePanelWidth from persistent storage
-  store.getValue('sidePanelWidth').then(function(val) {
-    if (val) {
-      state.sidePanelWidth.set(val);
-    }
   });
 
   var events = mercury.input([
@@ -717,10 +712,10 @@ function wireUpEvents(state, events) {
       drawer.querySelector('::shadow core-selector').
       classList.add('transition');
       var drawerWidth = drawer.getAttribute('drawerWidth');
-      store.setValue('sidePanelWidth', drawerWidth
-      ).catch(function(err) {
-        log.error(err);
-      });
+
+      // async call to persist the drawer width
+      stateService.saveSidePanelWidth(drawerWidth);
+
       state.sidePanelWidth.set(drawerWidth);
       state.sidePanelCollapsed.set(false);
       fireResizeEvent(null);

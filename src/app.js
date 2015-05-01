@@ -212,6 +212,16 @@ function loadUserState() {
     state.browse.namespace.set(namespace);
   }));
 
+  // Fetch the most recently used side panel width.
+  loads.push(stateService.loadSidePanelWidth().then(function(width) {
+    state.browse.sidePanelWidth.set(width);
+  }));
+
+  // Fetch the most recently used browse view type.
+  loads.push(stateService.loadBrowseViewType().then(function(view) {
+    state.browse.views.viewType.set(view);
+  }));
+
   return Promise.all(loads).catch(function() {});
 }
 
