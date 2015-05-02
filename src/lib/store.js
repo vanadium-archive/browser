@@ -6,7 +6,7 @@
  * The store allows key-value store for string keys and any value.
  */
 var localForage = require('localforage');
-var stripFunctions = require('./stripFunctions');
+var stripFunctions = require('./strip-functions');
 var _ = require('lodash');
 
 module.exports = {

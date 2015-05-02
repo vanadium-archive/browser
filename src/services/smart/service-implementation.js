@@ -7,7 +7,7 @@
  * implementations of the smart-service.
  */
 
-var addAttributes = require('../../lib/addAttributes');
+var addAttributes = require('../../lib/add-attributes');
 var hashInterface = require('../namespace/interface-util').hashInterface;
 var log = require('../../lib/log')('services:smart-service');
 var perceptron = require('../../lib/learning/perceptron');

@@ -3,7 +3,7 @@
 // license that can be found in the LICENSE file.
 
 var test = require('prova');
-var addAttributes = require('../../../src/lib/addAttributes');
+var addAttributes = require('../../../src/lib/add-attributes');
 
 test('addAttributes', function(t) {
   // Normal Cases: add nothing, add 1 thing, add multiple things

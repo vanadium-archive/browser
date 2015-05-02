@@ -8,7 +8,7 @@ var uuid = require('uuid');
 
 var makeRPC = require('./make-rpc.js');
 
-var arraySet = require('../../../../lib/arraySet');
+var arraySet = require('../../../../lib/array-set');
 var setMercuryArray = require('../../../../lib/mercury/set-mercury-array');
 var PropertyValueEvent =
   require('../../../../lib/mercury/property-value-event');

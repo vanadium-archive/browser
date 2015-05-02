@@ -3,7 +3,7 @@
 // license that can be found in the LICENSE file.
 
 var test = require('prova');
-var addAttributes = require('../../../src/lib/addAttributes');
+var addAttributes = require('../../../src/lib/add-attributes');
 var store = require('../../../src/lib/store');
 var proxyquire = require('proxyquireify')(require);
 
