@@ -41,6 +41,7 @@
 .browse-details-sidebar::shadow #mainContainer {
   background-color: var(--color-grey-very-light);
   border-left: solid 1px var(--color-divider);
+  min-width: 250px;
 }
 
 .browse-main-wrapper paper-progress {
