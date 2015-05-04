@@ -29,7 +29,8 @@ var namespaceService =
     '../../vanadium-config': vanadiumConfigForTest,
     'lru-cache': function() {
       return mockLRUCache;
-    }
+    },
+    'vanadium': require('vanadium'),
   });
 
 var sw;
