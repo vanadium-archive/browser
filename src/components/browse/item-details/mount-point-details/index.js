@@ -185,7 +185,7 @@ function formatPermission(perm) {
     results.push(
       h('div', [
         h('span.permission-in', 'In: '),
-        h('span', perm.in.join(' , '))
+        renderBlessingsList(perm.in)
       ])
     );
   }
@@ -194,9 +194,16 @@ function formatPermission(perm) {
     results.push(
       h('div', [
         h('span.permission-out', 'Not In: '),
-        h('span', perm.notIn.join(' , '))
+        renderBlessingsList(perm.notIn)
       ])
     );
+  }
+
+  function renderBlessingsList(list) {
+    var items = list.map(function(item) {
+      return h('li', item);
+    });
+    return h('ul', items);
   }
 
   return h('div', results);

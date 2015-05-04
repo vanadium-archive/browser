@@ -13,3 +13,11 @@
   color: var(--color-info);
   padding-left: var(--size-space-xsmall);
 }
+
+.permission-item ul {
+  padding-left: var(--size-space-large);
+}
+
+.permission-item ul li {
+  padding-bottom: var(--size-space-xsmall);
+}
