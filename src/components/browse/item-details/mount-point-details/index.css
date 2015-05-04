@@ -10,14 +10,20 @@
 }
 
 .permission-item .permission-in, .permission-item .permission-out {
+  white-space: nowrap;
   color: var(--color-info);
   padding-left: var(--size-space-xsmall);
 }
 
 .permission-item ul {
-  padding-left: var(--size-space-large);
+  padding-left: var(--size-space-small);
 }
 
 .permission-item ul li {
   padding-bottom: var(--size-space-xsmall);
+}
+
+.permissions-wrapper {
+  display: flex;
+  flex-direction: row;
 }

@@ -183,7 +183,7 @@ function formatPermission(perm) {
   var results = [];
   if (perm.in && perm.in.length > 0) {
     results.push(
-      h('div', [
+      h('div.permissions-wrapper', [
         h('span.permission-in', 'In: '),
         renderBlessingsList(perm.in)
       ])
