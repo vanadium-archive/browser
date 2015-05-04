@@ -69,7 +69,7 @@ function handleBrowseRoute(state, events, params) {
   }
 
   // Persist this namespace so that we know where to reload next time.
-  if (!state.demo) {
+  if (!state.demo()) {
     stateService.saveNamespace(namespace);
   }
 
