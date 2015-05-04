@@ -6,7 +6,7 @@ var mercury = require('mercury');
 var _ = require('lodash');
 var EventEmitter = require('events').EventEmitter;
 
-var arraySet = require('../../lib/arraySet');
+var arraySet = require('../../lib/array-set');
 var store = require('../../lib/store');
 var freeze = require('../../lib/mercury/freeze');
 var sortedPush = require('../../lib/mercury/sorted-push-array');

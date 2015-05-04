@@ -3,7 +3,7 @@
 // license that can be found in the LICENSE file.
 
 var test = require('prova');
-var arraySet = require('../../../src/lib/arraySet');
+var arraySet = require('../../../src/lib/array-set');
 
 test('arraySet set', function(t) {
   var arr = ['a', 'b', 'c'];
