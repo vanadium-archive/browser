@@ -66,7 +66,7 @@
   --color-button-secondary-text: var(--color-secondary-800);
 
   /* Very Light Grey. Use as background color where-ever darker shade of white is needed such as toolbars and secondary reading backgrounds */
-  --color-grey-very-light: #ECEFF1;
+  --color-grey-very-light: #FAFAFA;
 
   /* Icon button colors. Use as background color for actionable icons. */
   --color-icon-button: var(--color-grey-very-light);
