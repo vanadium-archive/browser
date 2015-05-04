@@ -136,7 +136,7 @@ watch-test: go/bin
 # CTRL-C to stop
 start: build
 	echo "Serving at http://localhost:9001"
-	@serve ./public --port 9001 > /dev/null
+	@static "./public" -p 9001 -H '{"Cache-Control": "max-age=0, no-cache, no-store"}' > /dev/null
 
 # Create needed directories like TMPDIR.
 directories:

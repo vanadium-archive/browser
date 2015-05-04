@@ -20,7 +20,7 @@
     "envify": "~3.2.0",
     "vulcanize": "~0.7.9",
     "uglifyify": "~3.0.1",
-    "serve": "~1.4.0"
+    "node-static": "^0.7.4"
   },
   "dependencies": {
     "bars": "git+https://github.com/steel/bars.git#1.2.2",
