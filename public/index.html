@@ -34,7 +34,7 @@
       word-break: break-word;
     }
     #splashMessage.splashError {
-      font-size: 1.5em;
+      font-size: 0.7em;
     }
     #splashMessage.splashError::before {
       content: "⚠";
@@ -55,14 +55,14 @@
       left: 0;
       z-index: 9999999;
     }
-    #progressbar {
+    #splashProgressbar {
       width: 100%;
       -webkit-animation:delayed-progressbar 1s;
     }
-    #progressbar::shadow #activeProgress {
+    #splashProgressbar::shadow #activeProgress {
       background-color: #FF6E40;
     }
-    #progressbar::shadow #progressContainer {
+    #splashProgressbar::shadow #splashProgressContainer {
       background-color: rgba(255,255,255,0.2);
       border-radius: 3px;
     }
@@ -71,13 +71,16 @@
       99%{visibility:hidden;}
       100%{visibility:visible;}
     }
-    #progressbarWrapper {
+    #splashProgressbarWrapper {
       margin-top: -35px;
       box-sizing: border-box;
       position: absolute;
       left: 0;
       width: 100%;
       padding: 10px 20%;
+    }
+    .hidden {
+      display: none;
     }
     body, #splash {
       background-repeat: no-repeat;
@@ -94,8 +97,8 @@
   <div id="splash">
     <div id="splashMessageWrapper">
       <div id="splashMessage">Loading Files...</div>
-      <div id="progressbarWrapper">
-        <paper-progress id="progressbar" indeterminate></paper-progress>
+      <div id="splashProgressbarWrapper">
+        <paper-progress id="splashProgressbar" indeterminate></paper-progress>
       </div>
     </div>
   </div>

@@ -217,6 +217,7 @@ function wireUpEvents(state, events) {
  * Splash screen fades so it is removed on animation end.
  */
 var splashDomNode = document.querySelector('#splash');
+
 function removeSplashScreen() {
   if (splashDomNode) {
     // keep a reference for the webkitAnimationEnd event handler
@@ -241,10 +242,14 @@ function setSplashMessage(message, isError) {
     return;
   }
   var messageNode = splashDomNode.querySelector('#splashMessage');
+  var progressbar = splashDomNode.querySelector('#splashProgressbarWrapper');
   if (isError) {
     messageNode.classList.add('splashError');
+    progressbar.classList.add('hidden');
+
   } else {
     messageNode.classList.remove('splashError');
+    progressbar.classList.remove('hidden');
   }
   messageNode.textContent = message;
 }
