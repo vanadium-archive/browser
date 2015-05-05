@@ -5,8 +5,13 @@
 @import "common-style/theme.css";
 @import "common-style/sizes.css";
 
-.nav-item.core-selected {
+.nav-item.core-selected,
+.nav-item.core-selected /deep/ core-icon {
   color: var(--color-secondary-800);
+}
+
+.nav-item /deep/ core-icon {
+  color: var(--color-text-secondary);
 }
 
 .nav-item {
