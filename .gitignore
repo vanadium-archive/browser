@@ -7,6 +7,8 @@ npm-debug.log
 go/bin/
 tmp/
 credentials/
+htmlReports/
+test/ui/target/
 
 # Vanadium
 /.v23
