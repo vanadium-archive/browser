@@ -26,7 +26,8 @@ module.exports = {
   makeRPC: makeRPC,
   search: search,
   util: naming,
-  initVanadium: getRuntime
+  initVanadium: getRuntime,
+  clearCache: clearCache
 };
 
 //TODO(aghassemi) What's a good timeout? It should be shorter than this.
@@ -61,6 +62,7 @@ function getAccountName() {
  * GLOB_CACHE_MAX_SIZE items in an LRU cache
  */
 var GLOB_CACHE_MAX_SIZE = 10000;
+var GLOB_CACHE_PREFIX = 'glob|';
 var globCache = new LRU({
   max: GLOB_CACHE_MAX_SIZE
 });
@@ -78,7 +80,7 @@ var globCache = new LRU({
  * of namespace items
  */
 function glob(pattern) {
-  var cacheKey = 'glob|' + pattern;
+  var cacheKey = GLOB_CACHE_PREFIX + pattern;
   var cacheHit = globCache.get(cacheKey);
   if (cacheHit) {
     // The addition of the end event to mark the end of a glob requires that
@@ -259,6 +261,7 @@ function getObjectAddresses(name) {
  * REMOTE_BLESSINGS_CACHE_MAX_SIZE items in an LRU cache
  */
 var REMOTE_BLESSINGS_CACHE_MAX_SIZE = 10000;
+var REMOTE_BLESSINGS_PREFIX = 'getRemoteBlessings|';
 var remoteBlessingsCache = new LRU({
   max: REMOTE_BLESSINGS_CACHE_MAX_SIZE
 });
@@ -269,7 +272,7 @@ var remoteBlessingsCache = new LRU({
  * @return {[]string} remoteBlessings The service's remote blessings.
  */
 function getRemoteBlessings(objectName) {
-  var cacheKey = 'getRemoteBlessings|' + objectName;
+  var cacheKey = REMOTE_BLESSINGS_PREFIX + objectName;
   var cacheHit = remoteBlessingsCache.get(cacheKey);
   if (cacheHit) {
     return Promise.resolve(cacheHit);
@@ -290,6 +293,7 @@ function getRemoteBlessings(objectName) {
  * SIGNATURE_CACHE_MAX_SIZE items in an LRU cache
  */
 var SIGNATURE_CACHE_MAX_SIZE = 10000;
+var SIGNATURE_CACHE_PREFIX = 'getSignature|';
 var signatureCache = new LRU({
   max: SIGNATURE_CACHE_MAX_SIZE
 });
@@ -300,7 +304,7 @@ var signatureCache = new LRU({
  * @return {signature} signature for the object represented by the given name
  */
 function getSignature(objectName) {
-  var cacheKey = 'getSignature|' + objectName;
+  var cacheKey = SIGNATURE_CACHE_PREFIX + objectName;
   var cacheHit = signatureCache.get(cacheKey);
   if (cacheHit) {
     return Promise.resolve(cacheHit);
@@ -397,4 +401,36 @@ function parseName(name) {
     namespaceParts = namespaceParts.concat(suffixParts);
   }
   return namespaceParts;
+}
+
+/*
+ * Clears all caches (glob, signature, etc...) for the given name and all of its
+ * descendants.
+ * @param {string} parentName Name to clear caches for. If no name is given, all
+ * caches are cleared.
+ */
+function clearCache(parentName) {
+  if (!parentName) {
+    globCache.reset();
+    remoteBlessingsCache.reset();
+    signatureCache.reset();
+    return;
+  }
+
+  clearByPrefix(globCache, GLOB_CACHE_PREFIX + parentName);
+  clearByPrefix(remoteBlessingsCache, REMOTE_BLESSINGS_PREFIX + parentName);
+  clearByPrefix(signatureCache, SIGNATURE_CACHE_PREFIX + parentName);
+
+  function clearByPrefix(cache, parent) {
+    var keys = cache.keys();
+    keys.forEach(function(key) {
+      var isMatch =
+        (key === parent) ||
+        (key.lastIndexOf(naming.clean(parent) + '/') === 0);
+
+      if (isMatch) {
+        cache.del(key);
+      }
+    });
+  }
 }

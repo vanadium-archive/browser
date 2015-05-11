@@ -344,6 +344,55 @@ test('getSignature uses caching', function(t) {
   }
 });
 
+test('test clearCache', function(t) {
+  initSampleWorld(t).then(run);
+
+  function run() {
+    mockLRUCache.reset();
+
+    // cache bunch of things under house first, then clear cache and validate
+    Promise.all([
+        namespaceService.getSignature('house/alarm'),
+        namespaceService.search('house', '*'),
+        namespaceService.search('house', ''),
+        namespaceService.search('house-2', ''),
+        namespaceService.getRemoteBlessings('house/alarm')
+      ])
+      .then(function verifyItemsAreCached() {
+        t.ok(mockLRUCache.has('getSignature|house/alarm'),
+          'signature is cached');
+        t.ok(mockLRUCache.has('glob|house/*'),
+          'glob is cached');
+        t.ok(mockLRUCache.has('glob|house'),
+          'glob is cached');
+        t.ok(mockLRUCache.has('glob|house-2'),
+          'glob is cached');
+        t.ok(mockLRUCache.has('getRemoteBlessings|house/alarm'),
+          'getRemoteBlessings is cached');
+      })
+      .then(function clearCacheForHouse() {
+        namespaceService.clearCache('house');
+      }).then(function verifyCacheWasCleared() {
+        t.notOk(mockLRUCache.has('getSignature|house/alarm'),
+          'signature cache cleared');
+        t.notOk(mockLRUCache.has('glob|house/*'),
+          'glob cache cleared');
+        t.notOk(mockLRUCache.has('glob|house'),
+          'glob cache cleared');
+        t.notOk(mockLRUCache.has('getRemoteBlessings|house/alarm'),
+          'getRemoteBlessings cache cleared');
+        t.ok(mockLRUCache.has('glob|house-2'),
+          'house-2 should not be impacted');
+        t.end();
+      }).then(function deleteEverything() {
+        return namespaceService.clearCache();
+      }).then(function verifyAllIsGone() {
+        t.notOk(mockLRUCache.has('glob|house-2'),
+          'house-2 should be gone now');
+      }).catch(t.end);
+  }
+});
+
 // Make RPC: good inputs => no error
 var okRPCs = {
   'no input': ['house/alarm', 'status', []],

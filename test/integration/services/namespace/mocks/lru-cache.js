@@ -18,12 +18,15 @@ module.exports = {
     this.cache = {};
   },
   has: function(key) {
-    this.cache[key] !== undefined;
+    return this.cache[key] !== undefined;
   },
   del: function(key) {
     delete this.cache[key];
   },
   wasCacheHit: function(key) {
     return !!this.getCallHits[key];
+  },
+  keys: function() {
+    return Object.keys(this.cache);
   }
 };
