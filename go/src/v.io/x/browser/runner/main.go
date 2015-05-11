@@ -201,7 +201,7 @@ func run() bool {
 	lspec.Addrs = rpc.ListenAddrs{{"wsh", ":0"}}
 	// Allow all processes started by this runner to use the proxy.
 	proxyACL := access.AccessList{In: security.DefaultBlessingPatterns(v23.GetPrincipal(ctx))}
-	proxyShutdown, proxyEndpoint, err := profiles.NewProxy(ctx, lspec, proxyACL, "test/proxy")
+	proxyShutdown, proxyEndpoint, err := generic.NewProxy(ctx, lspec, proxyACL, "test/proxy")
 	exitOnError(err, "Failed to start proxy")
 	defer proxyShutdown()
 	vars["PROXY_NAME"] = proxyEndpoint.Name()
