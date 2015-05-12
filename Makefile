@@ -123,6 +123,32 @@ test: all
 	:;jshint test # lint all test JavaScript files.
 	:;./go/bin/runner -v=3 -log_dir=$(V23_ROOT)/release/projects/browser/tmp/log -alsologtostderr=false
 
+# Run UI tests for the namespace browser.
+# These tests do not normally need to be run locally, but they can be if you
+# want to verify that the a specific, running version of the namespace browser
+# is compatible with the live version of the Vanadium extension.
+#
+# This test takes additional environment variables (typically temporary)
+# - GOOGLE_BOT_USERNAME and GOOGLE_BOT_PASSWORD (To sign into Google/Chrome)
+# - CHROME_WEBDRIVER (The path to the chrome web driver)
+# - WORKSPACE (optional, defaults to $V23_ROOT/release/projects/browser)
+# - TEST_URL (optional, defaults to http://localhost:9001)
+#
+# In addition, this test requires maven and Xvfb to be installed.
+# Xvfb -ac :23 -screen 0 1024x768x24 is expected to be running in the background.
+# The HTML report will be in $V23_ROOT/release/projects/browser/htmlReports
+WORKSPACE ?= $(V23_ROOT)/release/projects/browser
+TEST_URL ?= http://localhost:9001
+test-ui: all
+	WORKSPACE=$(WORKSPACE) mvn test \
+	  -f=$(V23_ROOT)/release/projects/browser/test/ui/pom.xml \
+	  -Dtest=NamespaceBrowserUITest \
+	  -DchromeDriverBin=$(CHROME_WEBDRIVER) \
+	  -DhtmlReportsRelativePath=htmlReports \
+	  -DgoogleBotUsername=$(GOOGLE_BOT_USERNAME) \
+	  -DgoogleBotPassword=$(GOOGLE_BOT_PASSWORD) \
+	  -DtestUrl=$(TEST_URL)
+
 # Continuously watch for changes to .js, .html or .css files.
 # Rebundles the appropriate bundles when local files change.
 watch:
@@ -150,5 +176,7 @@ clean:
 	rm -rf bower_components
 	rm -rf $(TMPDIR)
 	rm -rf public/version
+	rm -rf htmlReports
+	rm -rf test/ui/target
 
 .PHONY: all build start clean watch test watch-test directories
