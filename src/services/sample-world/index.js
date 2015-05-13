@@ -76,7 +76,10 @@ function create(namePrefix) {
  */
 function getRootedName() {
   return namespaceService.getAccountName().then(function(name) {
-    name = name.replace(/^dev.v.io\/root\//, '');
+    // The account has a blessing of the form: dev.v.io/u/<email>/chrome
+    // The object name to mount should be
+    // /ns.dev.v.io:8101/users/<email>/sample-world
+    name = name.replace(/^dev.v.io\/u\//, 'users/');
     name = name.replace(/\/chrome$/, '');
     return util.join('/ns.dev.v.io:8101', name, 'sample-world');
   });

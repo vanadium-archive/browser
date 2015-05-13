@@ -63,7 +63,7 @@ function addDefaultBookmarks(rt) {
 
 function getEmailFromAccountName(accountName) {
   // Use a regular expression to extract the email.
-  return /dev.v.io\/root\/users\/(.*?)\//.exec(accountName)[1];
+  return /dev.v.io\/u\/(.*?)\//.exec(accountName)[1];
 }
 
 // Set the returning_user flag to true.
