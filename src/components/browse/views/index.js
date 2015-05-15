@@ -18,6 +18,7 @@ module.exports = create;
 module.exports.render = render;
 module.exports.load = load;
 module.exports.trySetViewType = trySetViewType;
+module.exports.clearCache = clearCache;
 
 var VALID_VIEW_TYPES = ['grid', 'tree', 'visualize'];
 
@@ -99,6 +100,14 @@ function load(state, namespace, globQuery) {
 
   if (state.viewType() === 'tree') {
     TreeView.expand(state.tree, namespace);
+    // During a reload, some tree nodes may already have been expanded.
+    // If so, call expand to re-glob their children.
+    var expandedNames = state.tree.expandedMap();
+    for (var name in expandedNames) {
+      if (expandedNames[name] === true) {
+        TreeView.expand(state.tree, name);
+      }
+    }
     return namespaceService.getNamespaceItem(namespace)
       .then(function(item) {
         state.tree.put('rootItem', item);
@@ -161,4 +170,11 @@ function render(state, events, browseState, browseEvents, navEvents) {
     default:
       log.error('Unsupported viewType: ' + state.viewType);
   }
+}
+
+// Clears any locally cached data
+function clearCache(state, namespace) {
+  state.put('items', mercury.array([]));
+  TreeView.clearCache(state.tree, namespace);
+  VisualizeView.clearCache();
 }

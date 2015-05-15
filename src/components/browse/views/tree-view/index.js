@@ -6,6 +6,8 @@ var mercury = require('mercury');
 var insertCss = require('insert-css');
 var extend = require('extend');
 
+var namespaceService = require('../../../../services/namespace/service');
+
 var polymerEvent = require('../../../../lib/mercury/polymer-event');
 var expand = require('./expand');
 var getServiceIcon = require('../../get-service-icon');
@@ -16,6 +18,7 @@ var h = mercury.h;
 module.exports = create;
 module.exports.render = render;
 module.exports.expand = expand;
+module.exports.clearCache = clearCache;
 
 function create() {
 
@@ -136,5 +139,24 @@ function wireUpEvents(state, events) {
     data.browseEvents.selectItem({
       name: objectName
     });
+  });
+}
+
+/*
+ * Given a name, it clears local cache of any items that match the name or
+ * are a suffix of it.
+ */
+function clearCache(state, namespace) {
+  deleteFromVarHashByPrefix(state.childrenMap, namespace);
+}
+
+function deleteFromVarHashByPrefix(varhash, prefix) {
+  var childrenKeys = Object.keys(varhash());
+  childrenKeys.forEach(function(ck) {
+    // Ideally we want a transaction here but VarHash does not support it yet
+    // https://github.com/nrw/observ-varhash/issues/15
+    if (namespaceService.prefixes(prefix, ck)) {
+      varhash.delete(ck);
+    }
   });
 }

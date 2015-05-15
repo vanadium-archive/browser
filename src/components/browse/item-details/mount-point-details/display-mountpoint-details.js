@@ -22,11 +22,6 @@ function displayMountPointDetails(state, events, data) {
   var itemObs = data.itemObs;
   var name = itemObs().objectName;
 
-  // Return if we are already on that item.
-  if (isCurrentlySelected()) {
-    return;
-  }
-
   lastRequestedName = name;
 
   state.put('item', itemObs);

@@ -27,7 +27,9 @@ module.exports = {
   search: search,
   util: naming,
   initVanadium: getRuntime,
-  clearCache: clearCache
+  clearCache: clearCache,
+  deleteMountPoint: deleteMountPoint,
+  prefixes: prefixes
 };
 
 //TODO(aghassemi) What's a good timeout? It should be shorter than this.
@@ -221,6 +223,19 @@ function getPermissions(name) {
     // getPermissions return multiple results, permissions is at
     // outArg position 0
     return mercury.value(results[0]);
+  });
+}
+
+/*
+ * Deletes a mount point.
+ * @param {string} name mountpoint name to delete.
+ * @return {Promise<void>} Success or failure promise.
+ */
+function deleteMountPoint(name) {
+  return getRuntime().then(function(rt) {
+    var ctx = rt.getContext().withTimeout(RPC_TIMEOUT);
+    var ns = rt.namespace();
+    return ns.delete(ctx, name, true);
   });
 }
 
@@ -424,13 +439,17 @@ function clearCache(parentName) {
   function clearByPrefix(cache, parent) {
     var keys = cache.keys();
     keys.forEach(function(key) {
-      var isMatch =
-        (key === parent) ||
-        (key.lastIndexOf(naming.clean(parent) + '/') === 0);
-
-      if (isMatch) {
+      if (prefixes(parent, key)) {
         cache.del(key);
       }
     });
   }
+}
+
+/*
+ * Returns true iff parentName is a parent of childName or is same as childName
+ */
+function prefixes(parentName, childName) {
+  return (parentName === childName) ||
+    (childName.indexOf(naming.clean(parentName) + '/') === 0);
 }

@@ -9,12 +9,13 @@ var addDelegatedEvents = require('./lib/mercury/add-delegated-events');
 var onboarding = require('./onboarding');
 var router = require('./router');
 var registerItemPlugins = require('./item-plugins/register-plugins');
-var debug = require('./components/debug/index');
-var browse = require('./components/browse/index');
-var error = require('./components/error/index');
-var help = require('./components/help/index');
-var viewport = require('./components/viewport/index');
-var userAccount = require('./components/user-account/index');
+var debug = require('./components/debug');
+var browse = require('./components/browse');
+var error = require('./components/error');
+var help = require('./components/help');
+var viewport = require('./components/viewport');
+var views = require('./components/browse/views');
+var userAccount = require('./components/user-account');
 var namespaceService = require('./services/namespace/service');
 var sampleWorld = require('./services/sample-world');
 var stateService = require('./services/state/service');
@@ -120,7 +121,13 @@ events.navigation = mercury.input([
    * }
    * is expected as data for the event
    */
-  'navigate'
+  'navigate',
+
+  /*
+   * Event indicating a request to reload the current namespace
+   * The current namespace will be passed as data into the handlers.
+   */
+  'reload'
 ]);
 events.browse = browseComponent.events;
 events.help = helpComponent.events;
@@ -161,9 +168,36 @@ function wireEvents() {
   events.browse.error(onError);
   events.browse.toast(onToast);
 
+  events.navigation.reload(onReload);
+
   // Hook up external help events.
   events.help.navigate = events.navigation.navigate;
   events.help.error(onError);
+}
+
+/*
+ * Reload the views for the current namespace
+ */
+function onReload() {
+  var namespace = state.browse.namespace();
+  log.debug('reloading', namespace);
+
+  // clear the service cache
+  namespaceService.clearCache(namespace);
+
+  // tell views to clear their caches
+  views.clearCache(state.browse.views, namespace);
+
+  // navigate to the namespace again
+  // TODO(aghassemi) Ideally we only reset the selected item if the old one
+  // no longer is in the view, but that's a bit tricky and depends on
+  // https://github.com/vanadium/browser/issues/81
+  state.browse.selectedItemName.set(namespace);
+  events.navigation.navigate({
+    path: browseRoute.createUrl(state.browse(), {
+      namespace: namespace
+    })
+  });
 }
 
 /*
@@ -292,4 +326,3 @@ function initVanadium() {
 function onVanadiumCrash(crashErr) {
   events.browse.error(crashErr);
 }
-

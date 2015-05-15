@@ -137,6 +137,7 @@
 
 .namespace-box core-tooltip.icontooltip {
   margin-top: var(--size-space-xxsmall);
+  align-self: center;
 }
 
 .namespace-box core-tooltip.nstooltip {

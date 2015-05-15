@@ -102,8 +102,6 @@ function create() {
 
   events.serverDetails = serverDetailsComponent.events;
   events.mountPointDetails = mountPointDetailsComponent.events;
-  events.serverDetails.toast = events.toast;
-  events.mountPointDetails.toast = events.toast;
   wireUpEvents(state, events);
 
   return {
@@ -347,19 +345,18 @@ function renderTabTitle(state, events, tabKey, icon, title) {
       'tabkey': tabKey
     },
     'ev-click': new polymerEvent(function(data) {
-        events.tabSelected({
-          tabKey: tabKey
-        });
-      })
-    }, [
-      h('core-icon.tab-icon', {
-        attributes: {
-          'icon': icon,
-          'alt': '' // because we have the title beside it
-        }
-      }), title
-    ]
-  );
+      events.tabSelected({
+        tabKey: tabKey
+      });
+    })
+  }, [
+    h('core-icon.tab-icon', {
+      attributes: {
+        'icon': icon,
+        'alt': '' // because we have the title beside it
+      }
+    }), title
+  ]);
 }
 
 /*
@@ -386,6 +383,12 @@ function getSelectedTabKey(state) {
 
 // Wire up events that we know how to handle
 function wireUpEvents(state, events) {
+  events.serverDetails.toast = function(data) {
+    events.toast(data);
+  };
+  events.mountPointDetails.toast = function(data) {
+    events.toast(data);
+  };
   events.bookmark(bookmark.bind(null, state, events));
   events.displayItemDetails(displayItemDetails.bind(null, state, events));
   events.tabSelected(function(data) {

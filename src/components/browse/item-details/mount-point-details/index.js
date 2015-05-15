@@ -6,9 +6,15 @@ var mercury = require('mercury');
 var insertCss = require('insert-css');
 
 var displayMountPointDetails = require('./display-mountpoint-details');
+var mountPointManager = require('./manage-mountpoint');
 
+var dialogClickHook = require('../../../../lib/mercury/dialog-click-hook');
 var FieldItem = require('../field-item');
 var ErrorBox = require('../../../error/error-box');
+
+var log = require('../../../../lib/log')(
+  'components:browse:item-details:mount-point'
+);
 
 var css = require('./index.css');
 var h = mercury.h;
@@ -60,7 +66,7 @@ function create() {
     permissions: mercury.value(null),
 
     /*
-     * whether user is even authorized to see the permission for the mount point
+     * Whether user is even authorized to see the permission for the mount point
      * @type {boolean}
      */
     notAuthorizedToSeePermissions: mercury.value(false),
@@ -69,13 +75,42 @@ function create() {
      * The objectAddresses as resolveToMounttable
      * @type {mercury.array<string>}
      */
-    objectAddresses: mercury.array([])
+    objectAddresses: mercury.array([]),
+
+    /*
+     * Whether we should render a dialog prompting for an action.
+     * @type {boolean}
+     */
+    promptAction: mercury.value(false),
+
+    /*
+     * The text for the prompt.
+     * @type {string}
+     */
+    promptActionText: mercury.value(''),
+
+    /*
+     * The text for the positive button of the prompt.
+     * @type {string}
+     */
+    promptActionButtonText: mercury.value(''),
+
+    /*
+     * The event handler that will be called when confirmed.
+     * @type {function}
+     */
+    promptActionCallback: mercury.value()
 
   });
 
   var events = mercury.input([
-    'toast'
+    'toast',
+    'promptDeleteMountPoint',
+    'promptCanceled',
+    'promptConfirmed'
   ]);
+
+  wireUpEvents(state, events);
 
   return {
     state: state,
@@ -97,6 +132,7 @@ function render(state, events, browseState, navEvents) {
     displayItems.push(renderNameField(state));
     displayItems.push(renderObjectAddressesField(state));
     displayItems.push(renderPermissionsField(state));
+    displayItems.push(renderActionsField(state, events, navEvents));
 
     content.push(h('div', displayItems));
   }
@@ -156,12 +192,84 @@ function renderPermissionsField(state) {
 }
 
 /*
+ * Renders the mountpoint actions.
+ */
+function renderActionsField(state, events, navEvents) {
+  var actions = [
+    renderDeleteAction(state, events, navEvents)
+  ];
+
+  var filteredActions = actions.filter(function(a) {
+    return !!a;
+  });
+
+  if (filteredActions.length === 0) {
+    return;
+  }
+
+  return [
+    FieldItem.render('Manage', h('div', filteredActions)),
+    renderPrompt(state, events)
+  ];
+}
+
+/*
+ * Renders a modal prompt dialog if an action is taking place to confirm.
+ */
+function renderPrompt(state, events) {
+  return h('paper-action-dialog', {
+    attributes: {
+      'autoCloseDisabled': true,
+      'layered': true,
+      'backdrop': true,
+    },
+    'opened': state.promptAction
+  }, [
+    h('p', state.promptActionText),
+
+    h('paper-button', {
+      attributes: {
+        'dismissive': true,
+      },
+      'click-hook': dialogClickHook(mercury.send(events.promptCanceled))
+    }, 'Cancel'),
+
+    h('paper-button', {
+      attributes: {
+        'affirmative': true,
+        'autofocus': true
+      },
+      'click-hook': dialogClickHook(mercury.send(events.promptConfirmed))
+    }, state.promptActionButtonText)
+  ]);
+}
+
+/*
+ * Renders the mountpoint delete action.
+ */
+function renderDeleteAction(state, events, navEvents) {
+  /* TODO(aghassemi) We really should only render items user has access to.
+   * This was attempted by trying to match remoteBlessings with peerBlessings
+   * but we intentionally do not expose blessing names for peerBlessings so
+   * approach did not work.
+   * This needs https://github.com/vanadium/issues/issues/210 to be fixed first.
+   */
+  var action = h('paper-button', {
+    'ev-click': mercury.send(events.promptDeleteMountPoint, {
+      cb: navEvents.reload,
+      name: state.itemName
+    })
+  }, 'Delete');
+
+  return action;
+}
+
+/*
  * Formats a permissions object to string
  * TODO(aghassemi): we need a nicer permission formatter
  * @param {vanadium.security.Permissions} perms
  */
 function formatPermissions(perms) {
-  //
   var results = [];
   perms.forEach(function(p, key) {
     results.push(
@@ -207,4 +315,36 @@ function formatPermission(perm) {
   }
 
   return h('div', results);
+}
+
+// Wire up events that we know how to handle
+function wireUpEvents(state, events) {
+  events.promptDeleteMountPoint(function(data) {
+    state.promptAction.set(true);
+    state.promptActionText.set(
+      'Are you sure you want to delete ' + data.name + ' ?'
+    );
+    state.promptActionButtonText.set('Delete');
+    state.promptActionCallback.set(deleteMountPoint.bind(null, data));
+  });
+
+  events.promptCanceled(function() {
+    state.promptAction.set(false);
+  });
+
+  events.promptConfirmed(function() {
+    var cb = state.promptActionCallback();
+    cb();
+    state.promptAction.set(false);
+  });
+
+  function deleteMountPoint(data) {
+    mountPointManager.deleteMountPoint(state, events).then(function() {
+      if (data.cb) {
+        data.cb();
+      }
+    }, function(err) {
+      log.error('Could not delete mount point', err);
+    });
+  }
 }

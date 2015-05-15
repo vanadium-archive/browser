@@ -29,11 +29,6 @@ var lastRequestedName;
 function displayItemDetails(state, events, data) {
   var name = data.name;
 
-  // Return if we are already on that item.
-  if (isCurrentlySelected()) {
-    return;
-  }
-
   lastRequestedName = name;
 
   state.put('plugins', mercury.array([]));

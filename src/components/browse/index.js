@@ -351,8 +351,10 @@ function render(browseState, browseEvents, navEvents) {
       }, [
         h('div.resize-handle', {
           'ev-mousedown': function(e) {
-            browseEvents.slideSidePanel({ rawEvent: e,
-                collapsed: browseState.sidePanelCollapsed });
+            browseEvents.slideSidePanel({
+              rawEvent: e,
+              collapsed: browseState.sidePanelCollapsed
+            });
           }
         }),
         sideView
@@ -433,9 +435,7 @@ function renderNamespaceBox(browseState, browseEvents, navEvents) {
             'icon': 'refresh',
             'label': 'Reload'
           },
-          'ev-click': function() {
-            location.reload();
-          }
+          'ev-click': mercury.send(navEvents.reload)
         })
       ),
       h('core-tooltip.nstooltip', {
@@ -621,17 +621,17 @@ function renderBreadcrumbs(browseState, navEvents) {
     });
     breadCrumbs.push(h('li.breadcrumb-item.relative-name' +
       (parentParts.length ? '.breadcrumb-item-prefix' : ''), [
-      //TODO(aghassemi) refactor link generation code
-      h('a', {
-        'href': rootUrl,
-        'ev-click': mercury.event(navEvents.navigate, {
-          path: rootUrl
-        })
-      }, '<Home>')
-    ]));
+        //TODO(aghassemi) refactor link generation code
+        h('a', {
+          'href': rootUrl,
+          'ev-click': mercury.event(navEvents.navigate, {
+            path: rootUrl
+          })
+        }, '<Home>')
+      ]));
   }
 
-  parentParts.pop();  // remove last part (current view root)
+  parentParts.pop(); // remove last part (current view root)
 
   for (var i = 0; i < namespaceParts.length; i++) {
     var namePart = namespaceParts[i].trim();
@@ -707,19 +707,19 @@ function wireUpEvents(state, events) {
     }
 
     function slideEnd(e) { // release
-      window.removeEventListener('mouseup', slideEnd);
-      window.removeEventListener('mousemove', slideMove);
-      drawer.querySelector('::shadow core-selector').
-      classList.add('transition');
-      var drawerWidth = drawer.getAttribute('drawerWidth');
+        window.removeEventListener('mouseup', slideEnd);
+        window.removeEventListener('mousemove', slideMove);
+        drawer.querySelector('::shadow core-selector').
+        classList.add('transition');
+        var drawerWidth = drawer.getAttribute('drawerWidth');
 
-      // async call to persist the drawer width
-      stateService.saveSidePanelWidth(drawerWidth);
+        // async call to persist the drawer width
+        stateService.saveSidePanelWidth(drawerWidth);
 
-      state.sidePanelWidth.set(drawerWidth);
-      state.sidePanelCollapsed.set(false);
-      fireResizeEvent(null);
-    } // end slideEnd
+        state.sidePanelWidth.set(drawerWidth);
+        state.sidePanelCollapsed.set(false);
+        fireResizeEvent(null);
+      } // end slideEnd
   }); // end events.slideSidePanel
 
   function fireResizeEvent(e) { // resize on end animation
