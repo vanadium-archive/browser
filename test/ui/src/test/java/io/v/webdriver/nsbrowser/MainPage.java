@@ -9,6 +9,7 @@ import com.google.common.base.Predicate;
 
 import org.junit.Assert;
 import org.openqa.selenium.By;
+import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -120,7 +121,7 @@ public class MainPage extends PageBase {
     driver.switchTo().window(selectCaveatsTabHandle);
     WebElement btnBless =
         wait.until(ExpectedConditions.elementToBeClickable(By.id("submit-caveats")));
-    Util.takeScreenshot("select-caveats.png", "Selecting Caveats", htmlReportData);
+    Util.takeScreenshot((TakesScreenshot)driver, "select-caveats.png", "Selecting Caveats", htmlReportData);
     btnBless.click();
 
     // Verify the tree has the correct root and some key children.
@@ -139,6 +140,6 @@ public class MainPage extends PageBase {
         Assert.fail("Tree loaded with children but no root.");
       }
     }
-    Util.takeScreenshot("after-loading.png", "After Namespace Loading", htmlReportData);
+    Util.takeScreenshot((TakesScreenshot)driver, "after-loading.png", "After Namespace Loading", htmlReportData);
   }
 }

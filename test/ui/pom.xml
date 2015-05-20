@@ -42,9 +42,6 @@
         <version>2.18</version>
         <configuration>
           <forkMode>always</forkMode>
-          <environmentVariables>
-            <DISPLAY>:23</DISPLAY>
-          </environmentVariables>
         </configuration>
       </plugin>
       <plugin>

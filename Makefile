@@ -133,14 +133,18 @@ test: all
 # - CHROME_WEBDRIVER (The path to the chrome web driver)
 # - WORKSPACE (optional, defaults to $V23_ROOT/release/projects/browser)
 # - TEST_URL (optional, defaults to http://localhost:9001)
+# - NO_XVFB (optional, defaults to using Xvfb. Set to true to watch the test.)
 #
-# In addition, this test requires maven and Xvfb to be installed.
-# Xvfb -ac :23 -screen 0 1024x768x24 is expected to be running in the background.
+# In addition, this test requires that maven, Xvfb, and xvfb-run be installed.
 # The HTML report will be in $V23_ROOT/release/projects/browser/htmlReports
 WORKSPACE ?= $(V23_ROOT)/release/projects/browser
 TEST_URL ?= http://localhost:9001
+ifndef NO_XVFB
+	XVFB := TMPDIR=/tmp xvfb-run -s '-ac -screen 0 1024x768x24'
+endif
 test-ui: all
-	WORKSPACE=$(WORKSPACE) mvn test \
+	WORKSPACE=$(WORKSPACE) $(XVFB) \
+	  mvn test \
 	  -f=$(V23_ROOT)/release/projects/browser/test/ui/pom.xml \
 	  -Dtest=NamespaceBrowserUITest \
 	  -DchromeDriverBin=$(CHROME_WEBDRIVER) \

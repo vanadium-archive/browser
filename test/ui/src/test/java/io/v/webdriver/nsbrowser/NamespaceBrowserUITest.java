@@ -41,8 +41,13 @@ public class NamespaceBrowserUITest extends VanadiumUITestBase {
     String url = System.getProperty(PROPERTY_TEST_URL);
     System.out.printf("Url: %s\n", url);
     MainPage mainPage = new MainPage(driver, url, reportData);
-    OAuthLoginPage oauthLoginPage = mainPage.goToPage();
-    oauthLoginPage.login();
+    if (url.equals("https://browser.staging.v.io") || url.equals("https://browser.v.io")) {
+      // These are OAuth protected pages.
+      OAuthLoginPage oauthLoginPage = mainPage.goToPage();
+      oauthLoginPage.login();
+    } else {
+      mainPage.goWithoutTakingScreenshot();
+    }
     mainPage.load();
 
     // Write html report.
