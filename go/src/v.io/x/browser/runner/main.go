@@ -24,7 +24,6 @@ import (
 	"v.io/v23/security/access"
 
 	"v.io/x/ref"
-	"v.io/x/ref/lib/signals"
 	"v.io/x/ref/runtime/factories/generic"
 	"v.io/x/ref/services/identity/identitylib"
 	"v.io/x/ref/services/mounttable/mounttablelib"
@@ -33,9 +32,8 @@ import (
 )
 
 const (
-	RunMTCommand = "runMT"
-	stdoutLog    = "tmp/runner.stdout.log" // Used as stdout drain when shutting down.
-	stderrLog    = "tmp/runner.stderr.log" // Used as stderr drain when shutting down.
+	stdoutLog = "tmp/runner.stdout.log" // Used as stdout drain when shutting down.
+	stderrLog = "tmp/runner.stderr.log" // Used as stderr drain when shutting down.
 )
 
 var (
@@ -43,11 +41,10 @@ var (
 )
 
 func init() {
-	modules.RegisterChild(RunMTCommand, "", runMT)
 	flag.BoolVar(&runTestsWatch, "runTestsWatch", false, "if true runs the tests in watch mode")
 }
 
-func runMT(stdin io.Reader, stdout, stderr io.Writer, env map[string]string, args ...string) error {
+var runMT = modules.Register(func(env *modules.Env, args ...string) error {
 	ctx, shutdown := v23.Init()
 	defer shutdown()
 
@@ -68,13 +65,13 @@ func runMT(stdin io.Reader, stdout, stderr io.Writer, env map[string]string, arg
 	if err := server.ServeDispatcher(mp, mt); err != nil {
 		return fmt.Errorf("root failed: %s", err)
 	}
-	fmt.Fprintf(stdout, "PID=%d\n", os.Getpid())
+	fmt.Fprintf(env.Stdout, "PID=%d\n", os.Getpid())
 	for _, ep := range eps {
-		fmt.Fprintf(stdout, "MT_NAME=%s\n", ep.Name())
+		fmt.Fprintf(env.Stdout, "MT_NAME=%s\n", ep.Name())
 	}
-	modules.WaitForEOF(stdin)
+	modules.WaitForEOF(env.Stdin)
 	return nil
-}
+}, "runMT")
 
 // Helper function to simply print an error and then exit.
 func exitOnError(err error, desc string) {
@@ -115,7 +112,7 @@ func updateVars(h modules.Handle, vars map[string]string, varNames ...string) er
 }
 
 func main() {
-	if modules.IsModulesChildProcess() {
+	if modules.IsChildProcess() {
 		exitOnError(modules.Dispatch(), "Failed to dispatch module")
 		return
 	}
@@ -168,7 +165,7 @@ func run() bool {
 	defer sh.Cleanup(outFile, errFile)
 
 	// Run a mounttable for tests
-	hRoot, err := sh.Start(RunMTCommand, nil, "--v23.tcp.protocol=wsh", fmt.Sprintf("--v23.tcp.address=%s:%d", host, port), "root")
+	hRoot, err := sh.Start(nil, runMT, "--v23.tcp.protocol=wsh", fmt.Sprintf("--v23.tcp.address=%s:%d", host, port), "root")
 	exitOnError(err, "Failed to start root mount table")
 	exitOnError(updateVars(hRoot, vars, "MT_NAME"), "Failed to get MT_NAME")
 	defer hRoot.Shutdown(outFile, errFile)
@@ -178,13 +175,13 @@ func run() bool {
 	v23.GetNamespace(ctx).SetRoots(vars["MT_NAME"])
 
 	// Run the cottage mounttable at host/cottage.
-	hCottage, err := sh.Start(RunMTCommand, nil, "--v23.tcp.protocol=wsh", fmt.Sprintf("--v23.tcp.address=%s:%d", host, cottagePort), "cottage")
+	hCottage, err := sh.Start(nil, runMT, "--v23.tcp.protocol=wsh", fmt.Sprintf("--v23.tcp.address=%s:%d", host, cottagePort), "cottage")
 	exitOnError(err, "Failed to start cottage mount table")
 	expect.NewSession(nil, hCottage.Stdout(), 30*time.Second)
 	defer hCottage.Shutdown(outFile, errFile)
 
 	// run the house mounttable at host/house.
-	hHouse, err := sh.Start(RunMTCommand, nil, "--v23.tcp.protocol=wsh", fmt.Sprintf("--v23.tcp.address=%s:%d", host, housePort), "house")
+	hHouse, err := sh.Start(nil, runMT, "--v23.tcp.protocol=wsh", fmt.Sprintf("--v23.tcp.address=%s:%d", host, housePort), "house")
 	exitOnError(err, "Failed to start house mount table")
 	expect.NewSession(nil, hHouse.Stdout(), 30*time.Second)
 	defer hHouse.Shutdown(outFile, errFile)
@@ -206,7 +203,7 @@ func run() bool {
 	defer proxyShutdown()
 	vars["PROXY_NAME"] = proxyEndpoint.Name()
 
-	hIdentityd, err := sh.Start(identitylib.TestIdentitydCommand, nil, "--v23.tcp.protocol=wsh", "--v23.tcp.address=:0", "--v23.proxy=test/proxy", "--http-addr=localhost:0")
+	hIdentityd, err := sh.Start(nil, identitylib.TestIdentityd, "--v23.tcp.protocol=wsh", "--v23.tcp.address=:0", "--v23.proxy=test/proxy", "--http-addr=localhost:0")
 	exitOnError(err, "Failed to start identityd")
 	exitOnError(updateVars(hIdentityd, vars, "TEST_IDENTITYD_NAME", "TEST_IDENTITYD_HTTP_ADDR"), "Failed to obtain identityd address")
 	defer hIdentityd.Shutdown(outFile, errFile)
@@ -222,10 +219,6 @@ func run() bool {
 
 	fmt.Println("Cleaning up launched services...")
 	return testsOk
-
-	// Not in a test, so run until the program is killed.
-	<-signals.ShutdownOnSignals(ctx)
-	return true
 }
 
 // Run the prova tests and convert its tap output to xunit.
