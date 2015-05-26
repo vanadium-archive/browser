@@ -33,6 +33,11 @@ import java.util.Set;
  */
 public class MainPage extends PageBase {
   /**
+   * Default timeout for the namespace browser.
+   */
+  protected static final int NSB_TIMEOUT = 20;
+
+  /**
    * Checks whether the tree is loaded correctly.
    */
   private static class CheckTree implements Predicate<WebDriver> {
@@ -103,7 +108,7 @@ public class MainPage extends PageBase {
     // First, we need to click on the "Bless" button in the "select caveats" page.
     final String mainTabHandle = driver.getWindowHandle();
     // Wait until the corresponding tab is there, which means we should get two window handles.
-    String selectCaveatsTabHandle = wait.until(new Function<WebDriver, String>() {
+    String selectCaveatsTabHandle = new WebDriverWait(driver, NSB_TIMEOUT).until(new Function<WebDriver, String>() {
       @Override
       public String apply(WebDriver input) {
         Set<String> handles = driver.getWindowHandles();
@@ -128,7 +133,7 @@ public class MainPage extends PageBase {
     driver.switchTo().window(mainTabHandle);
     CheckTree treeChecker = new CheckTree();
     try {
-      new WebDriverWait(driver, 20).until(treeChecker);
+      new WebDriverWait(driver, NSB_TIMEOUT).until(treeChecker);
     } catch (TimeoutException e) {
       boolean rootOK = treeChecker.getRootOK();
       boolean childrenOK = treeChecker.getChildrenOK();
