@@ -35,7 +35,7 @@ public class NamespaceBrowserUITest extends VanadiumUITestBase {
     HTMLReportData reportData = new HTMLReportData(TEST_NAME_INIT_PROCESS, htmlReportsDir);
     curHTMLReportData = reportData;
 
-    super.installExtension(reportData);
+    super.signInAndInstallExtension(reportData);
 
     // Namespace browser.
     String url = System.getProperty(PROPERTY_TEST_URL);

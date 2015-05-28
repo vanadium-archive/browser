@@ -134,6 +134,8 @@ test: all
 # - WORKSPACE (optional, defaults to $V23_ROOT/release/projects/browser)
 # - TEST_URL (optional, defaults to http://localhost:9001)
 # - NO_XVFB (optional, defaults to using Xvfb. Set to true to watch the test.)
+# - BUILD_EXTENSION (optional, defaults to using the live one. Set to true to
+#                    use a local build of the Vanadium extension.)
 #
 # In addition, this test requires that maven, Xvfb, and xvfb-run be installed.
 # The HTML report will be in $V23_ROOT/release/projects/browser/htmlReports
@@ -142,7 +144,15 @@ TEST_URL ?= http://localhost:9001
 ifndef NO_XVFB
 	XVFB := TMPDIR=/tmp xvfb-run -s '-ac -screen 0 1024x768x24'
 endif
+
+ifdef BUILD_EXTENSION
+	BUILD_EXTENSION_PROPERTY := "-DvanadiumExtensionPath=$(VANADIUM_JS)/extension/build"
+endif
+
 test-ui: all
+ifdef BUILD_EXTENSION
+	make -B -C $(VANADIUM_JS)/extension build-dev
+endif
 	WORKSPACE=$(WORKSPACE) $(XVFB) \
 	  mvn test \
 	  -f=$(V23_ROOT)/release/projects/browser/test/ui/pom.xml \
@@ -151,6 +161,7 @@ test-ui: all
 	  -DhtmlReportsRelativePath=htmlReports \
 	  -DgoogleBotUsername=$(GOOGLE_BOT_USERNAME) \
 	  -DgoogleBotPassword=$(GOOGLE_BOT_PASSWORD) \
+	  $(BUILD_EXTENSION_PROPERTY) \
 	  -DtestUrl=$(TEST_URL)
 
 # Continuously watch for changes to .js, .html or .css files.
