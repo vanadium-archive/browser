@@ -48,7 +48,8 @@ public class NamespaceBrowserUITest extends VanadiumUITestBase {
     } else {
       mainPage.goWithoutTakingScreenshot();
     }
-    mainPage.load();
+    super.handleCaveatTab(reportData);
+    mainPage.validatePage();
 
     // Write html report.
     HTMLReporter reporter = new HTMLReporter(reportData);

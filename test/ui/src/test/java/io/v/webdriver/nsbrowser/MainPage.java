@@ -102,35 +102,9 @@ public class MainPage extends PageBase {
     return new OAuthLoginPage(driver, htmlReportData);
   }
 
-  public void load() {
-    log("Loading the main page");
-
-    // First, we need to click on the "Bless" button in the "select caveats" page.
-    final String mainTabHandle = driver.getWindowHandle();
-    // Wait until the corresponding tab is there, which means we should get two window handles.
-    String selectCaveatsTabHandle = new WebDriverWait(driver, NSB_TIMEOUT).until(new Function<WebDriver, String>() {
-      @Override
-      public String apply(WebDriver input) {
-        Set<String> handles = driver.getWindowHandles();
-        if (handles.size() != 2) {
-          return null;
-        }
-        for (String handle : handles) {
-          if (!handle.equals(mainTabHandle)) {
-            return handle;
-          }
-        }
-        return null;
-      }
-    });
-    driver.switchTo().window(selectCaveatsTabHandle);
-    WebElement btnBless =
-        wait.until(ExpectedConditions.elementToBeClickable(By.id("submit-caveats")));
-    Util.takeScreenshot((TakesScreenshot)driver, "select-caveats.png", "Selecting Caveats", htmlReportData);
-    btnBless.click();
-
+  public void validatePage() {
     // Verify the tree has the correct root and some key children.
-    driver.switchTo().window(mainTabHandle);
+    log("Checking the main page");
     CheckTree treeChecker = new CheckTree();
     try {
       new WebDriverWait(driver, NSB_TIMEOUT).until(treeChecker);
