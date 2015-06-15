@@ -24,6 +24,7 @@ import (
 	"v.io/v23/security/access"
 
 	"v.io/x/ref"
+	"v.io/x/ref/lib/xrpc"
 	"v.io/x/ref/runtime/factories/generic"
 	"v.io/x/ref/services/identity/identitylib"
 	"v.io/x/ref/services/mounttable/mounttablelib"
@@ -47,26 +48,19 @@ func init() {
 var runMT = modules.Register(func(env *modules.Env, args ...string) error {
 	ctx, shutdown := v23.Init()
 	defer shutdown()
-
-	lspec := v23.GetListenSpec(ctx)
-	server, err := v23.NewServer(ctx, options.ServesMountTable(true))
-	if err != nil {
-		return fmt.Errorf("root failed: %v", err)
-	}
 	mp := args[0]
+
 	mt, err := mounttablelib.NewMountTableDispatcher("", "", "mounttable")
 	if err != nil {
 		return fmt.Errorf("mounttablelib.NewMountTableDispatcher failed: %s", err)
 	}
-	eps, err := server.Listen(lspec)
+
+	server, err := xrpc.NewDispatchingServer(ctx, mp, mt, options.ServesMountTable(true))
 	if err != nil {
-		return fmt.Errorf("server.Listen failed: %s", err)
-	}
-	if err := server.ServeDispatcher(mp, mt); err != nil {
-		return fmt.Errorf("root failed: %s", err)
+		return fmt.Errorf("root failed: %v", err)
 	}
 	fmt.Fprintf(env.Stdout, "PID=%d\n", os.Getpid())
-	for _, ep := range eps {
+	for _, ep := range server.Status().Endpoints {
 		fmt.Fprintf(env.Stdout, "MT_NAME=%s\n", ep.Name())
 	}
 	modules.WaitForEOF(env.Stdin)
