@@ -50,7 +50,7 @@ var runMT = modules.Register(func(env *modules.Env, args ...string) error {
 	defer shutdown()
 	mp := args[0]
 
-	mt, err := mounttablelib.NewMountTableDispatcher("", "", "mounttable")
+	mt, err := mounttablelib.NewMountTableDispatcher(ctx, "", "", "mounttable")
 	if err != nil {
 		return fmt.Errorf("mounttablelib.NewMountTableDispatcher failed: %s", err)
 	}
