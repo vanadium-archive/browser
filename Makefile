@@ -193,5 +193,6 @@ clean:
 	rm -rf public/version
 	rm -rf htmlReports
 	rm -rf test/ui/target
+	rm -rf credentials
 
 .PHONY: all build start clean watch test watch-test directories
