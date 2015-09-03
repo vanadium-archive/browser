@@ -5,7 +5,7 @@
 var mercury = require('mercury');
 var insertCss = require('insert-css');
 
-var polymerEvent = require('../../../lib/mercury/polymer-event');
+var PolymerEvent = require('../../../lib/mercury/polymer-event');
 var displayItemDetails = require('./display-item-details');
 
 var browseRoute = require('../../../routes/browse');
@@ -344,7 +344,7 @@ function renderTabTitle(state, events, tabKey, icon, title) {
     attributes: {
       'tabkey': tabKey
     },
-    'ev-click': new polymerEvent(function(data) {
+    'ev-click': new PolymerEvent(function(data) {
       events.tabSelected({
         tabKey: tabKey
       });

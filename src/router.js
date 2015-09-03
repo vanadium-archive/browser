@@ -17,6 +17,10 @@ module.exports = router;
  */
 function router(state, events) {
 
+  // Create and register routes
+  var routes = new Routes();
+  registerRoutes(routes);
+
   // Match the path to a route and trigger the route handler for it
   var handleRouteChange = function(data) {
     var path = normalizePath(data.path);
@@ -38,10 +42,6 @@ function router(state, events) {
       skipHistoryPush: true
     });
   };
-
-  // Create and register routes
-  var routes = new Routes();
-  registerRoutes(routes);
 
   // Route and push to history when navigation event fires
   events.navigation.navigate(handleRouteChange);
