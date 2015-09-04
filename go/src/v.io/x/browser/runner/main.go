@@ -22,9 +22,7 @@ import (
 	"v.io/v23/rpc"
 	"v.io/v23/security"
 	"v.io/v23/security/access"
-
 	"v.io/x/ref"
-	"v.io/x/ref/lib/xrpc"
 	"v.io/x/ref/runtime/factories/generic"
 	"v.io/x/ref/services/identity/identitylib"
 	"v.io/x/ref/services/mounttable/mounttablelib"
@@ -55,7 +53,7 @@ var runMT = modules.Register(func(env *modules.Env, args ...string) error {
 		return fmt.Errorf("mounttablelib.NewMountTableDispatcher failed: %s", err)
 	}
 
-	server, err := xrpc.NewDispatchingServer(ctx, mp, mt, options.ServesMountTable(true))
+	_, server, err := v23.WithNewDispatchingServer(ctx, mp, mt, options.ServesMountTable(true))
 	if err != nil {
 		return fmt.Errorf("root failed: %v", err)
 	}
