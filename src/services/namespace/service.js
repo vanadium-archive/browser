@@ -109,7 +109,7 @@ function glob(pattern) {
     getRuntime().then(function callGlobOnNamespace(rt) {
       ctx = rt.getContext().withTimeout(RPC_TIMEOUT);
       // TODO(aghassemi) use watchGlob when available
-      var namespace = rt.namespace();
+      var namespace = rt.getNamespace();
       return namespace.glob(ctx, pattern).stream;
     }).then(function updateResult(globStream) {
       globStream.on('data', function createItem(globResult) {
@@ -217,7 +217,7 @@ function search(parentName, pattern) {
 function getPermissions(name) {
   return getRuntime().then(function(rt) {
     var ctx = rt.getContext().withTimeout(RPC_TIMEOUT);
-    var ns = rt.namespace();
+    var ns = rt.getNamespace();
     return ns.getPermissions(ctx, name);
   }).then(function(results) {
     // getPermissions return multiple results, permissions is at
@@ -234,7 +234,7 @@ function getPermissions(name) {
 function deleteMountPoint(name) {
   return getRuntime().then(function(rt) {
     var ctx = rt.getContext().withTimeout(RPC_TIMEOUT);
-    var ns = rt.namespace();
+    var ns = rt.getNamespace();
     return ns.delete(ctx, name, true);
   });
 }
@@ -248,7 +248,7 @@ function deleteMountPoint(name) {
 function resolveToMounttable(name) {
   return getRuntime().then(function(rt) {
     var ctx = rt.getContext().withTimeout(RPC_TIMEOUT);
-    var ns = rt.namespace();
+    var ns = rt.getNamespace();
     return ns.resolveToMounttable(ctx, name);
   }).then(function(objectAddresses) {
     return mercury.array(objectAddresses);
@@ -264,7 +264,7 @@ function resolveToMounttable(name) {
 function getObjectAddresses(name) {
   return getRuntime().then(function resolve(rt) {
     var resolveCtx = rt.getContext().withTimeout(RPC_TIMEOUT);
-    var ns = rt.namespace();
+    var ns = rt.getNamespace();
     return ns.resolve(resolveCtx, name);
   }).then(function(objectAddresses) {
     return mercury.array(objectAddresses);
@@ -294,7 +294,7 @@ function getRemoteBlessings(objectName) {
   }
   return getRuntime().then(function invokeRemoteBlessingsMethod(rt) {
     var ctx = rt.getContext().withTimeout(RPC_TIMEOUT);
-    var client = rt.newClient();
+    var client = rt.getClient();
     return client.remoteBlessings(ctx, objectName);
   }).then(function cacheAndReturnRemoteBlessings(remoteBlessings) {
     // Remote Blessings is []string representing the principals of the service.
@@ -326,7 +326,7 @@ function getSignature(objectName) {
   }
   return getRuntime().then(function invokeSignatureMethod(rt) {
     var ctx = rt.getContext().withTimeout(RPC_TIMEOUT);
-    var client = rt.newClient();
+    var client = rt.getClient();
     return client.signature(ctx, objectName);
   }).then(function cacheAndReturnSignature(signature) {
     // Signature is []interface; each interface contains method data.
@@ -348,7 +348,7 @@ function makeRPC(name, methodName, args) {
   var ctx;
   return getRuntime().then(function bindToName(rt) {
     ctx = rt.getContext();
-    var client = rt.newClient();
+    var client = rt.getClient();
     return client.bindTo(ctx, name);
   }).then(function callMethod(service) {
     log.debug('Calling', methodName, 'on', name, 'with', args);

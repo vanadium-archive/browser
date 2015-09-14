@@ -52,14 +52,11 @@ var SERVICES = [
 function create(namePrefix) {
   return namespaceService.initVanadium().then(function(runtime) {
     var allServed = [];
-    var allServers = [];
 
     SERVICES.forEach(function(s) {
       var name = util.join(namePrefix, s[0]);
       var service = s[1];
-      var server = runtime.newServer();
-      allServers.push(server);
-      var servePromise = server.serve(name, service).then(function() {
+      var servePromise = runtime.newServer(name, service).then(function() {
         return waitUntilPublished(name, runtime);
       });
       allServed.push(servePromise);
@@ -91,7 +88,7 @@ function waitUntilPublished(name, runtime) {
   var WAIT_TIME = 1000;
   var MAX_TRIES = 30;
   return new Promise(function(resolve, reject) {
-    var ns = runtime.namespace();
+    var ns = runtime.getNamespace();
     var count = 0;
     runResolve();
 
