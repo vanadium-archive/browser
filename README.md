@@ -32,7 +32,7 @@ To build a local copy, install the Vanadium environment and be sure to
 include the web profile.
 
 Here is the link to the development instructions for Vanadium:
-https://v.io/community/contributing.html
+https://github.com/vanadium/docs/blob/master/community/contributing.md
 
 Next, to build your own copy of the namespace browser, run:
 

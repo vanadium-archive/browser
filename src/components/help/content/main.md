@@ -1,13 +1,14 @@
 The namespace browser is a tool to browse Vanadium namespaces
 and interact with Vanadium services.
-See the [Vanadium documentation](http://v.io) for more information.
 
 Names
 -----
 
 Vanadium names identify objects in a namespace (similar to how URLs identify
 objects on the web). In Vanadium, the objects are all *services* on *servers*.
-See [the Naming concepts document](https://v.io/concepts/naming.html) for more information.
+See [the Naming concepts
+document](https://github.com/vanadium/docs/blob/master/concepts/naming.md) for
+more information.
 
 Names in Vanadium are a sequence of simple name components –
 called *mounted names* – separated by slashes (/).
