@@ -37,7 +37,7 @@ https://github.com/vanadium/docs/blob/master/community/contributing.md
 Next, to build your own copy of the namespace browser, run:
 
 ```sh
-cd $V23_ROOT/release/projects/browser
+cd $JIRI_ROOT/release/projects/browser
 make build
 ```
 

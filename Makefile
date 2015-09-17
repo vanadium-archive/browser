@@ -13,15 +13,15 @@
 # see http://stackoverflow.com/questions/21708839/problems-setting-path-in-makefile for details.
 ##
 
-export GOPATH:=$(V23_ROOT)/release/projects/browser/go
-export VDLPATH:=$(V23_ROOT)/release/projects/browser/go
-export GOBIN:=$(V23_ROOT)/release/projects/browser/go/bin
-export V23_CREDENTIALS=$(V23_ROOT)/release/projects/browser/credentials
+export GOPATH:=$(JIRI_ROOT)/release/projects/browser/go
+export VDLPATH:=$(JIRI_ROOT)/release/projects/browser/go
+export GOBIN:=$(JIRI_ROOT)/release/projects/browser/go/bin
+export V23_CREDENTIALS=$(JIRI_ROOT)/release/projects/browser/credentials
 
-PATH:=$(V23_ROOT)/third_party/cout/node/bin:$(PATH)
+PATH:=$(JIRI_ROOT)/third_party/cout/node/bin:$(PATH)
 PATH:=node_modules/.bin:$(GOBIN):$(PATH)
 
-VANADIUM_JS:=$(V23_ROOT)/release/javascript/core
+VANADIUM_JS:=$(JIRI_ROOT)/release/javascript/core
 SOURCE_FILES = $(shell find src -name "*")
 
 ifndef TMPDIR
@@ -65,11 +65,11 @@ default: build
 
 .PHONY: deploy-production
 deploy-production: build
-	make -C $(V23_ROOT)/infrastructure/deploy browser-production
+	make -C $(JIRI_ROOT)/infrastructure/deploy browser-production
 
 .PHONY: deploy-staging
 deploy-staging: build
-	make -C $(V23_ROOT)/infrastructure/deploy browser-staging
+	make -C $(JIRI_ROOT)/infrastructure/deploy browser-staging
 
 # Creating the bundle JS file.
 public/bundle.js: $(SOURCE_FILES) node_modules src/services/sample-world/ifc
@@ -86,8 +86,8 @@ public/bundle.html: $(SOURCE_FILES) node_modules bower_components
 
 # Generate VDL for JavaScript
 src/services/sample-world/ifc:
-	VDLPATH=$(V23_ROOT)/release/projects/browser \
-	vdl generate -lang=javascript -js-out-dir=$(V23_ROOT)/release/projects/browser/src \
+	VDLPATH=$(JIRI_ROOT)/release/projects/browser \
+	vdl generate -lang=javascript -js-out-dir=$(JIRI_ROOT)/release/projects/browser/src \
 	services/sample-world/ifc
 
 # Install what we need from NPM.
@@ -95,7 +95,7 @@ node_modules: package.json
 	:;npm prune
 	:;npm install --quiet
 	# TODO(aghassemi) Temporarily use local release/javascript/core add github/npm to package.json later
-	cd "$(V23_ROOT)/release/javascript/core" && npm link
+	cd "$(JIRI_ROOT)/release/javascript/core" && npm link
 	:;npm link vanadium
 
 	touch node_modules
@@ -121,7 +121,7 @@ build: directories public/bundle.js public/bundle.html
 # Run unit and integration tests.
 test: all
 	:;jshint test # lint all test JavaScript files.
-	:;./go/bin/runner -v=3 -log_dir=$(V23_ROOT)/release/projects/browser/tmp/log -alsologtostderr=false
+	:;./go/bin/runner -v=3 -log_dir=$(JIRI_ROOT)/release/projects/browser/tmp/log -alsologtostderr=false
 
 # Run UI tests for the namespace browser.
 # These tests do not normally need to be run locally, but they can be if you
@@ -131,15 +131,15 @@ test: all
 # This test takes additional environment variables (typically temporary)
 # - GOOGLE_BOT_USERNAME and GOOGLE_BOT_PASSWORD (To sign into Google/Chrome)
 # - CHROME_WEBDRIVER (The path to the chrome web driver)
-# - WORKSPACE (optional, defaults to $V23_ROOT/release/projects/browser)
+# - WORKSPACE (optional, defaults to $JIRI_ROOT/release/projects/browser)
 # - TEST_URL (optional, defaults to http://localhost:9001)
 # - NO_XVFB (optional, defaults to using Xvfb. Set to true to watch the test.)
 # - BUILD_EXTENSION (optional, defaults to using the live one. Set to true to
 #                    use a local build of the Vanadium extension.)
 #
 # In addition, this test requires that maven, Xvfb, and xvfb-run be installed.
-# The HTML report will be in $V23_ROOT/release/projects/browser/htmlReports
-WORKSPACE ?= $(V23_ROOT)/release/projects/browser
+# The HTML report will be in $JIRI_ROOT/release/projects/browser/htmlReports
+WORKSPACE ?= $(JIRI_ROOT)/release/projects/browser
 TEST_URL ?= http://localhost:9001
 ifndef NO_XVFB
 	XVFB := TMPDIR=/tmp xvfb-run -s '-ac -screen 0 1024x768x24'
@@ -155,7 +155,7 @@ ifdef BUILD_EXTENSION
 endif
 	WORKSPACE=$(WORKSPACE) $(XVFB) \
 	  mvn test \
-	  -f=$(V23_ROOT)/release/projects/browser/test/ui/pom.xml \
+	  -f=$(JIRI_ROOT)/release/projects/browser/test/ui/pom.xml \
 	  -Dtest=NamespaceBrowserUITest \
 	  -DchromeDriverBin=$(CHROME_WEBDRIVER) \
 	  -DhtmlReportsRelativePath=htmlReports \
@@ -171,7 +171,7 @@ watch:
 
 # Continuously reruns the tests as they change.
 watch-test: go/bin
-	NOMINIFY=true ./go/bin/runner -v=3 -log_dir=$(V23_ROOT)/release/projects/browser/tmp/log -runTestsWatch=true -alsologtostderr=false
+	NOMINIFY=true ./go/bin/runner -v=3 -log_dir=$(JIRI_ROOT)/release/projects/browser/tmp/log -runTestsWatch=true -alsologtostderr=false
 
 # Serves the needed daemons and starts a server at http://localhost:9000
 # CTRL-C to stop
