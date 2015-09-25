@@ -239,8 +239,8 @@ func runProva() bool {
 	err = cmdExtensionClean.Run()
 	exitOnError(err, "Failed to clean test extension")
 	cmdExtensionBuild := exec.Command("make", "-C", fmt.Sprintf("%s/extension", VANADIUM_JS), "build-test")
-	err = cmdExtensionBuild.Run()
-	exitOnError(err, "Failed to build test extension")
+	out, err := cmdExtensionBuild.CombinedOutput()
+	exitOnError(err, fmt.Sprintf("Failed to build test extension: make -C %s/extension build-test [[\n%s\n]]", VANADIUM_JS, out))
 
 	// These are the basic prova options.
 	options := []string{
