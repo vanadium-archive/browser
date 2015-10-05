@@ -31,9 +31,6 @@ order to use it, unless you want to modify it or see how it works.
 To build a local copy, install the Vanadium environment and be sure to
 include the web profile.
 
-Here is the link to the development instructions for Vanadium:
-https://github.com/vanadium/docs/blob/master/community/contributing.md
-
 Next, to build your own copy of the namespace browser, run:
 
 ```sh
