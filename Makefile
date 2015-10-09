@@ -107,8 +107,8 @@ bower_components: bower.json node_modules
 	touch bower_components
 
 go/bin: directories
-	v23 go install v.io/x/ref/services/mounttable/mounttabled
-	v23 go install v.io/x/browser/runner
+	jiri go install v.io/x/ref/services/mounttable/mounttabled
+	jiri go install v.io/x/browser/runner
 
 # PHONY targets:
 
