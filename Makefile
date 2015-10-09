@@ -18,8 +18,8 @@ export VDLPATH:=$(JIRI_ROOT)/release/projects/browser/go
 export GOBIN:=$(JIRI_ROOT)/release/projects/browser/go/bin
 export V23_CREDENTIALS=$(JIRI_ROOT)/release/projects/browser/credentials
 
-PATH:=$(JIRI_ROOT)/third_party/cout/node/bin:$(PATH)
-PATH:=node_modules/.bin:$(GOBIN):$(PATH)
+NODE_DIR := $(shell jiri v23-profile env --profile=nodejs V23_TARGET_INSTALLATION_DIR=)
+PATH := node_modules/.bin:$(NODE_DIR)/bin:$(GOBIN):$(PATH)
 
 VANADIUM_JS:=$(JIRI_ROOT)/release/javascript/core
 SOURCE_FILES = $(shell find src -name "*")
