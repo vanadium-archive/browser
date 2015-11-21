@@ -208,7 +208,7 @@ func run() bool {
 		vars["PROXY_NAME"] = proxyEndpoint.Name()
 	}
 
-	hIdentityd, err := sh.Start(nil, identitylib.TestIdentityd, "--v23.tcp.protocol=wsh", "--v23.tcp.address=:0", "--v23.proxy=test/proxy", "--http-addr=localhost:0")
+	hIdentityd, err := sh.Start(nil, identitylib.TestIdentityd, "--v23.tcp.protocol=wsh", "--v23.tcp.address=:0", "--http-addr=localhost:0")
 	exitOnError(err, "Failed to start identityd")
 	exitOnError(updateVars(hIdentityd, vars, "TEST_IDENTITYD_NAME", "TEST_IDENTITYD_HTTP_ADDR"), "Failed to obtain identityd address")
 	defer hIdentityd.Shutdown(outFile, errFile)
