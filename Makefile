@@ -14,7 +14,6 @@
 ##
 
 export GOPATH:=$(JIRI_ROOT)/release/projects/browser/go
-export VDLPATH:=$(JIRI_ROOT)/release/projects/browser/go
 export GOBIN:=$(JIRI_ROOT)/release/projects/browser/go/bin
 export V23_CREDENTIALS=$(JIRI_ROOT)/release/projects/browser/credentials
 
@@ -72,7 +71,7 @@ deploy-staging: build
 	make -C $(JIRI_ROOT)/infrastructure/deploy browser-staging
 
 # Creating the bundle JS file.
-public/bundle.js: $(SOURCE_FILES) node_modules src/services/sample-world/ifc
+public/bundle.js: $(SOURCE_FILES) node_modules src/services/sample-world/ifc/index.js
 	:;jshint src # lint all src JavaScript files.
 ifdef NOMINIFY
 	$(call BROWSERIFY,src/app.js,$@)
@@ -85,10 +84,11 @@ public/bundle.html: $(SOURCE_FILES) node_modules bower_components
 	:;vulcanize --output public/bundle.html web-component-dependencies.html --inline
 
 # Generate VDL for JavaScript
-src/services/sample-world/ifc:
-	VDLPATH=$(JIRI_ROOT)/release/projects/browser \
-	vdl generate -lang=javascript -js-out-dir=$(JIRI_ROOT)/release/projects/browser/src \
-	services/sample-world/ifc
+src/services/sample-world/ifc/index.js:
+	VDLPATH=$(JIRI_ROOT)/release/projects/browser/src \
+		vdl generate -lang=javascript \
+		-js-out-dir=$(JIRI_ROOT)/release/projects/browser/src \
+		services/sample-world/ifc
 
 # Install what we need from NPM.
 node_modules: package.json
