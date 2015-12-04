@@ -24,7 +24,7 @@ import (
 	"v.io/v23/security"
 	"v.io/v23/security/access"
 	"v.io/x/ref"
-	"v.io/x/ref/runtime/factories/generic"
+	_ "v.io/x/ref/runtime/factories/generic"
 	"v.io/x/ref/services/identity/identitylib"
 	"v.io/x/ref/services/mounttable/mounttablelib"
 	"v.io/x/ref/services/xproxy/xproxy"
@@ -190,23 +190,16 @@ func run() bool {
 
 	lspec := v23.GetListenSpec(ctx)
 	lspec.Addrs = rpc.ListenAddrs{{"wsh", ":0"}}
-	// Allow all processes started by this runner to use the proxy.
-	if ref.RPCTransitionState() >= ref.XServers {
-		ctx, cancel := context.WithCancel(ctx)
-		proxy, err := xproxy.New(ctx, "test/proxy", security.AllowEveryone())
-		exitOnError(err, "Failed to start proxy")
-		vars["PROXY_NAME"] = proxy.ListeningEndpoints()[0].Name()
-		defer func() {
-			cancel()
-			<-proxy.Closed()
-		}()
-	} else {
-		proxyACL := access.AccessList{In: security.DefaultBlessingPatterns(v23.GetPrincipal(ctx))}
-		proxyShutdown, proxyEndpoint, err := generic.NewProxy(ctx, lspec, proxyACL, "test/proxy")
-		exitOnError(err, "Failed to start proxy")
-		defer proxyShutdown()
-		vars["PROXY_NAME"] = proxyEndpoint.Name()
-	}
+	ctx = v23.WithListenSpec(ctx, lspec)
+	ctx, cancel := context.WithCancel(ctx)
+	proxyACL := access.AccessList{In: security.DefaultBlessingPatterns(v23.GetPrincipal(ctx))}
+	proxy, err := xproxy.New(ctx, "test/proxy", proxyACL)
+	exitOnError(err, "Failed to start proxy")
+	vars["PROXY_NAME"] = proxy.ListeningEndpoints()[0].Name()
+	defer func() {
+		cancel()
+		<-proxy.Closed()
+	}()
 
 	hIdentityd, err := sh.Start(nil, identitylib.TestIdentityd, "--v23.tcp.protocol=wsh", "--v23.tcp.address=:0", "--http-addr=localhost:0")
 	exitOnError(err, "Failed to start identityd")
