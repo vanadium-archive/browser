@@ -15,7 +15,6 @@ import (
 	"os/signal"
 	"strings"
 	"syscall"
-	"time"
 
 	"v.io/v23"
 	"v.io/v23/context"
@@ -23,19 +22,20 @@ import (
 	"v.io/v23/rpc"
 	"v.io/v23/security"
 	"v.io/v23/security/access"
+	"v.io/x/lib/gosh"
+	"v.io/x/lib/set"
 	"v.io/x/ref"
+	"v.io/x/ref/lib/signals"
+	"v.io/x/ref/lib/v23test"
 	_ "v.io/x/ref/runtime/factories/generic"
 	"v.io/x/ref/services/identity/identitylib"
 	"v.io/x/ref/services/mounttable/mounttablelib"
 	"v.io/x/ref/services/xproxy/xproxy"
 	"v.io/x/ref/test/expect"
-	"v.io/x/ref/test/modules"
 )
 
-const (
-	stdoutLog = "tmp/runner.stdout.log" // Used as stdout drain when shutting down.
-	stderrLog = "tmp/runner.stderr.log" // Used as stderr drain when shutting down.
-)
+// NOTE(sadovsky): It appears that a lot of this code has been copied from
+// v.io/x/ref/cmd/servicerunner/main.go.
 
 var (
 	runTestsWatch bool
@@ -45,10 +45,10 @@ func init() {
 	flag.BoolVar(&runTestsWatch, "runTestsWatch", false, "if true runs the tests in watch mode")
 }
 
-var runMT = modules.Register(func(env *modules.Env, args ...string) error {
+// TODO(sadovsky): Switch to using v23test.Shell.StartRootMountTable.
+var runMT = gosh.Register("runMT", func(mp string) error {
 	ctx, shutdown := v23.Init()
 	defer shutdown()
-	mp := args[0]
 
 	mt, err := mounttablelib.NewMountTableDispatcher(ctx, "", "", "mounttable")
 	if err != nil {
@@ -59,13 +59,13 @@ var runMT = modules.Register(func(env *modules.Env, args ...string) error {
 	if err != nil {
 		return fmt.Errorf("root failed: %v", err)
 	}
-	fmt.Fprintf(env.Stdout, "PID=%d\n", os.Getpid())
+	fmt.Printf("PID=%d\n", os.Getpid())
 	for _, ep := range server.Status().Endpoints {
-		fmt.Fprintf(env.Stdout, "MT_NAME=%s\n", ep.Name())
+		fmt.Printf("MT_NAME=%s\n", ep.Name())
 	}
-	modules.WaitForEOF(env.Stdin)
+	<-signals.ShutdownOnSignals(ctx)
 	return nil
-}, "runMT")
+})
 
 // Helper function to simply print an error and then exit.
 func exitOnError(err error, desc string) {
@@ -75,16 +75,13 @@ func exitOnError(err error, desc string) {
 	}
 }
 
-// updateVars captures the vars from the given Handle's stdout and adds them to
-// the given vars map, overwriting existing entries.
-func updateVars(h modules.Handle, vars map[string]string, varNames ...string) error {
-	varsToAdd := map[string]bool{}
-	for _, v := range varNames {
-		varsToAdd[v] = true
-	}
+// updateVars captures the vars from the given session and adds them to the
+// given vars map, overwriting existing entries.
+// TODO(sadovsky): Switch to gosh.SendVars/AwaitVars.
+func updateVars(s *expect.Session, vars map[string]string, varNames ...string) error {
+	varsToAdd := set.StringBool.FromSlice(varNames)
 	numLeft := len(varsToAdd)
 
-	s := expect.NewSession(nil, h.Stdout(), 30*time.Second)
 	for {
 		l := s.ReadLine()
 		if err := s.OriginalError(); err != nil {
@@ -94,7 +91,7 @@ func updateVars(h modules.Handle, vars map[string]string, varNames ...string) er
 		if len(parts) != 2 {
 			return fmt.Errorf("Unexpected line: %s", l)
 		}
-		if _, ok := varsToAdd[parts[0]]; ok {
+		if varsToAdd[parts[0]] {
 			numLeft--
 			vars[parts[0]] = parts[1]
 			if numLeft == 0 {
@@ -106,10 +103,7 @@ func updateVars(h modules.Handle, vars map[string]string, varNames ...string) er
 }
 
 func main() {
-	if modules.IsChildProcess() {
-		exitOnError(modules.Dispatch(), "Failed to dispatch module")
-		return
-	}
+	gosh.InitMain()
 
 	// If we ever get a SIGHUP (terminal closes), then end the program.
 	signalChannel := make(chan os.Signal)
@@ -131,54 +125,43 @@ func main() {
 // Runs the services and cleans up afterwards.
 // Returns true if the run was successful.
 func run() bool {
-	ctx, shutdown := v23.Init()
-	defer shutdown()
-
-	// In order to prevent conflicts, tests and webapp use different mounttable ports.
+	// In order to prevent conflicts, tests and webapp use different mounttable
+	// ports.
 	port := 8884
 	cottagePort := 8885
 	housePort := 8886
 	host := "localhost"
 
-	// Start a new shell module.
-	vars := map[string]string{}
-	sh, err := modules.NewShell(ctx, nil, false, nil)
-	if err != nil {
-		panic(fmt.Sprintf("modules.NewShell: %s", err))
-	}
-
-	// Collect the output of this shell on termination.
-	err = os.MkdirAll("tmp", 0750)
+	err := os.MkdirAll("tmp/runner", 0750)
 	exitOnError(err, "Could not make temp directory")
-	outFile, err := os.Create(stdoutLog)
-	exitOnError(err, "Could not open stdout log file")
-	defer outFile.Close()
-	errFile, err := os.Create(stderrLog)
-	exitOnError(err, "Could not open stderr log file")
-	defer errFile.Close()
-	defer sh.Cleanup(outFile, errFile)
+
+	vars := map[string]string{}
+	sh := v23test.NewShell(nil, v23test.Opts{ChildOutputDir: "tmp/runner"})
+	defer sh.Cleanup()
+	ctx := sh.Ctx
 
 	// Run a mounttable for tests
-	hRoot, err := sh.Start(nil, runMT, "--v23.tcp.protocol=wsh", fmt.Sprintf("--v23.tcp.address=%s:%d", host, port), "root")
+	cRoot := sh.Fn(runMT, "root")
+	cRoot.Args = append(cRoot.Args, "--v23.tcp.protocol=wsh", fmt.Sprintf("--v23.tcp.address=%s:%d", host, port))
+	cRoot.Start()
 	exitOnError(err, "Failed to start root mount table")
-	exitOnError(updateVars(hRoot, vars, "MT_NAME"), "Failed to get MT_NAME")
-	defer hRoot.Shutdown(outFile, errFile)
+	exitOnError(updateVars(cRoot.S, vars, "MT_NAME"), "Failed to get MT_NAME")
 
 	// Set ref.EnvNamespacePrefix env var, consumed downstream.
-	sh.SetVar(ref.EnvNamespacePrefix, vars["MT_NAME"])
+	sh.Vars[ref.EnvNamespacePrefix] = vars["MT_NAME"]
 	v23.GetNamespace(ctx).SetRoots(vars["MT_NAME"])
 
 	// Run the cottage mounttable at host/cottage.
-	hCottage, err := sh.Start(nil, runMT, "--v23.tcp.protocol=wsh", fmt.Sprintf("--v23.tcp.address=%s:%d", host, cottagePort), "cottage")
+	cCottage := sh.Fn(runMT, "cottage")
+	cCottage.Args = append(cCottage.Args, "--v23.tcp.protocol=wsh", fmt.Sprintf("--v23.tcp.address=%s:%d", host, cottagePort))
+	cCottage.Start()
 	exitOnError(err, "Failed to start cottage mount table")
-	expect.NewSession(nil, hCottage.Stdout(), 30*time.Second)
-	defer hCottage.Shutdown(outFile, errFile)
 
 	// run the house mounttable at host/house.
-	hHouse, err := sh.Start(nil, runMT, "--v23.tcp.protocol=wsh", fmt.Sprintf("--v23.tcp.address=%s:%d", host, housePort), "house")
+	cHouse := sh.Fn(runMT, "house")
+	cHouse.Args = append(cHouse.Args, "--v23.tcp.protocol=wsh", fmt.Sprintf("--v23.tcp.address=%s:%d", host, housePort))
+	cHouse.Start()
 	exitOnError(err, "Failed to start house mount table")
-	expect.NewSession(nil, hHouse.Stdout(), 30*time.Second)
-	defer hHouse.Shutdown(outFile, errFile)
 
 	// Just print out the collected variables. This is for debugging purposes.
 	bytes, err := json.Marshal(vars)
@@ -201,10 +184,11 @@ func run() bool {
 		<-proxy.Closed()
 	}()
 
-	hIdentityd, err := sh.Start(nil, identitylib.TestIdentityd, "--v23.tcp.protocol=wsh", "--v23.tcp.address=:0", "--http-addr=localhost:0")
+	cIdentityd := sh.Fn(identitylib.TestIdentityd)
+	cIdentityd.Args = append(cIdentityd.Args, "--v23.tcp.protocol=wsh", "--v23.tcp.address=:0", "--http-addr=localhost:0")
+	cIdentityd.Start()
 	exitOnError(err, "Failed to start identityd")
-	exitOnError(updateVars(hIdentityd, vars, "TEST_IDENTITYD_NAME", "TEST_IDENTITYD_HTTP_ADDR"), "Failed to obtain identityd address")
-	defer hIdentityd.Shutdown(outFile, errFile)
+	exitOnError(updateVars(cIdentityd.S, vars, "TEST_IDENTITYD_NAME", "TEST_IDENTITYD_HTTP_ADDR"), "Failed to obtain identityd address")
 
 	// Setup a lot of environment variables; these are used for the tests and building the test extension.
 	os.Setenv(ref.EnvNamespacePrefix, vars["MT_NAME"])
