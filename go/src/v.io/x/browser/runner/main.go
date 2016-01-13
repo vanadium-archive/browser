@@ -26,12 +26,12 @@ import (
 	"v.io/x/lib/set"
 	"v.io/x/ref"
 	"v.io/x/ref/lib/signals"
-	"v.io/x/ref/lib/v23test"
 	_ "v.io/x/ref/runtime/factories/generic"
 	"v.io/x/ref/services/identity/identitylib"
 	"v.io/x/ref/services/mounttable/mounttablelib"
 	"v.io/x/ref/services/xproxy/xproxy"
 	"v.io/x/ref/test/expect"
+	"v.io/x/ref/test/v23test"
 )
 
 // NOTE(sadovsky): It appears that a lot of this code has been copied from
