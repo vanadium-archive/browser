@@ -46,7 +46,7 @@ func init() {
 }
 
 // TODO(sadovsky): Switch to using v23test.Shell.StartRootMountTable.
-var runMT = gosh.Register("runMT", func(mp string) error {
+var runMT = gosh.RegisterFunc("runMT", func(mp string) error {
 	ctx, shutdown := v23.Init()
 	defer shutdown()
 
@@ -141,7 +141,7 @@ func run() bool {
 	ctx := sh.Ctx
 
 	// Run a mounttable for tests
-	cRoot := sh.Fn(runMT, "root")
+	cRoot := sh.FuncCmd(runMT, "root")
 	cRoot.Args = append(cRoot.Args, "--v23.tcp.protocol=wsh", fmt.Sprintf("--v23.tcp.address=%s:%d", host, port))
 	cRoot.Start()
 	exitOnError(err, "Failed to start root mount table")
@@ -152,13 +152,13 @@ func run() bool {
 	v23.GetNamespace(ctx).SetRoots(vars["MT_NAME"])
 
 	// Run the cottage mounttable at host/cottage.
-	cCottage := sh.Fn(runMT, "cottage")
+	cCottage := sh.FuncCmd(runMT, "cottage")
 	cCottage.Args = append(cCottage.Args, "--v23.tcp.protocol=wsh", fmt.Sprintf("--v23.tcp.address=%s:%d", host, cottagePort))
 	cCottage.Start()
 	exitOnError(err, "Failed to start cottage mount table")
 
 	// run the house mounttable at host/house.
-	cHouse := sh.Fn(runMT, "house")
+	cHouse := sh.FuncCmd(runMT, "house")
 	cHouse.Args = append(cHouse.Args, "--v23.tcp.protocol=wsh", fmt.Sprintf("--v23.tcp.address=%s:%d", host, housePort))
 	cHouse.Start()
 	exitOnError(err, "Failed to start house mount table")
@@ -184,7 +184,7 @@ func run() bool {
 		<-proxy.Closed()
 	}()
 
-	cIdentityd := sh.Fn(identitylib.TestIdentityd)
+	cIdentityd := sh.FuncCmd(identitylib.TestIdentityd)
 	cIdentityd.Args = append(cIdentityd.Args, "--v23.tcp.protocol=wsh", "--v23.tcp.address=:0", "--http-addr=localhost:0")
 	cIdentityd.Start()
 	exitOnError(err, "Failed to start identityd")
