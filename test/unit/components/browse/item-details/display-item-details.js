@@ -46,7 +46,7 @@ proxyquire(
   { '../../../services/namespace/service': namespaceServiceMockWithFailure}
 );
 
-test('Updates state.item', function(t) {
+test.skip('Updates state.item', function(t) {
 
   var component = itemDetailsComponent();
   var state = component.state;
@@ -64,7 +64,7 @@ test('Updates state.item', function(t) {
 
 });
 
-test('Updates state.item to null on failure', function(t) {
+test.skip('Updates state.item to null on failure', function(t) {
 
   var component = itemDetailsComponent();
   var state = component.state;
