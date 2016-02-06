@@ -39,7 +39,7 @@ or can be multiple names.
 "Permissions" shows all permissions set on this mount point.
 Recall that an item can have permissions set on both the name,
 and what the name points to.
-See [the Security concepts document](https://github.com/vanadium/docs/blob/master/concepts/security.md)
+See [the Security concepts document](https://vanadium.github.io/concepts/security.html)
 for information about permissions.
 
 Service tab

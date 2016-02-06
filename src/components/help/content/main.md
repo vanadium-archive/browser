@@ -7,7 +7,7 @@ Names
 Vanadium names identify objects in a namespace (similar to how URLs identify
 objects on the web). In Vanadium, the objects are all *services* on *servers*.
 See [the Naming concepts
-document](https://github.com/vanadium/docs/blob/master/concepts/naming.md) for
+document](https://vanadium.github.io/concepts/naming.html) for
 more information.
 
 Names in Vanadium are a sequence of simple name components –

@@ -7,4 +7,4 @@ https://github.com/vanadium/browser/issues/new
 ## How can I contribute to the namespace browser?
 
 Read the contributing instructions here:
-https://github.com/vanadium/docs/blob/master/contributing/coding-guidelines.md
+https://vanadium.github.io/community/contributing.html
