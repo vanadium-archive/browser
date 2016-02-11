@@ -1,5 +1,4 @@
 /.jiri
-#TODO(nlacasse): Get rid of .v23 below once v23->jiri transition is complete.
 node_modules/
 bower_components/
 go/pkg/
@@ -11,6 +10,3 @@ tmp/
 credentials/
 htmlReports/
 test/ui/target/
-
-# Vanadium
-/.v23
