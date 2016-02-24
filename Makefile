@@ -121,7 +121,7 @@ build: directories public/bundle.js public/bundle.html
 # Run unit and integration tests.
 test: all
 	:;jshint test # lint all test JavaScript files.
-	:;./go/bin/runner -v=3 -log_dir=$(JIRI_ROOT)/release/projects/browser/tmp/log -alsologtostderr=false
+	:;./go/bin/runner -v=3 -log_dir=$(JIRI_ROOT)/release/projects/browser/tmp/log -alsologtostderr=true
 
 # Run UI tests for the namespace browser.
 # These tests do not normally need to be run locally, but they can be if you
