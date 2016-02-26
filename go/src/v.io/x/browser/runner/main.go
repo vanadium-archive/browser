@@ -136,8 +136,9 @@ func run() bool {
 	exitOnError(err, "Could not make temp directory")
 
 	vars := map[string]string{}
-	sh := v23test.NewShell(nil, v23test.Opts{ChildOutputDir: "tmp/runner"})
+	sh := v23test.NewShell(nil, nil)
 	defer sh.Cleanup()
+	sh.ChildOutputDir = "tmp/runner"
 	ctx := sh.Ctx
 
 	// Run a mounttable for tests
