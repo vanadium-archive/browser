@@ -33,8 +33,7 @@ test('arraySet set', function(t) {
     'remove from existing index => true');
   t.deepEqual(arr2, ['d', 'e'], 'remove from existing index => changed');
 
-  // Error Cases
-  t.throws(arraySet.set(arr, 'f', true, indexOfBad), 'invalid index => throws');
+  t.notOk(arraySet.set(arr, 'f', true, indexOfBad), 'invalid index =>false');
 
   t.end();
 });
