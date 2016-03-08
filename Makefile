@@ -20,6 +20,10 @@ export V23_CREDENTIALS=$(JIRI_ROOT)/release/projects/browser/credentials
 NODE_DIR := $(shell jiri profile list --info Target.InstallationDir v23:nodejs)
 export PATH := node_modules/.bin:$(NODE_DIR)/bin:$(GOBIN):$(PATH)
 
+# NOTE: we run npm using 'node npm' to avoid relying on the shebang line in the
+# npm script, which can exceed the Linux shebang length limit on Jenkins.
+NPM := $(NODE_DIR)/bin/npm
+
 VANADIUM_JS:=$(JIRI_ROOT)/release/javascript/core
 SOURCE_FILES = $(shell find src -name "*")
 
@@ -92,11 +96,11 @@ src/services/sample-world/ifc/index.js:
 
 # Install what we need from NPM.
 node_modules: package.json
-	:;npm prune
-	:;npm install --quiet
+	:;node $(NPM) prune
+	:;node $(NPM) install --quiet
 	# TODO(aghassemi) Temporarily use local release/javascript/core add github/npm to package.json later
-	cd "$(JIRI_ROOT)/release/javascript/core" && npm link
-	:;npm link vanadium
+	cd "$(JIRI_ROOT)/release/javascript/core" && node $(NPM) link
+	:;node $(NPM) link vanadium
 
 	touch node_modules
 
