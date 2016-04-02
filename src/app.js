@@ -4,7 +4,6 @@
 
 var uuid = require('uuid');
 var mercury = require('mercury');
-var vanadium = require('vanadium');
 var addDelegatedEvents = require('./lib/mercury/add-delegated-events');
 var onboarding = require('./onboarding');
 var router = require('./router');
@@ -17,7 +16,6 @@ var viewport = require('./components/viewport');
 var views = require('./components/browse/views');
 var userAccount = require('./components/user-account');
 var namespaceService = require('./services/namespace/service');
-var sampleWorld = require('./services/sample-world');
 var stateService = require('./services/state/service');
 var errorRoute = require('./routes/error');
 var browseRoute = require('./routes/browse');
@@ -264,16 +262,9 @@ function loadUserState() {
  */
 function initVanadium() {
   viewport.setSplashMessage('Initializing Vanadium...');
-  namespaceService.initVanadium().then(function(vruntime) {
-    vruntime.once('crash', onVanadiumCrash);
-
+  namespaceService.getEmailAddress().then(function(email) {
     // Onboarding Hook for new users (async). Currently does not block.
-    onboarding(vruntime, state);
-
-    window.addEventListener('beforeunload', function() {
-      log.debug('closing runtime');
-      vruntime.close();
-    });
+    onboarding(email, state);
 
     if (state.demo()) {
       return intializeDemo();
@@ -293,7 +284,10 @@ function initVanadium() {
      * Initialized the demo mode
      */
     function intializeDemo() {
-      viewport.setSplashMessage('Initializing Sample World Demo...');
+      // TODO(alexfandrianto): With JS deprecated, we may want to delete the old
+      // demo code. Instead, demo services should be launched by cmdline or Go.
+      initialized();
+      /*viewport.setSplashMessage('Initializing Sample World Demo...');
       var sampleWorldDirectory = '';
       return sampleWorld.getRootedName().then(function(name) {
         sampleWorldDirectory = name;
@@ -307,22 +301,11 @@ function initVanadium() {
             viewType: 'tree'
           })
         });
-      });
+      });*/
     }
   }).catch(function(err) {
-    if (err instanceof vanadium.verror.ExtensionNotInstalledError) {
-      vanadium.extension.promptUserToInstallExtension();
-    } else {
-      var isError = true;
-      viewport.setSplashMessage(err.toString(), isError);
-      log.error(err);
-    }
+    var isError = true;
+    viewport.setSplashMessage(err.toString(), isError);
+    log.error(err);
   });
-}
-
-/*
- * Handler if Vanadium runtime crashes
- */
-function onVanadiumCrash(crashErr) {
-  events.browse.error(crashErr);
 }

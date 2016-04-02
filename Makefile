@@ -26,6 +26,7 @@ NPM := $(NODE_DIR)/bin/npm
 
 VANADIUM_JS:=$(JIRI_ROOT)/release/javascript/core
 SOURCE_FILES = $(shell find src -name "*")
+GO_FILES = $(shell find src -name "*.go")
 
 ifndef TMPDIR
 	export TMPDIR:=/tmp
@@ -75,7 +76,7 @@ deploy-staging: build
 	make -C $(JIRI_ROOT)/infrastructure/deploy browser-staging
 
 # Creating the bundle JS file.
-public/bundle.js: $(SOURCE_FILES) node_modules src/services/sample-world/ifc/index.js
+public/bundle.js: $(SOURCE_FILES) node_modules
 	:;jshint src # lint all src JavaScript files.
 ifdef NOMINIFY
 	$(call BROWSERIFY,src/app.js,$@)
@@ -88,6 +89,7 @@ public/bundle.html: $(SOURCE_FILES) node_modules bower_components
 	:;vulcanize --output public/bundle.html web-component-dependencies.html --inline
 
 # Generate VDL for JavaScript
+# TODO(alexfandrianto): The JS Sample World is unused, so we can remove this.
 src/services/sample-world/ifc/index.js:
 	VDLPATH=$(JIRI_ROOT)/release/projects/browser/src \
 		vdl generate -lang=javascript \
@@ -98,9 +100,6 @@ src/services/sample-world/ifc/index.js:
 node_modules: package.json
 	:;node $(NPM) prune
 	:;node $(NPM) install --quiet
-	# TODO(aghassemi) Temporarily use local release/javascript/core add github/npm to package.json later
-	cd "$(JIRI_ROOT)/release/javascript/core" && node $(NPM) link
-	:;node $(NPM) link vanadium
 
 	touch node_modules
 
@@ -110,9 +109,20 @@ bower_components: bower.json node_modules
 	:;bower install --config.interactive=false --quiet
 	touch bower_components
 
-go/bin: directories
+go/bin: $(GO_FILES)
+	jiri go install v.io/x/ref/cmd/principal
 	jiri go install v.io/x/ref/services/mounttable/mounttabled
 	jiri go install v.io/x/browser/runner
+	jiri go install v.io/x/browser/namespace-browserd
+
+credentials: go/bin
+	./go/bin/principal seekblessings
+
+.PHONY: start-browserd
+# Runs namespace browser with the credentials from V23_CREDENTIALS
+start-browserd: credentials go/bin/namespace-browserd
+	./go/bin/namespace-browserd
+
 
 # PHONY targets:
 

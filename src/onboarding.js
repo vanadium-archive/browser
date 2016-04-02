@@ -10,11 +10,11 @@ var log = require('./lib/log')('onboarding');
 module.exports = onboarding;
 
 // When a new user visits the namespace browser, do a simple onboarding.
-function onboarding(rt, appState) {
+function onboarding(email, appState) {
   store.getValue('returning_user').then(function(returning) {
     if (!returning) {
       log.debug('Welcome to the Vanadium Namespace Browser!');
-      addDefaultBookmarks(rt);
+      addDefaultBookmarks(email);
 
       // TODO(alexfandrianto): We can improve the onboarding experience
       // By changing the appState variable, we can do other things to help a new
@@ -27,12 +27,10 @@ function onboarding(rt, appState) {
 }
 
 // Add default bookmarks to the user's store.
-function addDefaultBookmarks(rt) {
+function addDefaultBookmarks(email) {
   function bookmarkFail(err) {
     log.warn('Could not add default bookmark', err);
   }
-
-  var email = getEmailFromAccountName(rt.accountName);
 
   // Determine the default bookmarks.
   var globalMT = '/ns.dev.v.io:8101';
@@ -59,11 +57,6 @@ function addDefaultBookmarks(rt) {
       });
     }
   }).catch(bookmarkFail);
-}
-
-function getEmailFromAccountName(accountName) {
-  // Use a regular expression to extract the email.
-  return /dev.v.io\/u\/(.*?)\//.exec(accountName)[1];
 }
 
 // Set the returning_user flag to true.

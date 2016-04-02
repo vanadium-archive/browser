@@ -2,16 +2,14 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-var vanadium = require('vanadium');
 var mercury = require('mercury');
 var LRU = require('lru-cache');
 var EventEmitter = require('events').EventEmitter;
-var vanadiumConfig = require('../../vanadium-config');
 var itemFactory = require('./item');
 var freeze = require('../../lib/mercury/freeze');
 var sortedPush = require('../../lib/mercury/sorted-push-array');
 var log = require('../../lib/log')('services:namespace:service');
-var naming = vanadium.naming;
+var naming = require('./naming-util.js');
 naming.parseName = parseName;
 
 module.exports = {
@@ -20,42 +18,97 @@ module.exports = {
   getRemoteBlessings: getRemoteBlessings,
   getSignature: getSignature,
   getAccountName: getAccountName,
+  getEmailAddress: getEmailAddress,
   getObjectAddresses: getObjectAddresses,
   getPermissions: getPermissions,
   resolveToMounttable: resolveToMounttable,
   makeRPC: makeRPC,
   search: search,
   util: naming,
-  initVanadium: getRuntime,
   clearCache: clearCache,
   deleteMountPoint: deleteMountPoint,
   prefixes: prefixes
 };
 
-//TODO(aghassemi) What's a good timeout? It should be shorter than this.
-//Can we use ML to dynamically change the timeout?
-//Should this be a user settings?
-var RPC_TIMEOUT = 15 * 1000;
 
 /*
- * Lazy getter and initializer for Vanadium runtime
+ * Returns an EventSource object connected to the local network.
+ * Only certain types of requests are allowed.
+ *
+ * accountName: <no parameters>  => { accountName: <string>, err: <err> }
+ * glob: string pattern  => a stream of responses
+ *   { globRes: <glob res>, globErr: <glob err>, globEnd: <bool>, err: <err> }
+ * permissions: string name =>  { permissions: <permissions>, err: <err> }
+ * deleteMountPoint: string name => { err: <err string> }
+ * resolveToMounttable: string name => { addresses: []<string>, err: <err> }
+ * objectAddresses: string name => { addresses: []<string>, err: <err> }
+ * remoteBlessings: string name => { blessings: []<string>, err: <err> }
+ * signature: string name => { signature: <signature>, err: <err> }
+ * makeRPC: { name: <string>, methodName: <string>, args: []<string>,
+ *            numOutArgs: <int> } =>
+ *          { response: <undefined, output, OR []outputs>, err: <err> }
  */
-var _runtimePromiseInstance;
+// TODO(alexfandrianto): Make this configurable here and on the Go end.
+// https://github.com/vanadium/issues/issues/1268
+var eventSourceURL = 'http://127.0.0.1:9002';
+function connectToEventSource(requestType, parameters) {
+  parameters = parameters || '';
+  var requestData = eventSourceURL +
+    '?request=' + encodeURIComponent(requestType) +
+    '&params=' + encodeURIComponent(JSON.stringify(parameters));
 
-function getRuntime() {
-  if (!_runtimePromiseInstance) {
-    _runtimePromiseInstance = vanadium.init(vanadiumConfig);
-  }
-  return _runtimePromiseInstance;
+  // Create the EventSource. Note: node does not have EventSource.
+  return new EventSource(requestData); // jshint ignore:line
+}
+
+/*
+ * Returns a Promise<value> drawn from the connected Event Source.
+ * See connectToEventSource.
+ */
+function getSingleEvent(type, params, field) {
+  return new Promise(function(resolve, reject) {
+    var ev = connectToEventSource(type, params);
+    ev.addEventListener('message', function(message) {
+      ev.close();
+      try {
+        var data = JSON.parse(message.data);
+        if (data.err) {
+          reject(data.err);
+        } else {
+          resolve(data[field]);
+        }
+      } catch (err) {
+        reject(err);
+      }
+    });
+    ev.addEventListener('error', function(err) {
+      ev.close();
+      reject(err);
+    });
+  });
 }
 
 /*
  * Returns the accountName for the currently logged in user
  * @return {Promise.<string>}
  */
+var _accountNamePromise;
 function getAccountName() {
-  return getRuntime().then(function(rt) {
-    return rt.accountName;
+  if (!_accountNamePromise) {
+    _accountNamePromise =
+      getSingleEvent('accountName', undefined, 'accountName');
+  }
+  return _accountNamePromise;
+}
+
+/*
+ * Returns the email address for the currently logged in user
+ * @return {Promise.<string>}
+ */
+function getEmailAddress() {
+  return getAccountName().then(function(accountName) {
+    // TODO(alexfandrianto): Assumes a lot about the format of the blessings.
+    return accountName.split(':')[2];
   });
 }
 
@@ -104,43 +157,92 @@ function glob(pattern) {
   var globItemsObservArr = mercury.array([]);
   var immutableResult = freeze(globItemsObservArr);
   immutableResult.events = new EventEmitter();
-  var ctx;
   var globItemsObservArrPromise =
-    getRuntime().then(function callGlobOnNamespace(rt) {
-      ctx = rt.getContext().withTimeout(RPC_TIMEOUT);
-      // TODO(aghassemi) use watchGlob when available
-      var namespace = rt.getNamespace();
-      return namespace.glob(ctx, pattern).stream;
-    }).then(function updateResult(globStream) {
-      globStream.on('data', function createItem(globResult) {
-        // Create an item as glob results come in and add the item to result
-        var item = createNamespaceItem(globResult);
+    Promise.resolve().then(function callGlobOnNamespace() {
+      return new Promise(function (resolve, reject) {
+        var ev = connectToEventSource('glob', pattern);
+        ev.addEventListener('error', function(err) {
+          ev.close();
+          reject(err);
+        });
 
-        var existingItem = globItemsObservArr.filter(function(curItem) {
-          return curItem().objectName === item().objectName;
-        }).get(0);
-        if (existingItem) {
-          // override the old one if new item has server
-          if (item().hasServer) {
-            var index = globItemsObservArr.indexOf(existingItem);
-            globItemsObservArr.put(index, item);
+        function handleMessageConnectionResponse(response) {
+          try {
+            var data = JSON.parse(response.data);
+            if (data.err) {
+              ev.close();
+              reject(data.err);
+            } else {
+              // We have successfully established the stream.
+              // Keep the event source open to listen for more.
+              resolve();
+            }
+          } catch (err) {
+            ev.close();
+            reject(err);
           }
-        } else {
-          var sorter = 'mountedName';
-          sortedPush(globItemsObservArr, item, sorter);
         }
-      });
 
-      globStream.on('end', function() {
-        immutableResult.events.emit('end');
-        immutableResult._hasEnded = true;
-      });
+        function handleStreamEvent(message) {
+          try {
+            var data = JSON.parse(message.data);
 
-      globStream.on('error', function emitGlobErrorAndLog(err) {
-        immutableResult.events.emit('globError', err);
-        log.warn('Glob stream error for', name, err);
-      });
+            if (data.globRes) {
+              var globResult = data.globRes;
 
+              // Handle a glob result by creating an item.
+              var item = createNamespaceItem(lowercasifyJSONObject(globResult));
+
+              var existingItem = globItemsObservArr.filter(function(curItem) {
+                return curItem().objectName === item().objectName;
+              }).get(0);
+              if (existingItem) {
+                // override the old one if new item has server
+                if (item().hasServer) {
+                  var index = globItemsObservArr.indexOf(existingItem);
+                  globItemsObservArr.put(index, item);
+                }
+              } else {
+                var sorter = 'mountedName';
+                sortedPush(globItemsObservArr, item, sorter);
+              }
+
+            } else if (data.globErr) {
+              var err = data.globErr;
+              // Handle a glob error by emitting that event.
+              immutableResult.events.emit('globError', err);
+              log.warn('Glob stream error', err);
+            } else if (data.globEnd) {
+              // Handle a glob end by emitting it. Close event source.
+              immutableResult.events.emit('end');
+              immutableResult._hasEnded = true;
+              ev.close();
+            } else {
+              // There was a data error. Close event source.
+              log.error('Event source error for', name, data.err);
+              ev.close();
+
+              // If this were an RPC, we probably would have failed earlier.
+              // So, we must also clear the cache key.
+              globCache.del(cacheKey);
+            }
+          } catch (err) {
+            log.error(err);
+          }
+        }
+
+        var initialResponse = false;
+        ev.addEventListener('message', function(response) {
+          if (!initialResponse) {
+            // Check whether the RPC and stream connection was established.
+            initialResponse = true;
+            handleMessageConnectionResponse(response);
+          } else {
+            // Handle the Glob Results and Errors from the stream.
+            handleStreamEvent(response);
+          }
+        });
+      });
     }).then(function cacheAndReturnResult() {
       globCache.set(cacheKey, immutableResult);
       return immutableResult;
@@ -215,16 +317,20 @@ function search(parentName, pattern) {
  * vanadium.security.Permissions object.
  */
 function getPermissions(name) {
-  return getRuntime().then(function(rt) {
-    var ctx = rt.getContext().withTimeout(RPC_TIMEOUT);
-    var ns = rt.getNamespace();
-    return ns.getPermissions(ctx, name);
-  }).then(function(results) {
-    // getPermissions return multiple results, permissions is at
-    // outArg position 0
-    return mercury.value(results[0]);
+  return getSingleEvent('permissions', name, 'permissions').then(
+    function(perms) {
+      // perms is an object, but we want a map instead.
+      var p2 = new Map();
+      for (var key in perms) {
+        if (perms.hasOwnProperty(key)) {
+          p2.set(key, lowercasifyJSONObject(perms[key]));
+        }
+      }
+      return mercury.value(p2);
   });
 }
+
+
 
 /*
  * Deletes a mount point.
@@ -232,11 +338,8 @@ function getPermissions(name) {
  * @return {Promise<void>} Success or failure promise.
  */
 function deleteMountPoint(name) {
-  return getRuntime().then(function(rt) {
-    var ctx = rt.getContext().withTimeout(RPC_TIMEOUT);
-    var ns = rt.getNamespace();
-    return ns.delete(ctx, name, true);
-  });
+  // Note: The return value on success is undefined.
+  return getSingleEvent('deleteMountPoint', name, 'deleteMountPoint');
 }
 
 /*
@@ -246,12 +349,9 @@ function deleteMountPoint(name) {
  * objectAddress strings.
  */
 function resolveToMounttable(name) {
-  return getRuntime().then(function(rt) {
-    var ctx = rt.getContext().withTimeout(RPC_TIMEOUT);
-    var ns = rt.getNamespace();
-    return ns.resolveToMounttable(ctx, name);
-  }).then(function(objectAddresses) {
-    return mercury.array(objectAddresses);
+  return getSingleEvent('resolveToMounttable', name, 'addresses').then(
+    function(objectAddresses) {
+      return mercury.array(objectAddresses);
   });
 }
 
@@ -262,12 +362,9 @@ function resolveToMounttable(name) {
  * array of string objectAddresses
  */
 function getObjectAddresses(name) {
-  return getRuntime().then(function resolve(rt) {
-    var resolveCtx = rt.getContext().withTimeout(RPC_TIMEOUT);
-    var ns = rt.getNamespace();
-    return ns.resolve(resolveCtx, name);
-  }).then(function(objectAddresses) {
-    return mercury.array(objectAddresses);
+  return getSingleEvent('objectAddresses', name, 'addresses').then(
+    function(objectAddresses) {
+      return mercury.array(objectAddresses);
   });
 }
 
@@ -292,14 +389,11 @@ function getRemoteBlessings(objectName) {
   if (cacheHit) {
     return Promise.resolve(cacheHit);
   }
-  return getRuntime().then(function invokeRemoteBlessingsMethod(rt) {
-    var ctx = rt.getContext().withTimeout(RPC_TIMEOUT);
-    var client = rt.getClient();
-    return client.remoteBlessings(ctx, objectName);
-  }).then(function cacheAndReturnRemoteBlessings(remoteBlessings) {
-    // Remote Blessings is []string representing the principals of the service.
-    remoteBlessingsCache.set(cacheKey, remoteBlessings);
-    return remoteBlessings;
+  return getSingleEvent('remoteBlessings', objectName, 'blessings').then(
+    function cacheAndReturnRemoteBlessings(remoteBlessings) {
+      // Remote Blessings is []string of the service's blessings.
+      remoteBlessingsCache.set(cacheKey, remoteBlessings);
+      return remoteBlessings;
   });
 }
 
@@ -324,15 +418,41 @@ function getSignature(objectName) {
   if (cacheHit) {
     return Promise.resolve(cacheHit);
   }
-  return getRuntime().then(function invokeSignatureMethod(rt) {
-    var ctx = rt.getContext().withTimeout(RPC_TIMEOUT);
-    var client = rt.getClient();
-    return client.signature(ctx, objectName);
-  }).then(function cacheAndReturnSignature(signature) {
-    // Signature is []interface; each interface contains method data.
-    signatureCache.set(cacheKey, signature);
-    return signature;
+  return getSingleEvent('signature', objectName, 'signature').then(
+    function cacheAndReturnSignature(signature) {
+      // Signature is []interface; each interface contains method data.
+      signatureCache.set(cacheKey, signature);
+      return signature;
   });
+}
+
+// Go through the JSON object and lowercase everything recursively.
+// We need this because it is annoying to change every Go struct to have the
+// json annotation to lowercase its field name.
+function lowercasifyJSONObject(obj) {
+  // number, string, boolean, or null
+  if (typeof obj !== 'object' || obj === null) {
+    return obj; // It's actually primitive.
+  }
+
+  // array
+  if (Array.isArray(obj)) {
+    var a = [];
+    for (var i = 0; i < obj.length; i++) {
+      a[i] = lowercasifyJSONObject(obj[i]);
+    }
+    return a;
+  }
+
+  // object
+  var cp = {};
+  for (var k in obj) {
+    if (obj.hasOwnProperty(k)) {
+      var lowerK = k[0].toLowerCase() + k.substr(1);
+      cp[lowerK] = lowercasifyJSONObject(obj[k]);
+    }
+  }
+  return cp;
 }
 
 /*
@@ -341,23 +461,23 @@ function getSignature(objectName) {
  * methodName: string for the service method name
  * args (optional): array of arguments for the service method
  */
-function makeRPC(name, methodName, args) {
-  // Adapt the method name to be lowercase again.
-  methodName = methodName[0].toLowerCase() + methodName.substr(1);
-
-  var ctx;
-  return getRuntime().then(function bindToName(rt) {
-    ctx = rt.getContext();
-    var client = rt.getClient();
-    return client.bindTo(ctx, name);
-  }).then(function callMethod(service) {
-    log.debug('Calling', methodName, 'on', name, 'with', args);
-    args.unshift(ctx.withTimeout(RPC_TIMEOUT));
-    return service[methodName].apply(null, args);
-  }).then(function returnResult(result) {
+function makeRPC(name, methodName, args, numOutArgs) {
+  log.debug('Calling', methodName, 'on', name, 'with', args, 'for', numOutArgs);
+  var call = {
+    name: name,
+    methodName: methodName,
+    args: args,
+    numOutArgs: numOutArgs
+  };
+  return getSingleEvent('makeRPC', call, 'response').then(function (result) {
     // If the result was for 0 outArg, then this returns undefined.
     // If the result was for 1 outArg, then it gets a single output.
     // If the result was for >1 outArgs, then we return []output.
+    if (numOutArgs === 0) {
+      return;
+    } else if (numOutArgs === 1) {
+      return result[0];
+    }
     return result;
   });
 }
@@ -371,18 +491,16 @@ function makeRPC(name, methodName, args) {
  * about an item.
  */
 function createNamespaceItem(mountEntry) {
-
   var name = mountEntry.name;
 
   // mounted name relative to parent
   var mountedName = naming.basename(name);
   var isLeaf = mountEntry.isLeaf;
-  var hasServer = mountEntry.servers.length > 0 ||
-    !mountEntry.servesMountTable;
-  var hasMountPoint = mountEntry.servers.length > 0 ||
-    mountEntry.servesMountTable;
-  var isMounttable = mountEntry.servers.length > 0 &&
-    mountEntry.servesMountTable;
+  var hasServers = (mountEntry.servers && mountEntry.servers.length > 0);
+
+  var hasServer = hasServers || !mountEntry.servesMountTable;
+  var hasMountPoint = hasServers || mountEntry.servesMountTable;
+  var isMounttable = hasServers && mountEntry.servesMountTable;
 
   var item = itemFactory.createItem({
     objectName: name,
@@ -399,8 +517,8 @@ function createNamespaceItem(mountEntry) {
 /*
  * Given an arbitrary Vanadium name, parses it into an array
  * of strings.
- * For example, if name is "/ns.dev.v.io:8101/global/rps"
- * returns ["ns.dev.v.io:8101", "global", "rps"]
+ * For example, if name is '/ns.dev.v.io:8101/global/rps'
+ * returns ['ns.dev.v.io:8101', 'global', 'rps']
  * Can use namespaceService.util.isRooted to see if the name
  * is rooted (begins with a slash).
  * Note that the address part can contain slashes.

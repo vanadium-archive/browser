@@ -33,9 +33,10 @@ function getMethodData(interface, methodName) {
 function hashInterface(interface) {
   var pkgPath = interface.pkgPath + '.' + interface.name;
   var methods = interface.methods.map(function(methodData) {
+    var inArgList = methodData.inArgs || [];
     return {
       name: methodData.name,
-      inArgs: methodData.inArgs.map(function(inArg) {
+      inArgs: inArgList.map(function(inArg) {
         return inArg.name;
       })
     };

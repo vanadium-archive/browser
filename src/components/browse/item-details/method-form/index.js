@@ -146,9 +146,12 @@ function displayMethodForm(state, events, data) {
  */
 function initializeInputArguments(state) {
   var param = getMethodData(state.interface(), state.methodName());
-  var startingArgs = _.range(param.inArgs.length).map(function() {
-    return ''; // Initialize array with empty string values using lodash.
-  });
+  var startingArgs = [];
+  if (param.inArgs) {
+    startingArgs = _.range(param.inArgs.length).map(function() {
+      return ''; // Initialize array with empty string values using lodash.
+    });
+  }
   setMercuryArray(state.args, startingArgs);
 }
 
@@ -161,9 +164,11 @@ function refreshInputSuggestions(state) {
     interface: state.interface(),
     methodName: state.methodName(),
   };
+  var inArgList = param.inArgs || [];
+
   return Promise.all(
     // For each argname, predict which inputs should be suggested.
-    param.inArgs.map(function(inArg, i) {
+    inArgList.map(function(inArg, i) {
       return smartService.predict(
         'learner-method-input',
         _.assign({argName: inArg.name}, input)
@@ -388,7 +393,7 @@ function makeMethodTooltip(state, child) {
   var tooltip = methodSig.doc || '<no description>';
 
   // If the method takes input, add documentation about the input arguments.
-  if (methodSig.inArgs.length > 0) {
+  if (methodSig.inArgs && methodSig.inArgs.length > 0) {
     tooltip += '\n\nParameters';
     methodSig.inArgs.forEach(function(inArg) {
       tooltip += '\n';
@@ -400,7 +405,7 @@ function makeMethodTooltip(state, child) {
   }
 
   // If the method returns output, add documentation about the output arguments.
-  if (methodSig.outArgs.length > 0) {
+  if (methodSig.outArgs && methodSig.outArgs.length > 0) {
     tooltip += '\n\nOutput';
     methodSig.outArgs.forEach(function(outArg) {
       tooltip += '\n';
@@ -412,11 +417,11 @@ function makeMethodTooltip(state, child) {
   }
 
   // If the method has tags, show the tag types and values.
-  if (methodSig.tags.length > 0) {
+  if (methodSig.tags && methodSig.tags.length > 0) {
     tooltip += '\n\nTags';
     methodSig.tags.forEach(function(tag) {
       tooltip += '\n';
-      tooltip += '- ' + tag.val + ': ' + tag._type.name;
+      tooltip += '- ' + tag;
     });
   }
 
@@ -459,12 +464,13 @@ function getMethodSignature(state, args) {
   var methodName = state.methodName;
   var param = getMethodData(state.interface, methodName);
   var text = methodName;
-  var hasArgs = (param.inArgs.length > 0);
+  var inArgList = param.inArgs || [];
+  var hasArgs = (inArgList.length > 0);
   if (hasArgs) {
     text += '(';
   }
   if (args !== undefined) {
-    for (var i = 0; i < param.inArgs.length; i++) {
+    for (var i = 0; i < inArgList.length; i++) {
       if (i > 0) {
         text += ', ';
       }
@@ -674,10 +680,13 @@ function renderRPCRunButton(state, events) {
  * from state.args, a starred invocation's arguments, or a recommendation's.
  */
 function getRunEvent(state, events, args) {
+  var methodData = getMethodData(state.interface, state.methodName);
+  var outArgList = methodData.outArgs || [];
   return mercury.event(events.runAction, {
     name: state.itemName,
     methodName: state.methodName,
-    args: args
+    args: args,
+    numOutArgs: outArgList.length
   });
 }
 

@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-var vanadium = require('vanadium');
 var namespaceService = require('../../../../services/namespace/service');
 
 var log = require('../../../../lib/log')(
@@ -74,7 +73,9 @@ function displayMountPointDetails(state, events, data) {
         state.put('permissions', permissions);
       }
     }).catch(function(err) {
-      if (err instanceof vanadium.verror.NoAccessError) {
+      // TODO(alexfandrianto): We don't have access to VErrors, so this is the
+      // closest we can get to determining "notAuthorizedToSeePermissions".
+      if (err.toString().contains('NoAccess')) {
         state.put('notAuthorizedToSeePermissions', true);
       }
       log.error('Failed to get mountpoint permissions for:', name, err);

@@ -30,8 +30,8 @@ function makeRPC(data) {
     }
   });
 
-  return namespaceService.makeRPC(data.name, data.methodName, args).catch(
-    function(err) {
+  return namespaceService.makeRPC(
+    data.name, data.methodName, args, data.numOutArgs).catch(function(err) {
       log.error('Error during RPC',
         data.name,
         data.methodName,
