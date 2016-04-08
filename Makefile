@@ -119,7 +119,7 @@ credentials: go/bin
 
 .PHONY: start-browserd
 # Runs namespace browser with the credentials from V23_CREDENTIALS
-start-browserd: credentials go/bin/namespace-browserd
+start-browserd: directories credentials go/bin/namespace-browserd
 	./go/bin/namespace-browserd
 
 
