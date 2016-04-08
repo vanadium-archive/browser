@@ -1,1 +1,1 @@
-make start-browserd
+make -C $JIRI_ROOT/release/projects/browser start-browserd
