@@ -111,7 +111,6 @@ bower_components: bower.json node_modules
 
 go/bin: $(GO_FILES)
 	jiri go install v.io/x/ref/cmd/principal
-	jiri go install v.io/x/ref/services/mounttable/mounttabled
 	jiri go install v.io/x/browser/runner
 	jiri go install v.io/x/browser/namespace-browserd
 

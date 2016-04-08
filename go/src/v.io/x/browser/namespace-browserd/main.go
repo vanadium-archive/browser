@@ -29,6 +29,8 @@ const (
 	// TODO(alexfandrianto): Make this configurable here and on the JS end.
 	// https://github.com/vanadium/issues/issues/1268
 	SERVER_ADDRESS = "localhost:9002"
+	WEB_SERVER_ADDRESS = "localhost:9001"
+	HTML_DIR = "public"
 )
 
 type NamespaceBrowser struct {
@@ -288,7 +290,11 @@ func (b *NamespaceBrowser) ServeHTTP(rw http.ResponseWriter, req *http.Request) 
 func main() {
 	ctx, shutdown := v23.Init()
 	defer shutdown()
-
+		fmt.Printf("\nPlease Visit http://%s to see Namespace Browser.\n\n", WEB_SERVER_ADDRESS)
+	go func() {
+		http.ListenAndServe(WEB_SERVER_ADDRESS, http.FileServer(http.Dir("public")))
+		log.Fatal("Web server error: ", http.ListenAndServe(WEB_SERVER_ADDRESS, http.FileServer(http.Dir(HTML_DIR))))
+	}()
 	browser := NewNamespaceBrowser(ctx)
 	log.Fatal("HTTP server error: ", http.ListenAndServe(SERVER_ADDRESS, browser))
 }

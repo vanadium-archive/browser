@@ -2,7 +2,6 @@
 node_modules/
 bower_components/
 go/pkg/
-public/bundle.*
 public/version
 npm-debug.log
 go/bin/
