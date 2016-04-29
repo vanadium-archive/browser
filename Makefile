@@ -115,12 +115,13 @@ go/bin: $(GO_FILES)
 	jiri go install v.io/x/browser/namespace-browserd
 
 credentials: go/bin
-	./go/bin/principal seekblessings
+	@./go/bin/principal -alsologtostderr=false create -with-passphrase=false -overwrite=true credentials "namespace-browser"
+	@./go/bin/principal -alsologtostderr=false seekblessings
 
 .PHONY: start-browserd
 # Runs namespace browser with the credentials from V23_CREDENTIALS
 start-browserd: directories credentials go/bin/namespace-browserd
-	./go/bin/namespace-browserd
+	@./go/bin/namespace-browserd -alsologtostderr=false
 
 
 # PHONY targets:
@@ -194,11 +195,10 @@ start: build
 
 # Create needed directories like TMPDIR.
 directories:
-	mkdir -p $(TMPDIR)
+	@mkdir -p $(TMPDIR)
 
 # Clean all build artifacts.
 clean:
-	rm -f public/bundle.*
 	rm -rf node_modules
 	rm -rf go/bin
 	rm -rf bower_components
